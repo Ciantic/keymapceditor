@@ -63,7 +63,8 @@ export class KeyboardLayout extends React.Component<{
         let areaHeight = 0;
         let areaWidth = 0;
         props.layout.forEach(row => {
-            // Each row resets the coordinate x = 0.
+            // Specification says "Each row resets the coordinate x = 0.", but
+            // I've found out it's not true, at least the way my renderer works
             let x = rx;
             let w = 1;
             let h = 1;
