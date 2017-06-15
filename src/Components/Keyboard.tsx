@@ -135,7 +135,7 @@ export class KeyboardLayout extends React.Component<{
                         w2: w2, 
                         h2: h2,
 
-                        // Rotation 
+                        // Text 
                         text: k,
 
                         // Style
@@ -173,7 +173,7 @@ export class KeyboardLayout extends React.Component<{
         const c = (v) => {
             return v / areaWidth * 100;
         };
-        
+
         return <div 
             className={this.props.className}
             style={{
