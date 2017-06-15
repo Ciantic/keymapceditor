@@ -5,6 +5,10 @@ $key-top-radius: 0.55em;
 $key-border-color: #444;
 $key-shadow-color: #CCCCCC;
 $key-top-color: #eee;
+$key-shadow-sides-size: 0.8em;
+$key-shadow-top-size: 0.8em;
+$key-shadow-bottom-size: 1.5em;
+$key-shadow-press-size: 0.4em;
 $key-pressed-shadow-color: mix(darken($key-shadow-color, 10%), red, 85%);
 $key-pressed-top-color: mix(darken($key-top-color, 10%), red, 85%);
 
@@ -22,10 +26,10 @@ $key-pressed-top-color: mix(darken($key-top-color, 10%), red, 85%);
     background: $key-top-color;
     border-radius: $key-top-radius;
     position: absolute;
-    top: 0.75em;
-    left: 1em;
-    right: 1em;
-    bottom: 2em;
+    top: $key-shadow-top-size;
+    left: $key-shadow-sides-size;
+    right: $key-shadow-sides-size;
+    bottom: $key-shadow-bottom-size;
     transition: all $anim-speed;
     user-select: none;
     cursor: pointer;
@@ -39,7 +43,7 @@ $key-pressed-top-color: mix(darken($key-top-color, 10%), red, 85%);
     width: 100%;
     height: 100%;
     border-radius: $key-outer-radius;
-    border: 1.5px solid $key-border-color;
+    border: 1px solid $key-border-color;
     transition: all $anim-speed;
     cursor: pointer;
     overflow: hidden;
@@ -79,9 +83,9 @@ $key-pressed-top-color: mix(darken($key-top-color, 10%), red, 85%);
     }
 
     .top {
-        top: 0.75em + 0.5em;
-        left: 1em;
-        right: 1em;
-        bottom: 2em - 0.5em;
+        top: $key-shadow-top-size + $key-shadow-press-size;
+        left: $key-shadow-sides-size;
+        right: $key-shadow-sides-size;
+        bottom: $key-shadow-bottom-size - $key-shadow-press-size;
     }
 }

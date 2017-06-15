@@ -1,6 +1,7 @@
 import * as React from "react";
 import { cns } from "../Utils/classnames";
 import { observer } from "mobx-react";
+import { CSSProperties } from "react";
 
 const styles = require("./Key.module.scss");
 
@@ -73,7 +74,7 @@ export class Key extends React.Component<KeyProps, {}> {
                 transform: `rotate(${props.r || 0}deg)`,
                 transformOrigin: `top left`,
             }}>
-                <div className={styles.container} style={rectangle1} {...events}>
+                <div className={styles.container} style={rectangle1 as CSSProperties} {...events}>
                     <div className={styles.borders}>
                         <div className={styles.shadow} />
                         <div className={styles.top}>
@@ -83,7 +84,7 @@ export class Key extends React.Component<KeyProps, {}> {
                         </div>
                     </div>
                 </div>
-                {rectangle2 && <div className={styles.container} style={rectangle2} {...events}>
+                {rectangle2 && <div className={styles.container} style={rectangle2 as CSSProperties} {...events}>
                     <div className={styles.borders}>
                         <div className={styles.shadow} />
                         <div className={styles.top}></div>

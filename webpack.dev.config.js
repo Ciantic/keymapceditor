@@ -6,16 +6,18 @@ var appDir = path.resolve(__dirname, "src");
 var config = {
     entry: {
         vendors: [
+            'react-hot-loader',
             // For react hot loader
             'react-hot-loader/patch',
         ].concat(Object.keys(packageJson.dependencies)),
         app: [
+            'react-hot-loader',
             // For react hot loader
             'react-hot-loader/patch',
             // For module replacement
             'webpack-dev-server/client?http://localhost:6002',
             'webpack/hot/only-dev-server',
-            path.join(__dirname, 'src', 'Index.tsx')
+            path.join(__dirname, 'src', 'Index.hmr.tsx')
         ]
     },
     resolve: {
@@ -53,6 +55,11 @@ var config = {
     },
     devtool: 'inline-source-map',
     plugins: [
+        new webpack.DefinePlugin({
+            'process.env': {
+                'NODE_ENV': '"development"'
+            }
+        }),
         new webpack.HotModuleReplacementPlugin()
     ]
 };

@@ -1,6 +1,5 @@
 require("./App.scss");
 import * as React from "react";
-import { TestComponent } from "./TestComponent";
 import { Keyboard } from "./Components/Keyboard";
 
 const ergodoxKeyboardLayout = [
