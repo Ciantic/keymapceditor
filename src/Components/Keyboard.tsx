@@ -41,7 +41,6 @@ const isKeyboardLayoutKeyDefinition = (o: any): o is IKeyboardLayoutKeyDefinitio
 @observer
 export class KeyboardLayout extends React.Component<{ 
     className?: string;
-    keySize: number;
     layout: any[][];
     keyStyles: KeyStyle[];
     onMouseOverKey?: (keyIndex: number) => () => void;
@@ -137,7 +136,6 @@ export class KeyboardLayout extends React.Component<{
 
                         // Rotation 
                         text: k,
-                        size: props.keySize,
 
                         // Style
                         style: props.keyStyles[n],
@@ -211,7 +209,6 @@ export class Keyboard extends React.Component<{
     render() {
         return <KeyboardLayout 
             className={this.props.className}
-            keySize={54}
             keyStyles={this.keyStyles} 
             layout={this.props.layout} 
             onMouseOutKey={this.onMouseOutKey}

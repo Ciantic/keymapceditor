@@ -21,7 +21,6 @@ export interface KeyProps {
     h2: number;
     r: number; 
     text: string;
-    size: number;
     style?: KeyStyle;
     onMouseOver?: () => void;
     onMouseOut?: () => void;
@@ -32,7 +31,6 @@ export interface KeyProps {
 export class Key extends React.Component<KeyProps, {}> {
     render() {
         let props = this.props;
-        let size = props.size;
         let events = {
             onMouseOver : props.onMouseOver,
             onMouseOut : props.onMouseOut,
