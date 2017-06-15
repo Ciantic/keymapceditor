@@ -168,9 +168,12 @@ export class KeyboardLayout extends React.Component<{
             // each subsequent row increments the y coordinate by 1.0.
             y += 1;
         })
+
+        // Convert the value to percentages
         const c = (v) => {
             return v / areaWidth * 100;
         };
+        
         return <div 
             className={this.props.className}
             style={{
