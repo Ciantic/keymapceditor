@@ -3,36 +3,10 @@ import { Key, KeyStyle, KeyProps } from './Key';
 import { observable, action, runInAction } from "mobx";
 import { observer } from "mobx-react";
 import { asDefaultMap } from "../Utils/asDefaultMap";
+import { IKeyboardLayoutNextKey, IKeyboardLayoutSubsequentKey, IKeyboardLayoutKeyDefinition, KeyboardLayoutArray } from "../KLE/keyboardlayout";
 
 const styles = require("./Keyboard.module.scss");
 
-interface IKeyboardLayoutNextKey {
-    x: number;
-    y: number;
-    w: number;
-    h: number;
-    x2: number;
-    y2: number;
-    w2: number;
-    h2: number;
-    l: number;
-    n: boolean;
-    r: number;
-    rx: number;
-    ry: number;
-}
-
-interface IKeyboardLayoutSubsequentKey {
-    c: string;
-    t: string;
-    g: boolean;
-    a: number;
-    f: number;
-    f2: number;
-    p: string;
-}
-
-type IKeyboardLayoutKeyDefinition = Partial<IKeyboardLayoutNextKey> & Partial<IKeyboardLayoutSubsequentKey>
 
 const isKeyboardLayoutKeyDefinition = (o: any): o is IKeyboardLayoutKeyDefinition => {
     return typeof o === "object";
@@ -41,7 +15,7 @@ const isKeyboardLayoutKeyDefinition = (o: any): o is IKeyboardLayoutKeyDefinitio
 @observer
 export class KeyboardLayout extends React.Component<{ 
     className?: string;
-    layout: any[][];
+    layout: KeyboardLayoutArray;
     keyStyles: KeyStyle[];
     onMouseOverKey?: (keyIndex: number) => () => void;
     onMouseOutKey?: (keyIndex: number) => () => void;
@@ -202,7 +176,7 @@ export class KeyboardLayout extends React.Component<{
 @observer
 export class Keyboard extends React.Component<{
     className?: string;
-    layout: (string | IKeyboardLayoutKeyDefinition)[][]
+    layout: KeyboardLayoutArray;
 }, void> {
     // 1K oughta be enough
     @observable
