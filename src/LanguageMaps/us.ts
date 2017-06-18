@@ -1,6 +1,7 @@
 import { Keymapping } from './index';
 import { LANGS } from "../Langs";
 
+// TODO: This is incorrect, this is UK mapping at the moment
 class UsMapping extends Keymapping {
     constructor() {
         super()
