@@ -8,6 +8,9 @@ import { observer } from "mobx-react";
 import { KeyboardLayoutArray } from "./KLE/keyboardlayout";
 import { observable, action, computed } from "mobx";
 import { KeyStyle } from "./Components/Key";
+import { initTools } from './Tools';
+
+initTools(window["QMTOOLS"] = {});
 
 
 // TODO: read this file /usr/share/X11/xkb/symbols/fi

@@ -1,5 +1,99 @@
 import { IKeyboardLayoutKeyDefinition } from "../KLE/keyboardlayout";
 
+export type modifierkeycodes =    
+    "KC_LCTRL" | 
+    "KC_LSHIFT" | 
+    "KC_LALT" | 
+    "KC_LGUI" | 
+    "KC_RCTRL" | 
+    "KC_RSHIFT" | 
+    "KC_RALT" | 
+    "KC_RGUI";
+
+export type noncharkeycodes = 
+    "KC_ENTER" | 
+    "KC_ESCAPE" | 
+    "KC_BSPACE" | 
+    "KC_TAB" | 
+    "KC_SPACE" |       
+    "KC_CAPSLOCK" |
+    "KC_F1" | 
+    "KC_F2" | 
+    "KC_F3" | 
+    "KC_F4" | 
+    "KC_F5" | 
+    "KC_F6" | 
+    "KC_F7" |             
+    "KC_F8" | 
+    "KC_F9" | 
+    "KC_F10" | 
+    "KC_F11" | 
+    "KC_F12" | 
+    "KC_F13" | 
+    "KC_F14" | 
+    "KC_F15" | 
+    "KC_F16" | 
+    "KC_F17" | 
+    "KC_F18" | 
+    "KC_F19" | 
+    "KC_F20" | 
+    "KC_F21" |              
+    "KC_F22" | 
+    "KC_F23" | 
+    "KC_F24" | 
+    "KC_PSCREEN" | 
+    "KC_SCROLLLOCK" | 
+    "KC_PAUSE" | 
+    "KC_INSERT" | 
+    "KC_HOME" | 
+    "KC_PGUP" | 
+    "KC_DELETE" | 
+    "KC_END" | 
+    "KC_PGDOWN" | 
+    "KC_RIGHT" | 
+    "KC_LEFT" |           
+    "KC_DOWN" | 
+    "KC_UP" | 
+    "KC_NUMLOCK" | 
+    "KC_APPLICATION" | 
+    "KC_POWER" | 
+    "KC__MUTE" | 
+    "KC__VOLUP" |           
+    "KC__VOLDOWN" | 
+    "KC_RETURN" |        
+    "KC_LCTRL" | 
+    "KC_LSHIFT" | 
+    "KC_LALT" | 
+    "KC_LGUI" | 
+    "KC_RCTRL" | 
+    "KC_RSHIFT" | 
+    "KC_RALT" | 
+    "KC_RGUI" | 
+    "KC_SYSTEM_POWER" | 
+    "KC_SYSTEM_SLEEP" | 
+    "KC_SYSTEM_WAKE" | 
+    "KC_AUDIO_MUTE" | 
+    "KC_AUDIO_VOL_UP" | 
+    "KC_AUDIO_VOL_DOWN" | 
+    "KC_MEDIA_NEXT_TRACK" | 
+    "KC_MEDIA_PREV_TRACK" | 
+    "KC_MEDIA_STOP" | 
+    "KC_MEDIA_PLAY_PAUSE" | 
+    "KC_MEDIA_SELECT" | 
+    "KC_MEDIA_EJECT" | 
+    "KC_MAIL" | 
+    "KC_CALCULATOR" | 
+    "KC_MY_COMPUTER" | 
+    "KC_WWW_SEARCH" | 
+    "KC_WWW_HOME" | 
+    "KC_WWW_BACK" | 
+    "KC_WWW_FORWARD" | 
+    "KC_WWW_STOP" | 
+    "KC_WWW_REFRESH" | 
+    "KC_WWW_FAVORITES" | 
+    "KC_MEDIA_FAST_FORWARD" | 
+    "KC_MEDIA_REWIND";
+
 export type keycode =
     "KC_NO" |         
     "KC_ROLL_OVER" | 
