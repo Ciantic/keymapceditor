@@ -7,7 +7,6 @@ import { IKeyboardLayoutNextKey, IKeyboardLayoutSubsequentKey, IKeyboardLayoutKe
 
 const styles = require("./Keyboard.module.scss");
 
-
 const isKeyboardLayoutKeyDefinition = (o: any): o is IKeyboardLayoutKeyDefinition => {
     return typeof o === "object";
 }
@@ -110,7 +109,9 @@ export class KeyboardLayout extends React.Component<{
                         h2: h2,
 
                         // Text 
-                        text: k,
+                        texts: {
+                            tl : k
+                        },
 
                         // Style
                         style: props.keyStyles[n],

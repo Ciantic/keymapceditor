@@ -19,6 +19,46 @@ $key-pressed-top-color: mix(darken($key-top-color, 10%), red, 85%);
 
 .texts {
     font-size: 15px;
+    .tl {
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+    .tr {
+        position: absolute;
+        right: 0;
+        top: 0;
+    }
+    .bl {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+    }
+    .br {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+    }
+    .c {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        left: 0;
+        right: 0;
+        text-align: center;
+    }
+    .cr {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        right: 0;
+    }
+    .cl {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        left: 0;
+    }
 }
 
 .top {

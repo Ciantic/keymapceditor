@@ -10,6 +10,16 @@ export interface KeyStyle {
     pressed: boolean;
 };
 
+export interface KeyTexts {
+    tl?: string;
+    tr?: string;
+    bl?: string;
+    br?: string;
+    cl?: string;
+    c?: string;
+    cr?: string;
+}
+
 export interface KeyProps { 
     x: number; 
     y: number; 
@@ -20,7 +30,7 @@ export interface KeyProps {
     w2: number;
     h2: number;
     r: number; 
-    text: string;
+    texts: KeyTexts;
     style?: KeyStyle;
     onMouseOver?: () => void;
     onMouseOut?: () => void;
@@ -72,23 +82,29 @@ export class Key extends React.Component<KeyProps, {}> {
                 transform: `rotate(${props.r || 0}deg)`,
                 transformOrigin: `top left`,
             }}>
-                <div className={styles.container} style={rectangle1 as CSSProperties} {...events}>
-                    <div className={styles.borders}>
-                        <div className={styles.shadow} />
-                        <div className={styles.top}>
-                            <div className={styles.texts}>
-                                {props.text}
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 {rectangle2 && <div className={styles.container} style={rectangle2 as CSSProperties} {...events}>
                     <div className={styles.borders}>
                         <div className={styles.shadow} />
                         <div className={styles.top}></div>
                     </div>
+                </div>}
+
+                <div className={styles.container} style={rectangle1 as CSSProperties} {...events}>
+                    <div className={styles.borders}>
+                        <div className={styles.shadow} />
+                        <div className={styles.top}>
+                            <div className={styles.texts}>
+                                {props.texts.tl && <div className={styles.tl}>{props.texts.tl}</div>}
+                                {props.texts.tr && <div className={styles.tr}>{props.texts.tr}</div>}
+                                {props.texts.bl && <div className={styles.bl}>{props.texts.bl}</div>}
+                                {props.texts.br && <div className={styles.br}>{props.texts.br}</div>}
+                                {props.texts.c && <div className={styles.c}>{props.texts.c}</div>}
+                                {props.texts.cr && <div className={styles.cr}>{props.texts.cr}</div>}
+                                {props.texts.cl && <div className={styles.cl}>{props.texts.cl}</div>}
+                            </div>
+                        </div>
+                    </div>
                 </div>
-}
             </div>
     }
 }
