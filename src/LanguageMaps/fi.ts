@@ -39,6 +39,3 @@ class FinnishStandardMapping extends Keymapping {
         }
     }
 }
-
-// Dead keys KC_EQUAL both ` and ´ area dead keys
-// µ _µ€e
