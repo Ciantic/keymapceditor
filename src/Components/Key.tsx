@@ -11,13 +11,14 @@ export interface KeyStyle {
 };
 
 export interface KeyTexts {
-    tl?: string;
-    tr?: string;
-    bl?: string;
-    br?: string;
-    cl?: string;
-    c?: string;
-    cr?: string;
+    tl?: React.ReactNode;
+    tr?: React.ReactNode;
+    bl?: React.ReactNode;
+    br?: React.ReactNode;
+    cl?: React.ReactNode;
+    c?: React.ReactNode;
+    cr?: React.ReactNode;
+    node?: React.ReactNode;
 }
 
 export interface KeyProps { 
@@ -101,6 +102,7 @@ export class Key extends React.Component<KeyProps, {}> {
                                 {props.texts.c && <div className={styles.c}>{props.texts.c}</div>}
                                 {props.texts.cr && <div className={styles.cr}>{props.texts.cr}</div>}
                                 {props.texts.cl && <div className={styles.cl}>{props.texts.cl}</div>}
+                                {props.texts.node && props.texts.node}
                             </div>
                         </div>
                     </div>

@@ -48,30 +48,15 @@ export abstract class Keymapping {
     // Each language may have own weird way to render keycaps, this can be
     // overridden in the language definition
     public get keytexts() {
+        let chars = this.chars;
         let keys: { [k in keycode]? : KeyTexts } = {};
-        Object.keys(this.mapping).forEach((k: keycode) => {
-            let val = this.mapping[k];
-            let keytexts: KeyTexts = {};
-            if (typeof val === "string") {
-                keys[k] = {
-                    tl : val.charAt(0),
-                    bl : val.charAt(1),
-                    br : val.charAt(2),
-                    tr : val.charAt(3),
-                    c : val.charAt(4),
-                    cl : val.charAt(5),
-                    cr : val.charAt(6)
-                }
-            } else if (val instanceof Array) {
-                keys[k] = {
-                    tl : val[0] || "",
-                    bl : val[1] || "",
-                    br : val[2] || "",
-                    tr : val[3] || "",
-                    c : val[4] || "",
-                    cl : val[5] || "",
-                    cr : val[6] || ""
-                }
+        Object.keys(chars).forEach((k: keycode) => {
+            let val = chars[k];
+            keys[k] = {
+                tl : val.shifted,
+                bl : val.normal,
+                br : val.altgr,
+                tr : val.altgrshifted
             }
         })
         return keys;
