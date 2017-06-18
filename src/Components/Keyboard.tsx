@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Key, KeyStyle, KeyProps } from './Key';
+import { Key, KeyStyle, KeyProps, KeyTexts } from './Key';
 import { observable, action, runInAction } from "mobx";
 import { observer } from "mobx-react";
 import { asDefaultMap } from "../Utils/asDefaultMap";
@@ -16,6 +16,7 @@ export class KeyboardLayout extends React.Component<{
     className?: string;
     layout: KeyboardLayoutArray;
     keyStyles: KeyStyle[];
+    keyTexts: KeyTexts[];
     onMouseOverKey?: (keyIndex: number) => () => void;
     onMouseOutKey?: (keyIndex: number) => () => void;
     onClickKey?: (keyIndex: number) => () => void;
@@ -109,9 +110,7 @@ export class KeyboardLayout extends React.Component<{
                         h2: h2,
 
                         // Text 
-                        texts: {
-                            tl : k
-                        },
+                        texts: props.keyTexts && props.keyTexts.length > n ? props.keyTexts[n] : {},
 
                         // Style
                         style: props.keyStyles[n],
@@ -177,6 +176,7 @@ export class KeyboardLayout extends React.Component<{
 @observer
 export class Keyboard extends React.Component<{
     className?: string;
+    keyTexts: KeyTexts[];
     layout: KeyboardLayoutArray;
 }, void> {
     // 1K oughta be enough
@@ -189,6 +189,7 @@ export class Keyboard extends React.Component<{
         return <KeyboardLayout 
             className={this.props.className}
             keyStyles={this.keyStyles} 
+            keyTexts={this.props.keyTexts}
             layout={this.props.layout} 
             onMouseOutKey={this.onMouseOutKey}
             onMouseOverKey={this.onMouseOverKey}

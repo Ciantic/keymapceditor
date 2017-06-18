@@ -31,7 +31,7 @@ export interface KeyProps {
     w2: number;
     h2: number;
     r: number; 
-    texts: KeyTexts;
+    texts?: KeyTexts;
     style?: KeyStyle;
     onMouseOver?: () => void;
     onMouseOut?: () => void;
@@ -42,6 +42,7 @@ export interface KeyProps {
 export class Key extends React.Component<KeyProps, {}> {
     render() {
         let props = this.props;
+        let texts = props.texts || {};
         let events = {
             onMouseOver : props.onMouseOver,
             onMouseOut : props.onMouseOut,
@@ -70,7 +71,6 @@ export class Key extends React.Component<KeyProps, {}> {
                 paddingTop : props.h2 + "%"
             };
         }
-
         return <div 
             className={cns(
                 styles.key,
@@ -95,14 +95,14 @@ export class Key extends React.Component<KeyProps, {}> {
                         <div className={styles.shadow} />
                         <div className={styles.top}>
                             <div className={styles.texts}>
-                                {props.texts.tl && <div className={styles.tl}>{props.texts.tl}</div>}
-                                {props.texts.tr && <div className={styles.tr}>{props.texts.tr}</div>}
-                                {props.texts.bl && <div className={styles.bl}>{props.texts.bl}</div>}
-                                {props.texts.br && <div className={styles.br}>{props.texts.br}</div>}
-                                {props.texts.c && <div className={styles.c}>{props.texts.c}</div>}
-                                {props.texts.cr && <div className={styles.cr}>{props.texts.cr}</div>}
-                                {props.texts.cl && <div className={styles.cl}>{props.texts.cl}</div>}
-                                {props.texts.node && props.texts.node}
+                                {texts.tl && <div className={styles.tl}>{texts.tl}</div>}
+                                {texts.tr && <div className={styles.tr}>{texts.tr}</div>}
+                                {texts.bl && <div className={styles.bl}>{texts.bl}</div>}
+                                {texts.br && <div className={styles.br}>{texts.br}</div>}
+                                {texts.c && <div className={styles.c}>{texts.c}</div>}
+                                {texts.cr && <div className={styles.cr}>{texts.cr}</div>}
+                                {texts.cl && <div className={styles.cl}>{texts.cl}</div>}
+                                {texts.node && texts.node}
                             </div>
                         </div>
                     </div>

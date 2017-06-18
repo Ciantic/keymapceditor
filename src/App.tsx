@@ -1,3 +1,5 @@
+import { ansi104 } from './QMK/ansi104';
+import { usMapping } from './LanguageMaps/us';
 require("./App.scss");
 import * as React from "react";
 import { Keyboard, KeyboardLayout } from "./Components/Keyboard";
@@ -9,6 +11,7 @@ import { KeyboardLayoutArray } from "./KLE/keyboardlayout";
 import { observable, action, computed } from "mobx";
 import { KeyStyle } from "./Components/Key";
 import { initTools } from './Tools';
+import { languageMappedKeyTexts } from "./LanguageMaps/index";
 
 initTools(window["QMTOOLS"] = {});
 
@@ -42,6 +45,7 @@ export class KeyboardConfigure extends React.Component<{
         return <KeyboardLayout 
             className={this.props.className}
             keyStyles={this.keyStyles} 
+            keyTexts={[]}
             layout={this.props.layout} 
             onMouseOutKey={this.onMouseOutKey}
             onMouseOverKey={this.onMouseOverKey}
@@ -66,8 +70,6 @@ export class KeyboardConfigure extends React.Component<{
     })
 }
 
-
-
 export const App = () => <div>
     <KeyboardConfigure layout={ergodox} />
     <input type="text" className="pt-input pt-fill" />
@@ -81,5 +83,6 @@ export const App = () => <div>
             <option selected>{LANGS.ChooseReferenceMapping}</option>
         </select>
     </div>
-    <Keyboard layout={iso105} />
+    <Keyboard layout={iso105} keyTexts={languageMappedKeyTexts(usMapping, iso105)} />
+    <Keyboard layout={ansi104} keyTexts={languageMappedKeyTexts(usMapping, ansi104)} />
 </div>;

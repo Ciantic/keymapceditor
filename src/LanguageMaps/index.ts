@@ -1,7 +1,7 @@
-import { keycode } from "../QMK/keycodes";
+import { keycode, QmkUsbLayoutArray } from "../QMK/keycodes";
 import { KeyTexts } from "../Components/Key";
 
-export type mapping = Partial<{[k in keycode]: KeyProducedChars | KeyProducedCharsShort | string | [string, string, string, string] | [string, string, string] | [string, string] }> 
+export type mapping = Partial<{[k in keycode]: KeyProducedChars | KeyProducedCharsShort | string | [string, string, string, string] | [string, string, string] | [string, string] }>
 
 export interface KeyProducedChars {
     normal?: string;
@@ -51,31 +51,34 @@ export abstract class Keymapping {
             // KeyProducedCharsShort
             } else if (isShortFormat(val)) {
                 let render: KeyTexts
-                if (typeof val.text === "string") {
+                let text = val.text;
+                if (typeof text === "string") {
                     render = {
                         c: val.text
                     }
-                } else if (typeof val.text as any instanceof Array) {
+                } else if (text instanceof Array) {
                     render = {
-                        bl : val.text[0] || "",
-                        tl : val.text[1] || "",
-                        br : val.text[2] || "",
-                        tr : val.text[3] || "",
+                        bl : text[0] || "",
+                        tl : text[1] || "",
+                        br : text[2] || "",
+                        tr : text[3] || "",
                     }
                 } else {
-                    throw "wrong format";
+                    console.error("wrong format", val);
+                    throw Error("wrong format");
                 }
                 
+                
                 keys[k] = {
-                    normal : val.symbols[0] || "",
-                    shifted : val.symbols[1] || "",
-                    altgr : val.symbols[2] || "",
-                    altgrshifted : val.symbols[3] || "",
+                    normal : val.symbols && val.symbols[0] || "",
+                    shifted : val.symbols && val.symbols[1] || "",
+                    altgr : val.symbols && val.symbols[2] || "",
+                    altgrshifted : val.symbols && val.symbols[3] || "",
                     deadKeys : val.deadKeys,
                     render : render
                 }
             } else {
-                throw "wrong format 2"
+                throw Error("wrong format 2")
             }
         });
         return keys;
@@ -97,4 +100,17 @@ export abstract class Keymapping {
         })
         return keys;
     }
+}
+
+export const languageMappedKeyTexts = (keymapping: Keymapping, layout: QmkUsbLayoutArray) => {
+    let keytexts = keymapping.keytexts;
+    let newlayout = [] as KeyTexts[];
+    layout.forEach(r => {
+        r.forEach(k => {
+            if (typeof k === "string") {
+                newlayout.push(keytexts[k]);
+            }
+        })
+    })
+    return newlayout;
 }
