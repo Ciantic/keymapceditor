@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Key, KeyStyle, KeyProps, KeyTexts } from './Key';
+import { Key, KeyStyle, KeyProps, KeycapText } from './Key';
 import { observable, action, runInAction } from "mobx";
 import { observer } from "mobx-react";
 import { asDefaultMap } from "../Utils/asDefaultMap";
@@ -16,18 +16,18 @@ export class KeyboardLayout extends React.Component<{
     className?: string;
     layout: KeyboardLayoutArray;
     keyStyles: KeyStyle[];
-    keyTexts: KeyTexts[];
-    onMouseOverKey?: (keyIndex: number) => () => void;
-    onMouseOutKey?: (keyIndex: number) => () => void;
-    onClickKey?: (keyIndex: number) => () => void;
+    getKeycapText?: (layoutValue: string, keyIndex: number) => KeycapText;
+    onMouseOverKey?: (layoutValue: string, keyIndex: number) => () => void;
+    onMouseOutKey?: (layoutValue: string, keyIndex: number) => () => void;
+    onClickKey?: (layoutValue: string, keyIndex: number) => () => void;
 }, void> {
     render() {
         let props = this.props;
         let keys: KeyProps[] = [];
         let n = 0;
-        let onMouseOverKey = props.onMouseOverKey || ((n: number) => () => {});
-        let onMouseOutKey = props.onMouseOutKey || ((n: number) => () => {});
-        let onClickKey = props.onClickKey || ((n: number) => () => {});
+        let onMouseOverKey = props.onMouseOverKey || ((v: string, n: number) => () => {});
+        let onMouseOutKey = props.onMouseOutKey || ((v: string, n: number) => () => {});
+        let onClickKey = props.onClickKey || ((v: string, n: number) => () => {});
 
         // The first row starts with coordinate y = 0 by default
         let y = 0;
@@ -110,15 +110,15 @@ export class KeyboardLayout extends React.Component<{
                         h2: h2,
 
                         // Text 
-                        texts: props.keyTexts && props.keyTexts.length > n ? props.keyTexts[n] : {},
+                        texts: props.getKeycapText && props.getKeycapText(k, n),
 
                         // Style
                         style: props.keyStyles[n],
 
                         // Events
-                        onMouseOut: onMouseOutKey(n),
-                        onMouseOver: onMouseOverKey(n),
-                        onClick: onClickKey(n)
+                        onMouseOut: onMouseOutKey(k, n),
+                        onMouseOver: onMouseOverKey(k, n),
+                        onClick: onClickKey(k, n)
                     });
 
                     areaWidth = Math.max(areaWidth, x + w, x + x2 + w2);
@@ -176,8 +176,8 @@ export class KeyboardLayout extends React.Component<{
 @observer
 export class Keyboard extends React.Component<{
     className?: string;
-    keyTexts: KeyTexts[];
     layout: KeyboardLayoutArray;
+    getKeycapText?: (layoutValue: string, keyIndex: number) => KeycapText;
 }, void> {
     // 1K oughta be enough
     @observable
@@ -189,7 +189,7 @@ export class Keyboard extends React.Component<{
         return <KeyboardLayout 
             className={this.props.className}
             keyStyles={this.keyStyles} 
-            keyTexts={this.props.keyTexts}
+            getKeycapText={this.props.getKeycapText}
             layout={this.props.layout} 
             onMouseOutKey={this.onMouseOutKey}
             onMouseOverKey={this.onMouseOverKey}
@@ -197,15 +197,15 @@ export class Keyboard extends React.Component<{
             />
     }
 
-    onClickKey = (n: number) => action(() => {
+    onClickKey = (v: string, n: number) => action(() => {
         this.keyStyles[n].pressed = !this.keyStyles[n].pressed;
     });
     
-    onMouseOverKey = (n: number) => action(() => {
+    onMouseOverKey = (v: string, n: number) => action(() => {
         this.keyStyles[n].hovered = true;
     })
 
-    onMouseOutKey = (n: number) => action(() => {
+    onMouseOutKey = (v: string, n: number) => action(() => {
         this.keyStyles[n].hovered = false;
     })
 }

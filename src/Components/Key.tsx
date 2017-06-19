@@ -10,14 +10,14 @@ export interface KeyStyle {
     pressed: boolean;
 };
 
-export interface KeyTexts {
-    tl?: React.ReactNode;
-    tr?: React.ReactNode;
-    bl?: React.ReactNode;
-    br?: React.ReactNode;
-    cl?: React.ReactNode;
-    c?: React.ReactNode;
-    cr?: React.ReactNode;
+export interface KeycapText {
+    topleft?: React.ReactNode;
+    topright?: React.ReactNode;
+    bottomleft?: React.ReactNode;
+    bottomright?: React.ReactNode;
+    centerleft?: React.ReactNode;
+    centered?: React.ReactNode;
+    centerright?: React.ReactNode;
     node?: React.ReactNode;
 }
 
@@ -31,7 +31,7 @@ export interface KeyProps {
     w2: number;
     h2: number;
     r: number; 
-    texts?: KeyTexts;
+    texts?: KeycapText;
     style?: KeyStyle;
     onMouseOver?: () => void;
     onMouseOut?: () => void;
@@ -95,13 +95,13 @@ export class Key extends React.Component<KeyProps, {}> {
                         <div className={styles.shadow} />
                         <div className={styles.top}>
                             <div className={styles.texts}>
-                                {texts.tl && <div className={styles.tl}>{texts.tl}</div>}
-                                {texts.tr && <div className={styles.tr}>{texts.tr}</div>}
-                                {texts.bl && <div className={styles.bl}>{texts.bl}</div>}
-                                {texts.br && <div className={styles.br}>{texts.br}</div>}
-                                {texts.c && <div className={styles.c}>{texts.c}</div>}
-                                {texts.cr && <div className={styles.cr}>{texts.cr}</div>}
-                                {texts.cl && <div className={styles.cl}>{texts.cl}</div>}
+                                {texts.topleft && <div className={styles.tl}>{texts.topleft}</div>}
+                                {texts.topright && <div className={styles.tr}>{texts.topright}</div>}
+                                {texts.bottomleft && <div className={styles.bl}>{texts.bottomleft}</div>}
+                                {texts.bottomright && <div className={styles.br}>{texts.bottomright}</div>}
+                                {texts.centered && <div className={styles.c}>{texts.centered}</div>}
+                                {texts.centerright && <div className={styles.cr}>{texts.centerright}</div>}
+                                {texts.centerleft && <div className={styles.cl}>{texts.centerleft}</div>}
                                 {texts.node && texts.node}
                             </div>
                         </div>

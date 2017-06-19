@@ -15,6 +15,7 @@
     "@types/react-dom": "^15.5.0",
     "@types/react-hot-loader": "^3.0.1",
     "css-loader": "^0.28.0",
+    "csv-loader": "^2.1.1",
     "extract-text-webpack-plugin": "^2.1.2",
     "file-loader": "^0.11.1",
     "html-webpack-plugin": "^2.28.0",

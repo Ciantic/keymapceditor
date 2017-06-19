@@ -873,6 +873,13 @@ csso@~2.3.1:
     clap "^1.0.9"
     source-map "^0.5.3"
 
+csv-loader@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/csv-loader/-/csv-loader-2.1.1.tgz#f71d46080cc8cbc0b4170720e2992f2f1e2d7c46"
+  dependencies:
+    loader-utils "^1.1.0"
+    papaparse "^4.2.0"
+
 currently-unhandled@^0.4.1:
   version "0.4.1"
   resolved "https://registry.yarnpkg.com/currently-unhandled/-/currently-unhandled-0.4.1.tgz#988df33feab191ef799a61369dd76c17adf957ea"
@@ -2380,6 +2387,10 @@ osenv@0, osenv@^0.1.4:
 pako@~0.2.0:
   version "0.2.9"
   resolved "https://registry.yarnpkg.com/pako/-/pako-0.2.9.tgz#f3f7522f4ef782348da8161bad9ecfd51bf83a75"
+
+papaparse@^4.2.0:
+  version "4.3.3"
+  resolved "https://registry.yarnpkg.com/papaparse/-/papaparse-4.3.3.tgz#716ecd5b876d0e4f274b24d948fa0f8eda2f72be"
 
 param-case@2.1.x:
   version "2.1.1"

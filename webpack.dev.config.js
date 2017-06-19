@@ -30,6 +30,15 @@ var config = {
     watch: true,
     module: {
         loaders: [
+             {
+                test: /\.csv$/,
+                loader: 'csv-loader',
+                options: {
+                    dynamicTyping: false,
+                    header: true,
+                    skipEmptyLines: true
+                }
+            },
             { test: /\.tsx?$/, loaders: ['ts-loader'], include: appDir },
             { test: /\.css$/, exclude: /\.import\.css$/, loader: "style-loader!css", include: appDir },
             { test: /\.scss$/, exclude: /\.module\.scss$/, loader: "style-loader!css-loader!postcss-loader!sass-loader", include: appDir },

@@ -1,7 +1,6 @@
-import { ansi104 } from './QMK/ansi104';
-import { usMapping } from './LanguageMaps/us';
+import { IReferenceKeyboard, referenceKeyboards } from './QMK/referencekeyboards';
 require("./App.scss");
-import * as React from "react";
+import * as React from 'react';
 import { Keyboard, KeyboardLayout } from "./Components/Keyboard";
 import { LANGS } from "./Langs";
 import { iso105 } from './QMK/iso105';
@@ -11,12 +10,10 @@ import { KeyboardLayoutArray } from "./KLE/keyboardlayout";
 import { observable, action, computed } from "mobx";
 import { KeyStyle } from "./Components/Key";
 import { initTools } from './Tools';
-import { languageMappedKeyTexts } from "./LanguageMaps/index";
+import { IKeymapping, languageMappings } from './LanguageMaps';
+import { ansi104 } from './QMK/ansi104';
 
 initTools(window["QMTOOLS"] = {});
-
-
-// TODO: read this file /usr/share/X11/xkb/symbols/fi
 
 @observer
 export class KeyboardConfigure extends React.Component<{
@@ -45,15 +42,16 @@ export class KeyboardConfigure extends React.Component<{
         return <KeyboardLayout 
             className={this.props.className}
             keyStyles={this.keyStyles} 
-            keyTexts={[]}
             layout={this.props.layout} 
             onMouseOutKey={this.onMouseOutKey}
             onMouseOverKey={this.onMouseOverKey}
+            getKeycapText={(v) => ({ centered: v })}
             onClickKey={this.onClickKey}
             />
     }
 
-    onClickKey = (n: number) => action(() => {
+    onClickKey = (v: string, n: number) => action(() => {
+        console.log("click qmk index", v);
         if (this.selectedKey === n) {
             this.selectedKey = -1;
         } else {
@@ -61,28 +59,53 @@ export class KeyboardConfigure extends React.Component<{
         }
     });
     
-    onMouseOverKey = (n: number) => action(() => {
+    onMouseOverKey = (v: string, n: number) => action(() => {
         this.hoveredKey = n;
     })
 
-    onMouseOutKey = (n: number) => action(() => {
+    onMouseOutKey = (v: string, n: number) => action(() => {
         this.hoveredKey = -1;
     })
 }
 
-export const App = () => <div>
-    <KeyboardConfigure layout={ergodox} />
-    <input type="text" className="pt-input pt-fill" />
-    <div className="pt-select .modifier">
-        <select>
-            <option selected>{LANGS.ChooseReferenceKeyboard}</option>
-        </select>
-    </div>
-    <div className="pt-select .modifier">
-        <select>
-            <option selected>{LANGS.ChooseReferenceMapping}</option>
-        </select>
-    </div>
-    <Keyboard layout={iso105} keyTexts={languageMappedKeyTexts(usMapping, iso105)} />
-    <Keyboard layout={ansi104} keyTexts={languageMappedKeyTexts(usMapping, ansi104)} />
-</div>;
+@observer
+export class App extends React.Component<{}, {}> {
+    @observable langMappingIndex = -1;
+    @observable referenceKeyboardIndex = -1;
+
+    render() {
+        let langMapping: IKeymapping = languageMappings[this.langMappingIndex] || {} as any;
+        let referenceKeyboard: IReferenceKeyboard = referenceKeyboards[this.referenceKeyboardIndex] || null;
+        return <div>
+            <KeyboardConfigure layout={ergodox} />
+            {/*<input type="text" className="pt-input pt-fill" />*/}
+            <div className="pt-select pt-fill .modifier">
+                <select value={this.langMappingIndex} onChange={this.changeMapping}>
+                    <option value="-1">{LANGS.ChooseReferenceMapping}</option>
+                    {languageMappings.map((t, i) => 
+                        <option value={i} selected>{t.name}</option>
+                    )}
+                </select>
+            </div>
+            <div className="pt-select pt-fill .modifier">
+                <select value={this.referenceKeyboardIndex} onChange={this.changeReferenceKeyboard}>
+                    <option value="-1">{LANGS.ChooseReferenceKeyboard}</option>
+                    {referenceKeyboards.map((t, i) => 
+                        <option value={i} selected>{t.name}</option>
+                    )}                
+                </select>
+            </div>
+            {referenceKeyboard && <Keyboard layout={referenceKeyboard.keyboard}  getKeycapText={langMapping.getKeycapText} />}
+        </div>
+    }
+
+    @action
+    private changeMapping = (e: React.SyntheticEvent<any>) => {
+        this.langMappingIndex = +(e.target as any).value;
+    }
+
+    @action
+    private changeReferenceKeyboard = (e: React.SyntheticEvent<any>) => {
+        this.referenceKeyboardIndex = +(e.target as any).value;
+    }
+}
