@@ -22,10 +22,12 @@ export class App extends React.Component<{}, {}> {
     @observable private referenceKeyboardIndex = 1;
     @observable private keyboardLayoutIndex = 0;
 
-    @observable private selectedConfigureKeys = new Array(1024).fill(false);
-    @observable private hoveredConfigureKeys = new Array(1024).fill(false);
-    @observable private selectedRefKeys = new Array(1024).fill(false);
-    @observable private hoveredRefKeys = new Array(1024).fill(false);
+    @observable private selectedConfigureKeys: boolean[] = new Array(1024).fill(false);
+    @observable private hoveredConfigureKeys: boolean[] = new Array(1024).fill(false);
+    @observable private selectedRefKeys: boolean[] = new Array(1024).fill(false);
+    @observable private hoveredRefKeys: boolean[] = new Array(1024).fill(false);
+
+    private inputRef: HTMLInputElement | null = null;
 
     render() {
         let langMapping: IKeymapping = languageMappings[this.langMappingIndex] || null;
@@ -83,7 +85,7 @@ export class App extends React.Component<{}, {}> {
                         getKeycapText={getConfigureKeycapText}
                         onClickKey={this.onClickConfigureKey}
                     />
-                    <input type="text" className={cns(
+                    <input ref={this.setInputRef} type="text" className={cns(
                         "pt-input pt-fill pt-large",
                         styles.layoutInput
                     )} 
@@ -110,6 +112,11 @@ export class App extends React.Component<{}, {}> {
         </div>
     }
 
+    private setInputRef = (el: HTMLInputElement) => {
+        this.inputRef = el;
+    }
+
+    // Drop downs at the top
     @action
     private changeMapping = (e: React.SyntheticEvent<any>) => {
         this.langMappingIndex = +(e.target as any).value;
@@ -124,7 +131,29 @@ export class App extends React.Component<{}, {}> {
     private changeKeyboardLayout = (e: React.SyntheticEvent<any>) => {
         this.keyboardLayoutIndex = +(e.target as any).value;
     }
+    
+    // Configure keyboard layout
+    private onClickConfigureKey = (v: string, n: number) => action(() => {
+        this.selectedConfigureKeys.forEach((t, i) => {
+            this.selectedConfigureKeys[i] = i === n ? !t : false;
+        })
+        if (this.inputRef) {
+            setTimeout(() => {
+                this.inputRef.focus();
+            }, 100);
+        }
+    });
+    
+    private onMouseOverConfigureKey = (v: string, n: number) => action(() => {
+        this.hoveredConfigureKeys[n] = true;
+    })
 
+    private onMouseOutConfigureKey = (v: string, n: number) => action(() => {
+        this.hoveredConfigureKeys[n] = false;
+    })
+
+
+    // Reference keyboard layout
     private onClickReferenceKey = (v: string, n: number) => action(() => {
         this.selectedRefKeys[n] = !this.selectedRefKeys[n];
     });
@@ -136,17 +165,4 @@ export class App extends React.Component<{}, {}> {
     private onMouseOutReferenceKey = (v: string, n: number) => action(() => {
         this.hoveredRefKeys[n] = false;
     })
-
-    private onClickConfigureKey = (v: string, n: number) => action(() => {
-        this.selectedConfigureKeys[n] = !this.selectedConfigureKeys[n];
-    });
-    
-    private onMouseOverConfigureKey = (v: string, n: number) => action(() => {
-        this.hoveredConfigureKeys[n] = true;
-    })
-
-    private onMouseOutConfigureKey = (v: string, n: number) => action(() => {
-        this.hoveredConfigureKeys[n] = false;
-    })
-
 }
