@@ -70,8 +70,8 @@ export class KeyboardConfigure extends React.Component<{
 
 @observer
 export class App extends React.Component<{}, {}> {
-    @observable langMappingIndex = -1;
-    @observable referenceKeyboardIndex = -1;
+    @observable langMappingIndex = 1;
+    @observable referenceKeyboardIndex = 1;
 
     render() {
         let langMapping: IKeymapping = languageMappings[this.langMappingIndex] || {} as any;

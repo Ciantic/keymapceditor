@@ -22,6 +22,15 @@ var config = {
     },
     module: {
         loaders: [
+             {
+                test: /\.csv$/,
+                loader: 'csv-loader',
+                options: {
+                    dynamicTyping: false,
+                    header: true,
+                    skipEmptyLines: true
+                }
+            },
             { test: /\.tsx?$/, loaders: ['ts-loader'], include: appDir },
             { test: /\.css$/, exclude: /\.module\.css$/, loader: ExtractTextPlugin.extract(["css-loader"]), include: appDir },
             { test: /\.scss$/, exclude: /\.module\.scss$/, loader: ExtractTextPlugin.extract(["css-loader", "postcss-loader", "sass-loader"]), include: appDir },
