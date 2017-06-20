@@ -39,7 +39,7 @@ usbcode,normal,shifted,altgr,altgrshifted,deadkeys,bottomleft,topleft,topright,b
 41,,,,,,,,,,Esc,
 42,,,,,,,,,,Backspace,
 43,,,,,,,,,,Tab,
-44,,,,,,,,,,,
+44, ,,,,,,,,,Space,
 45,-,_,,,,,,,,,
 46,=,+,,,,,,,,,
 47,[,{,,,,,,,,,
