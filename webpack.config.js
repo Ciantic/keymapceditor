@@ -3,6 +3,7 @@ var packageJson = require(path.join(__dirname, 'package.json'));
 var webpack = require('webpack');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
+var releaseDate = new Date().getTime();
 
 var appDir = path.resolve(__dirname, "src");
 var config = {
@@ -17,7 +18,7 @@ var config = {
     },
     output: {
         path: path.join(__dirname, 'build'),
-        filename: '[name].js',
+        filename: `[name].js?${releaseDate}`,
         publicPath: ""
     },
     module: {
@@ -71,9 +72,9 @@ var config = {
                 warnings: false
             }
         }),
-        new webpack.optimize.CommonsChunkPlugin({ name: 'vendors', filename: `vendors.js` }),
+        new webpack.optimize.CommonsChunkPlugin({ name: 'vendors', filename: `vendors.js?${releaseDate}` }),
         new ExtractTextPlugin({
-            filename: '[name].css', 
+            filename: `[name].css?${releaseDate}`, 
             allChunks: true
         })
     ]

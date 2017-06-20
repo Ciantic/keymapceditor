@@ -4,6 +4,7 @@ import { observable, action, runInAction } from "mobx";
 import { observer } from "mobx-react";
 import { asDefaultMap } from "../Utils/asDefaultMap";
 import { IKeyboardLayoutNextKey, IKeyboardLayoutSubsequentKey, IKeyboardLayoutKeyDefinition, KeyboardLayoutArray } from "../KLE/keyboardlayout";
+import { cns } from "../Utils/classnames";
 
 const styles = require("./Keyboard.module.scss");
 
@@ -163,7 +164,7 @@ export class KeyboardLayout extends React.Component<KeyboardLayoutProps, void> {
         };
 
         return <div 
-            className={this.props.className}
+            className={cns(styles.keyboard, this.props.className)}
             style={{
                 position: "relative"
             }}>
