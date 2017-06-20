@@ -48,7 +48,7 @@ usbcode,normal,shifted,altgr,altgrshifted,deadkeys,bottomleft,topleft,topright,b
 51,;,:,,,,,,,,,
 52,',@,,,,,,,,,
 53,`,¬,,,,,,,,,
-54,0,<,,,,,,,,,
+54,",",<,,,,,,,,,
 55,.,>,,,,,,,,,
 56,/,?,,,,,,,,,
 57,,,,,,,,,,Caps Lock,
@@ -64,25 +64,25 @@ usbcode,normal,shifted,altgr,altgrshifted,deadkeys,bottomleft,topleft,topright,b
 67,,,,,,,,,,F10,
 68,,,,,,,,,,F11,
 69,,,,,,,,,,F12,
-70,,,,,,,,,,PrtScn,
+70,,,,,,,,,,PrtScn,Print screen
 71,,,,,,,,,,Scroll Lock,
 72,,,,,,,,,,Pause Break,
 73,,,,,,,,,,Insert,
 74,,,,,,,,,,Home,
-75,,,,,,,,,,PgUp,
+75,,,,,,,,,,PgUp,Page up
 76,,,,,,,,,,Delete,
 77,,,,,,,,,,End,
-78,,,,,,,,,,PgDn,
+78,,,,,,,,,,PgDn,Page down
 79,,,,,,,,,,→,Right arrow
 80,,,,,,,,,,←,Left arrow
 81,,,,,,,,,,↓,Down arrow
 82,,,,,,,,,,↑,Up arrow
 83,,,,,,,,,,Num Lock,
-84,,,,,,,/,,,,
-85,,,,,,,*,,,,
-86,,,,,,,-,,,,
-87,,,,,,,+,,,,
-88,,,,,,,,,,Enter,
+84,,,,,,,/,,,,Numpad Divide
+85,,,,,,,*,,,,Numpad Asterisk
+86,,,,,,,-,,,,Numpad Minus
+87,,,,,,,+,,,,Numpad Plus
+88,,,,,,,,,,Enter,Numpad Enter
 89,,,,,,End,1,,,,Numpad 1 and End
 90,,,,,,↓,2,,,,Numpad 2 and Down arrow
 91,,,,,,PgDn,3,,,,Numpad 3 and Page down

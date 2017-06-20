@@ -48,7 +48,7 @@ usbcode,normal,shifted,altgr,altgrshifted,deadkeys,bottomleft,topleft,bottomrigh
 51,ö,Ö,,,,,Ö,,,
 52,ä,Ä,,,,,Ä,,,
 53,§,½,,,,,,,,
-54,0,;,,,,,,,,
+54,",",;,,,,,,,,
 55,.,:,,,,,,,,
 56,-,_,,,,,,,,
 57,,,,,,,,,Caps Lock,
