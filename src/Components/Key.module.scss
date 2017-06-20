@@ -84,7 +84,6 @@ $key-pressed-top-color: mix(darken($key-top-color, 10%), red, 85%);
     height: 100%;
     border-radius: $key-outer-radius;
     border: 1px solid $key-border-color;
-    transition: all $anim-speed;
     cursor: pointer;
     overflow: hidden;
     background: $key-shadow-color;
@@ -111,9 +110,6 @@ $key-pressed-top-color: mix(darken($key-top-color, 10%), red, 85%);
 
 .pressed {
     z-index: 3;
-    .borders {
-        box-shadow: 0 0 15px rgba(255,0,0,0.5);
-    }
     .top {
         background: $key-pressed-top-color;
     }

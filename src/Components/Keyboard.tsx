@@ -11,23 +11,34 @@ const isKeyboardLayoutKeyDefinition = (o: any): o is IKeyboardLayoutKeyDefinitio
     return typeof o === "object";
 }
 
-@observer
-export class KeyboardLayout extends React.Component<{ 
+interface KeyboardLayoutProps { 
     className?: string;
     layout: KeyboardLayoutArray;
-    keyStyles: KeyStyle[];
+    styleHoveredKeys: boolean[];
+    stylePressedKeys: boolean[];
     getKeycapText?: (layoutValue: string, keyIndex: number) => KeycapText;
-    onMouseOverKey?: (layoutValue: string, keyIndex: number) => () => void;
-    onMouseOutKey?: (layoutValue: string, keyIndex: number) => () => void;
+    onMouseEnterKey?: (layoutValue: string, keyIndex: number) => () => void;
+    onMouseLeaveKey?: (layoutValue: string, keyIndex: number) => () => void;
     onClickKey?: (layoutValue: string, keyIndex: number) => () => void;
-}, void> {
+}
+
+@observer
+export class KeyboardLayout extends React.Component<KeyboardLayoutProps, void> {
+    static defaultProps: Partial<KeyboardLayoutProps> = {
+        styleHoveredKeys: [],
+        stylePressedKeys: [],
+        onClickKey: ((v: string, n: number) => () => {}),
+        onMouseLeaveKey: ((v: string, n: number) => () => {}),
+        onMouseEnterKey: ((v: string, n: number) => () => {})
+    }
+
     render() {
         let props = this.props;
         let keys: KeyProps[] = [];
         let n = 0;
-        let onMouseOverKey = props.onMouseOverKey || ((v: string, n: number) => () => {});
-        let onMouseOutKey = props.onMouseOutKey || ((v: string, n: number) => () => {});
-        let onClickKey = props.onClickKey || ((v: string, n: number) => () => {});
+        let onMouseEnterKey = props.onMouseEnterKey;
+        let onMouseLeaveKey = props.onMouseLeaveKey;
+        let onClickKey = props.onClickKey;
 
         // The first row starts with coordinate y = 0 by default
         let y = 0;
@@ -113,11 +124,14 @@ export class KeyboardLayout extends React.Component<{
                         texts: props.getKeycapText && props.getKeycapText(k, n),
 
                         // Style
-                        style: props.keyStyles[n],
+                        style: {
+                            hovered: props.styleHoveredKeys[n],
+                            pressed: props.stylePressedKeys[n]
+                        },
 
                         // Events
-                        onMouseOut: onMouseOutKey(k, n),
-                        onMouseOver: onMouseOverKey(k, n),
+                        onMouseLeave: onMouseLeaveKey(k, n),
+                        onMouseEnter: onMouseEnterKey(k, n),
                         onClick: onClickKey(k, n)
                     });
 
@@ -153,7 +167,8 @@ export class KeyboardLayout extends React.Component<{
             style={{
                 position: "relative"
             }}>
-            {keys.map(k => <Key 
+            {keys.map((k, n) => <Key 
+            key={n}
             {...k} 
             x={c(k.x)} 
             y={c(k.y)} 
@@ -170,42 +185,4 @@ export class KeyboardLayout extends React.Component<{
             }}></div>
         </div>
     }
-}
-
-
-@observer
-export class Keyboard extends React.Component<{
-    className?: string;
-    layout: KeyboardLayoutArray;
-    getKeycapText?: (layoutValue: string, keyIndex: number) => KeycapText;
-}, void> {
-    // 1K oughta be enough
-    @observable
-    private keyStyles = new Array<KeyStyle>(1024).fill({
-        hovered : false,
-        pressed : false
-    });
-    render() {
-        return <KeyboardLayout 
-            className={this.props.className}
-            keyStyles={this.keyStyles} 
-            getKeycapText={this.props.getKeycapText}
-            layout={this.props.layout} 
-            onMouseOutKey={this.onMouseOutKey}
-            onMouseOverKey={this.onMouseOverKey}
-            onClickKey={this.onClickKey}
-            />
-    }
-
-    onClickKey = (v: string, n: number) => action(() => {
-        this.keyStyles[n].pressed = !this.keyStyles[n].pressed;
-    });
-    
-    onMouseOverKey = (v: string, n: number) => action(() => {
-        this.keyStyles[n].hovered = true;
-    })
-
-    onMouseOutKey = (v: string, n: number) => action(() => {
-        this.keyStyles[n].hovered = false;
-    })
 }

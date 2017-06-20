@@ -1,6 +1,9 @@
 @import "~@blueprintjs/core/dist/blueprint.css";
 
+$pt-navbar-height: 50px;
+
 body {
     -moz-box-sizing: border-box;
     box-sizing: border-box;
+    padding-top: $pt-navbar-height;
 }

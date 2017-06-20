@@ -1,5 +1,8 @@
-// KEYMAP(N=1,2,3...) where N is the positional number in the layout below
-export const ergodox = [
+import { KeyboardLayoutArray } from "../KLE/keyboardlayout";
+import { IKeyboardLayout } from "./index";
+import { LANGS } from "../Langs";
+
+const ergodox: KeyboardLayoutArray = [
     [{x:3.5},"3",{x:10.5},"41"],
     [{y:-0.875,x:2.5},"2",{x:1},"4",{x:8.5},"40",{x:1},"42"],
     [{y:-0.875,x:5.5},"5","6",{x:4.5},"38","39"],
@@ -27,3 +30,8 @@ export const ergodox = [
     [{x:-3},"72",{h:2},"74",{h:2},"75"],
     [{x:-3},"73"]
 ];
+
+export const ergodoxKeyboardLayout: IKeyboardLayout = {
+    layout: ergodox,
+    name: LANGS.Ergodox
+}

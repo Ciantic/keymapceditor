@@ -277,5 +277,3 @@ addUsbcodeToKeycodes(modifierkeys);
 addUsbcodeToKeycodes(specialkeys);
 
 export type keycode = keyof ((typeof keys) & (typeof modifierkeys) & (typeof specialkeys));
-
-export type QmkUsbLayoutArray = (keycode | IKeyboardLayoutKeyDefinition)[][];

@@ -2,13 +2,17 @@ import { AppContainer } from "react-hot-loader";
 import * as React from "react";
 import { render } from "react-dom";
 import { App } from "./App";
+import DevTools from 'mobx-react-devtools';
 
 const rootEl = document.getElementById("root");
 
 // NOTE: This file cannot be hot reloaded, try editing App.tsx instead!
 
 render(<AppContainer>
-    <App />
+    <div>
+        <App />
+        <DevTools />
+    </div>
 </AppContainer>, rootEl);
 
 declare var module: any; // Hot module replacement thingie
@@ -21,7 +25,10 @@ if (process.env.NODE_ENV === "development" && (module as any).hot) {
         const NextApp = require("./App").App;
         render(
             <AppContainer>
-                <NextApp />
+                <div>
+                    <NextApp />
+                    <DevTools />
+                </div>
             </AppContainer>,
             rootEl
         );

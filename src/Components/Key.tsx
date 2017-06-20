@@ -33,8 +33,8 @@ export interface KeyProps {
     r: number; 
     texts?: KeycapText;
     style?: KeyStyle;
-    onMouseOver?: () => void;
-    onMouseOut?: () => void;
+    onMouseEnter?: () => void;
+    onMouseLeave?: () => void;
     onClick?: () => void;
 }
 
@@ -44,8 +44,8 @@ export class Key extends React.Component<KeyProps, {}> {
         let props = this.props;
         let texts = props.texts || {};
         let events = {
-            onMouseOver : props.onMouseOver,
-            onMouseOut : props.onMouseOut,
+            onMouseEnter : props.onMouseEnter,
+            onMouseLeave : props.onMouseLeave,
             onClick : props.onClick
         }
         let style: KeyStyle = props.style || {
