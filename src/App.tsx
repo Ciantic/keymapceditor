@@ -53,7 +53,7 @@ export class App extends React.Component<{}, {}> {
             let setkeycode = this.configuredKeys.get(c);
             return (
                 (setkeycode && langMapping && langMapping.getKeycapText(setkeycode)) || {
-                    centered: c,
+                    centered: setkeycode || c,
                 }
             );
         };
