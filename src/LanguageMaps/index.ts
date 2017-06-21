@@ -8,7 +8,7 @@ interface CSVFormat {
     usbcode: number;
 
     // Symbols produced
-    normal: string; 
+    normal: string;
     shifted: string;
     altgr: string;
     altgrshifted: string;
@@ -36,20 +36,20 @@ interface KeymappingOpts {
 
 export interface IKeymapping {
     name: string;
-    getKeycapText(c: keycode): KeycapText
+    getKeycapText(c: keycode): KeycapText;
 }
 
 export class Keymapping implements IKeymapping {
     public readonly lang: string;
     public readonly name: string;
-    public readonly mapping: Readonly<{ [k in keycode] ?: CSVFormat }>
+    public readonly mapping: Readonly<{ [k in keycode]?: CSVFormat }>;
 
     constructor(opts: KeymappingOpts) {
         this.name = opts.name;
         this.mapping = {};
         opts.mapping.forEach(t => {
             this.mapping[usbcodeToKeycode[t.usbcode]] = t;
-        })
+        });
     }
 
     // This can be overridden in some really weird mappings by inheriting from
@@ -57,36 +57,37 @@ export class Keymapping implements IKeymapping {
     public getKeycapText = (c: keycode): KeycapText => {
         if (c in this.mapping) {
             let m = this.mapping[c];
-            if (m.bottomleft || 
-                m.topleft || 
-                m.bottomright || 
-                m.topright || 
+            if (
+                m.bottomleft ||
+                m.topleft ||
+                m.bottomright ||
+                m.topright ||
                 m.centerleft ||
                 m.centered ||
-                m.centerright)
-            {
+                m.centerright
+            ) {
                 return m;
             }
             return {
-                bottomleft : m.normal,
+                bottomleft: m.normal,
                 topleft: m.shifted,
                 bottomright: m.altgr,
-                topright: m.altgrshifted
-            }
+                topright: m.altgrshifted,
+            };
         }
         return {};
-    }
+    };
 }
 
 export const languageMappings: IKeymapping[] = [
     new Keymapping({
-        lang : "UK",
-        mapping : require("./Data/uk.csv"), 
-        name : LANGS.UkKeyboard
-    }), 
+        lang: "UK",
+        mapping: require("./Data/uk.csv"),
+        name: LANGS.UkKeyboard,
+    }),
     new Keymapping({
-        lang : "FI",
-        mapping : require("./Data/fi.csv"), 
-        name : LANGS.FinnishStandardKeyboard
-    })
-]
+        lang: "FI",
+        mapping: require("./Data/fi.csv"),
+        name: LANGS.FinnishStandardKeyboard,
+    }),
+];

@@ -1,4 +1,4 @@
-import { ergodoxKeyboardLayout } from './ergodox';
+import { ergodoxKeyboardLayout } from "./ergodox";
 import { KeyboardLayoutArray } from "../KLE/keyboardlayout";
 
 export interface IKeyboardLayout {
@@ -6,6 +6,4 @@ export interface IKeyboardLayout {
     name: string;
 }
 
-export const keyboardLayouts: IKeyboardLayout[] = [
-    ergodoxKeyboardLayout
-]
+export const keyboardLayouts: IKeyboardLayout[] = [ergodoxKeyboardLayout];

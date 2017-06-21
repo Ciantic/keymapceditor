@@ -24,4 +24,4 @@ export const cns = (...args: any[]) => {
     }
 
     return classes.join(" ");
-}
+};

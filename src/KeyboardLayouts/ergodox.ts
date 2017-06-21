@@ -2,6 +2,7 @@ import { KeyboardLayoutArray } from "../KLE/keyboardlayout";
 import { IKeyboardLayout } from "./index";
 import { LANGS } from "../Langs";
 
+// prettier-ignore
 const ergodox: KeyboardLayoutArray = [
     [{x:3.5},"3",{x:10.5},"41"],
     [{y:-0.875,x:2.5},"2",{x:1},"4",{x:8.5},"40",{x:1},"42"],
@@ -33,5 +34,5 @@ const ergodox: KeyboardLayoutArray = [
 
 export const ergodoxKeyboardLayout: IKeyboardLayout = {
     layout: ergodox,
-    name: LANGS.Ergodox
-}
+    name: LANGS.Ergodox,
+};

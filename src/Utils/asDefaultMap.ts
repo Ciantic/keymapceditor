@@ -6,20 +6,22 @@ export class ObservableDefaultMap<T> extends ObservableMap<T> {
     }
 
     modifyValue(key: string, mutator: (v: T) => void) {
-        
         runInAction(() => {
-            let a = this.getDefault(key)
+            let a = this.getDefault(key);
             mutator(a);
             this.set(key, a);
         });
-        
     }
 
     setDefault(key: string): T {
         let v = this.get(key);
         if (typeof v === "undefined") {
-            this.set(key, typeof this.defaultValue === "object" ?
-                Object.assign({}, this.defaultValue) : this.defaultValue);
+            this.set(
+                key,
+                typeof this.defaultValue === "object"
+                    ? Object.assign({}, this.defaultValue)
+                    : this.defaultValue
+            );
             return this.get(key);
         }
         return v;
@@ -29,12 +31,12 @@ export class ObservableDefaultMap<T> extends ObservableMap<T> {
     getDefault(key: string) {
         let v = this.get(key);
         if (typeof v === "undefined") {
-            return typeof this.defaultValue === "object" ?
-                Object.assign({}, this.defaultValue) : this.defaultValue;
+            return typeof this.defaultValue === "object"
+                ? Object.assign({}, this.defaultValue)
+                : this.defaultValue;
         }
         return v;
     }
 }
 
-export const asDefaultMap = <T>(defaultValue: T) =>
-    new ObservableDefaultMap<T>(defaultValue);
+export const asDefaultMap = <T>(defaultValue: T) => new ObservableDefaultMap<T>(defaultValue);

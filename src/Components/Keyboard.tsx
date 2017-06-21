@@ -1,18 +1,23 @@
 import * as React from "react";
-import { Key, KeyStyle, KeyProps, KeycapText } from './Key';
+import { Key, KeyStyle, KeyProps, KeycapText } from "./Key";
 import { observable, action, runInAction } from "mobx";
 import { observer } from "mobx-react";
 import { asDefaultMap } from "../Utils/asDefaultMap";
-import { IKeyboardLayoutNextKey, IKeyboardLayoutSubsequentKey, IKeyboardLayoutKeyDefinition, KeyboardLayoutArray } from "../KLE/keyboardlayout";
+import {
+    IKeyboardLayoutNextKey,
+    IKeyboardLayoutSubsequentKey,
+    IKeyboardLayoutKeyDefinition,
+    KeyboardLayoutArray,
+} from "../KLE/keyboardlayout";
 import { cns } from "../Utils/classnames";
 
 const styles = require("./Keyboard.module.scss");
 
 const isKeyboardLayoutKeyDefinition = (o: any): o is IKeyboardLayoutKeyDefinition => {
     return typeof o === "object";
-}
+};
 
-interface KeyboardLayoutProps { 
+interface KeyboardLayoutProps {
     className?: string;
     layout: KeyboardLayoutArray;
     styleHoveredKeys: boolean[];
@@ -28,10 +33,10 @@ export class KeyboardLayout extends React.Component<KeyboardLayoutProps, void> {
     static defaultProps: Partial<KeyboardLayoutProps> = {
         styleHoveredKeys: [],
         stylePressedKeys: [],
-        onClickKey: ((v: string, n: number) => () => {}),
-        onMouseLeaveKey: ((v: string, n: number) => () => {}),
-        onMouseEnterKey: ((v: string, n: number) => () => {})
-    }
+        onClickKey: (v: string, n: number) => () => {},
+        onMouseLeaveKey: (v: string, n: number) => () => {},
+        onMouseEnterKey: (v: string, n: number) => () => {},
+    };
 
     render() {
         let props = this.props;
@@ -61,7 +66,7 @@ export class KeyboardLayout extends React.Component<KeyboardLayoutProps, void> {
             row.forEach(k => {
                 if (isKeyboardLayoutKeyDefinition(k)) {
                     // Initialize rx and ry if either one is given
-                    if (("rx" in k) || ("ry" in k)) {
+                    if ("rx" in k || "ry" in k) {
                         k.rx = "rx" in k ? k.rx : rx;
                         k.ry = "ry" in k ? k.ry : ry;
                     }
@@ -87,9 +92,8 @@ export class KeyboardLayout extends React.Component<KeyboardLayoutProps, void> {
                     w = k.w || 1;
                     h = k.h || 1;
 
-
                     // Additional rectangle e.g. for special enter in Ansi 104
-                    if (("x2" in k) || ("y2" in k) || ("w2" in k) || ("h2" in k)) {
+                    if ("x2" in k || "y2" in k || "w2" in k || "h2" in k) {
                         x2 = "x2" in k ? k.x2 : 0;
                         y2 = "y2" in k ? k.y2 : 0;
                         w2 = "w2" in k ? k.w2 : 0;
@@ -106,34 +110,34 @@ export class KeyboardLayout extends React.Component<KeyboardLayoutProps, void> {
 
                     // Height corrected y in the original transform
                     let hy = (sy + h) * Math.cos(-rr) + (sx + w) * Math.sin(-rr);
-                    
+
                     keys.push({
                         // Regular key settings
                         x: sx,
                         y: sy,
-                        w: w, 
-                        h: h, 
+                        w: w,
+                        h: h,
                         r: r,
 
                         // Second Rectangle for oddly shaped key e.g. Enter
                         x2: x2,
                         y2: y2,
-                        w2: w2, 
+                        w2: w2,
                         h2: h2,
 
-                        // Text 
+                        // Text
                         texts: props.getKeycapText && props.getKeycapText(k, n),
 
                         // Style
                         style: {
                             hovered: props.styleHoveredKeys[n],
-                            pressed: props.stylePressedKeys[n]
+                            pressed: props.stylePressedKeys[n],
                         },
 
                         // Events
                         onMouseLeave: onMouseLeaveKey(k, n),
                         onMouseEnter: onMouseEnterKey(k, n),
-                        onClick: onClickKey(k, n)
+                        onClick: onClickKey(k, n),
                     });
 
                     areaWidth = Math.max(areaWidth, x + w, x + x2 + w2);
@@ -142,7 +146,8 @@ export class KeyboardLayout extends React.Component<KeyboardLayoutProps, void> {
                     // Key index
                     n += 1;
 
-                    // After each keycap, the current x coordinate is incremented by the previous cap's width.
+                    // After each keycap, the current x coordinate is
+                    // incremented by the previous cap's width.
                     x += w;
 
                     // Reset the width and height for subsequent keys
@@ -153,37 +158,44 @@ export class KeyboardLayout extends React.Component<KeyboardLayoutProps, void> {
                     w2 = 0;
                     h2 = 0;
                 }
-            })
+            });
             // each subsequent row increments the y coordinate by 1.0.
             y += 1;
-        })
+        });
 
         // Convert the value to percentages
-        const c = (v) => {
+        const c = v => {
             return v / areaWidth * 100;
         };
 
-        return <div 
-            className={cns(styles.keyboard, this.props.className)}
-            style={{
-                position: "relative"
-            }}>
-            {keys.map((k, n) => <Key 
-            key={n}
-            {...k} 
-            x={c(k.x)} 
-            y={c(k.y)} 
-            x2={c(k.x2)} 
-            y2={c(k.y2)} 
-            w={c(k.w)} 
-            h={c(k.h)} 
-            w2={c(k.w2)} 
-            h2={c(k.h2)} 
-            />)}
-            <div style={{
-                position: "relative",
-                paddingTop: areaHeight / areaWidth * 100 + "%"
-            }}></div>
-        </div>
+        return (
+            <div
+                className={cns(styles.keyboard, this.props.className)}
+                style={{
+                    position: "relative",
+                }}
+            >
+                {keys.map((k, n) =>
+                    <Key
+                        key={n}
+                        {...k}
+                        x={c(k.x)}
+                        y={c(k.y)}
+                        x2={c(k.x2)}
+                        y2={c(k.y2)}
+                        w={c(k.w)}
+                        h={c(k.h)}
+                        w2={c(k.w2)}
+                        h2={c(k.h2)}
+                    />
+                )}
+                <div
+                    style={{
+                        position: "relative",
+                        paddingTop: areaHeight / areaWidth * 100 + "%",
+                    }}
+                />
+            </div>
+        );
     }
 }

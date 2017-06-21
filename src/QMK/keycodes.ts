@@ -1,7 +1,7 @@
 import { IKeyboardLayoutKeyDefinition } from "../KLE/keyboardlayout";
 
 export enum keys {
-    KC_NO               = 0x00,
+    KC_NO = 0x00,
     KC_ROLL_OVER,
     KC_POST_FAIL,
     KC_UNDEFINED,
@@ -17,7 +17,7 @@ export enum keys {
     KC_J,
     KC_K,
     KC_L,
-    KC_M,               /* 0x10 */
+    KC_M /* 0x10 */,
     KC_N,
     KC_O,
     KC_P,
@@ -33,7 +33,7 @@ export enum keys {
     KC_Z,
     KC_1,
     KC_2,
-    KC_3,               /* 0x20 */
+    KC_3 /* 0x20 */,
     KC_4,
     KC_5,
     KC_6,
@@ -49,15 +49,15 @@ export enum keys {
     KC_MINUS,
     KC_EQUAL,
     KC_LBRACKET,
-    KC_RBRACKET,        /* 0x30 */
-    KC_BSLASH,          /* \ (and |) */
-    KC_NONUS_HASH,      /* Non-US # and ~ (Typically near the Enter key) */
-    KC_SCOLON,          /* ; (and :) */
-    KC_QUOTE,           /* ' and " */
-    KC_GRAVE,           /* Grave accent and tilde */
-    KC_COMMA,           /* , and < */
-    KC_DOT,             /* . and > */
-    KC_SLASH,           /* / and ? */
+    KC_RBRACKET /* 0x30 */,
+    KC_BSLASH /* \ (and |) */,
+    KC_NONUS_HASH /* Non-US # and ~ (Typically near the Enter key) */,
+    KC_SCOLON /* ; (and :) */,
+    KC_QUOTE /* ' and " */,
+    KC_GRAVE /* Grave accent and tilde */,
+    KC_COMMA /* , and < */,
+    KC_DOT /* . and > */,
+    KC_SLASH /* / and ? */,
     KC_CAPSLOCK,
     KC_F1,
     KC_F2,
@@ -65,7 +65,7 @@ export enum keys {
     KC_F4,
     KC_F5,
     KC_F6,
-    KC_F7,              /* 0x40 */
+    KC_F7 /* 0x40 */,
     KC_F8,
     KC_F9,
     KC_F10,
@@ -81,7 +81,7 @@ export enum keys {
     KC_END,
     KC_PGDOWN,
     KC_RIGHT,
-    KC_LEFT,            /* 0x50 */
+    KC_LEFT /* 0x50 */,
     KC_DOWN,
     KC_UP,
     KC_NUMLOCK,
@@ -97,11 +97,11 @@ export enum keys {
     KC_KP_5,
     KC_KP_6,
     KC_KP_7,
-    KC_KP_8,            /* 0x60 */
+    KC_KP_8 /* 0x60 */,
     KC_KP_9,
     KC_KP_0,
     KC_KP_DOT,
-    KC_NONUS_BSLASH,    /* Non-US \ and | (Typically near the Left-Shift key) */
+    KC_NONUS_BSLASH /* Non-US \ and | (Typically near the Left-Shift key) */,
     KC_APPLICATION,
     KC_POWER,
     KC_KP_EQUAL,
@@ -113,7 +113,7 @@ export enum keys {
     KC_F18,
     KC_F19,
     KC_F20,
-    KC_F21,             /* 0x70 */
+    KC_F21 /* 0x70 */,
     KC_F22,
     KC_F23,
     KC_F24,
@@ -129,13 +129,13 @@ export enum keys {
     KC_PASTE,
     KC_FIND,
     KC__MUTE,
-    KC__VOLUP,          /* 0x80 */
+    KC__VOLUP /* 0x80 */,
     KC__VOLDOWN,
-    KC_LOCKING_CAPS,    /* locking Caps Lock */
-    KC_LOCKING_NUM,     /* locking Num Lock */
-    KC_LOCKING_SCROLL,  /* locking Scroll Lock */
+    KC_LOCKING_CAPS /* locking Caps Lock */,
+    KC_LOCKING_NUM /* locking Num Lock */,
+    KC_LOCKING_SCROLL /* locking Scroll Lock */,
     KC_KP_COMMA,
-    KC_KP_EQUAL_AS400,  /* equal sign on AS/400 */
+    KC_KP_EQUAL_AS400 /* equal sign on AS/400 */,
     KC_INT1,
     KC_INT2,
     KC_INT3,
@@ -145,7 +145,7 @@ export enum keys {
     KC_INT7,
     KC_INT8,
     KC_INT9,
-    KC_LANG1,           /* 0x90 */
+    KC_LANG1 /* 0x90 */,
     KC_LANG2,
     KC_LANG3,
     KC_LANG4,
@@ -161,15 +161,15 @@ export enum keys {
     KC_PRIOR,
     KC_RETURN,
     KC_SEPARATOR,
-    KC_OUT,             /* 0xA0 */
+    KC_OUT /* 0xA0 */,
     KC_OPER,
     KC_CLEAR_AGAIN,
     KC_CRSEL,
-    KC_EXSEL,           /* 0xA4 */
-};
+    KC_EXSEL /* 0xA4 */,
+}
 
 export enum modifierkeys {
-    KC_LCTRL            = 0xE0,
+    KC_LCTRL = 0xe0,
     KC_LSHIFT,
     KC_LALT,
     KC_LGUI,
@@ -182,7 +182,7 @@ export enum modifierkeys {
 /* NOTE: 0xA5-DF and 0xE8-FF are used for internal special purpose */
 export enum specialkeys {
     /* System Control */
-    KC_SYSTEM_POWER     = 0xA5,
+    KC_SYSTEM_POWER = 0xa5,
     KC_SYSTEM_SLEEP,
     KC_SYSTEM_WAKE,
 
@@ -207,10 +207,10 @@ export enum specialkeys {
     KC_WWW_REFRESH,
     KC_WWW_FAVORITES,
     KC_MEDIA_FAST_FORWARD,
-    KC_MEDIA_REWIND,    /* 0xBC */
+    KC_MEDIA_REWIND /* 0xBC */,
 
     /* Fn key */
-    KC_FN0              = 0xC0,
+    KC_FN0 = 0xc0,
     KC_FN1,
     KC_FN2,
     KC_FN3,
@@ -227,7 +227,7 @@ export enum specialkeys {
     KC_FN14,
     KC_FN15,
 
-    KC_FN16             = 0xD0,
+    KC_FN16 = 0xd0,
     KC_FN17,
     KC_FN18,
     KC_FN19,
@@ -242,10 +242,10 @@ export enum specialkeys {
     KC_FN28,
     KC_FN29,
     KC_FN30,
-    KC_FN31,            /* 0xDF */
+    KC_FN31 /* 0xDF */,
 
     /* Mousekey */
-    KC_MS_UP            = 0xF0,
+    KC_MS_UP = 0xf0,
     KC_MS_DOWN,
     KC_MS_LEFT,
     KC_MS_RIGHT,
@@ -253,24 +253,24 @@ export enum specialkeys {
     KC_MS_BTN2,
     KC_MS_BTN3,
     KC_MS_BTN4,
-    KC_MS_BTN5,         /* 0xF8 */
+    KC_MS_BTN5 /* 0xF8 */,
     /* Mousekey wheel */
     KC_MS_WH_UP,
     KC_MS_WH_DOWN,
     KC_MS_WH_LEFT,
-    KC_MS_WH_RIGHT,     /* 0xFC */
+    KC_MS_WH_RIGHT /* 0xFC */,
     /* Mousekey accel */
     KC_MS_ACCEL0,
     KC_MS_ACCEL1,
-    KC_MS_ACCEL2        /* 0xFF */
-};
+    KC_MS_ACCEL2 /* 0xFF */,
+}
 
-export const usbcodeToKeycode: { [k: string] : string } = {};
+export const usbcodeToKeycode: { [k: string]: string } = {};
 const addUsbcodeToKeycodes = (o: object) => {
     Object.keys(o).forEach(t => {
         usbcodeToKeycode[o[t]] = t;
-    })
-}
+    });
+};
 
 addUsbcodeToKeycodes(keys);
 addUsbcodeToKeycodes(modifierkeys);

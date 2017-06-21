@@ -1,6 +1,7 @@
 import { IReferenceKeyboard, IReferenceKeyboardLayout } from "./index";
 import { LANGS } from "../Langs";
 
+// prettier-ignore
 const ansi104: IReferenceKeyboardLayout = [
     ["KC_ESCAPE",{x:1},"KC_F1","KC_F2","KC_F3","KC_F4",{x:0.5},"KC_F5","KC_F6","KC_F7","KC_F8",{x:0.5},"KC_F9","KC_F10","KC_F11","KC_F12",{x:0.25},"KC_PSCREEN","KC_SCROLLLOCK","KC_PAUSE"],
     [{y:0.5},"KC_GRAVE","KC_1","KC_2","KC_3","KC_4","KC_5","KC_6","KC_7","KC_8","KC_9","KC_0","KC_MINUS","KC_EQUAL",{w:2},"KC_BSPACE",{x:0.25},"KC_INSERT","KC_HOME","KC_PGUP",{x:0.25},"KC_NUMLOCK","KC_KP_SLASH","KC_KP_ASTERISK","KC_KP_MINUS"],
@@ -11,6 +12,6 @@ const ansi104: IReferenceKeyboardLayout = [
 ];
 
 export const ansi104ReferenceKeyboard: IReferenceKeyboard = {
-    keyboard : ansi104,
-    name : LANGS.Ansi104,
-}
+    keyboard: ansi104,
+    name: LANGS.Ansi104,
+};

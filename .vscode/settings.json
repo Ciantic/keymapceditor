@@ -1,0 +1,11 @@
+// Place your settings in this file to overwrite default and user settings.
+{
+    "editor.formatOnSave": true,
+    "prettier.tabWidth": 4,
+    "prettier.typescriptEnable": [
+        "typescript",
+        "typescriptreact"
+    ],
+    "prettier.trailingComma": "es5",
+    "prettier.printWidth": 100
+}

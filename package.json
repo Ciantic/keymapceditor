@@ -22,6 +22,7 @@
     "mobx-react-devtools": "^4.2.15",
     "node-sass": "^4.5.2",
     "postcss-loader": "^2.0.5",
+    "prettier": "^1.4.4",
     "react-hot-loader": "next",
     "sass-loader": "^6.0.3",
     "style-loader": "^0.16.1",

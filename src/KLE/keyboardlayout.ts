@@ -24,6 +24,8 @@ export interface IKeyboardLayoutSubsequentKey {
     p: string;
 }
 
-export type IKeyboardLayoutKeyDefinition = Partial<IKeyboardLayoutNextKey & IKeyboardLayoutSubsequentKey>
+export type IKeyboardLayoutKeyDefinition = Partial<
+    IKeyboardLayoutNextKey & IKeyboardLayoutSubsequentKey
+>;
 
 export type KeyboardLayoutArray = (string | IKeyboardLayoutKeyDefinition)[][];

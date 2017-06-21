@@ -104,7 +104,7 @@ $key-pressed-top-color: mix(darken($key-top-color, 10%), red, 85%);
 .hovered {
     z-index: 3;
     .borders {
-        box-shadow: 0 0 15px rgba(255,0,0,0.5);
+        box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
     }
 }
 
@@ -113,8 +113,7 @@ $key-pressed-top-color: mix(darken($key-top-color, 10%), red, 85%);
     .top {
         background: $key-pressed-top-color;
     }
-    .borders,
-    .shadow {
+    .borders, .shadow {
         background: $key-pressed-shadow-color;
     }
 

@@ -5,8 +5,8 @@ export const kleKeys = (layout: any[][]) => {
             if (typeof c === "string") {
                 keys.push(c);
             }
-        })
-    })
+        });
+    });
 
     return keys;
-}
+};

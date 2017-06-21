@@ -1,5 +1,5 @@
-import { ansi104ReferenceKeyboard } from './ansi104';
-import { iso105ReferenceKeyboard } from './iso105';
+import { ansi104ReferenceKeyboard } from "./ansi104";
+import { iso105ReferenceKeyboard } from "./iso105";
 import { keycode } from "../QMK/keycodes";
 import { IKeyboardLayoutKeyDefinition } from "../KLE/keyboardlayout";
 
@@ -12,5 +12,5 @@ export interface IReferenceKeyboard {
 
 export const referenceKeyboards: IReferenceKeyboard[] = [
     ansi104ReferenceKeyboard,
-    iso105ReferenceKeyboard
-]
+    iso105ReferenceKeyboard,
+];
