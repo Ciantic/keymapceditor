@@ -226,7 +226,6 @@ export enum specialkeys {
     KC_FN13,
     KC_FN14,
     KC_FN15,
-
     KC_FN16 = 0xd0,
     KC_FN17,
     KC_FN18,
@@ -254,11 +253,13 @@ export enum specialkeys {
     KC_MS_BTN3,
     KC_MS_BTN4,
     KC_MS_BTN5 /* 0xF8 */,
+
     /* Mousekey wheel */
     KC_MS_WH_UP,
     KC_MS_WH_DOWN,
     KC_MS_WH_LEFT,
     KC_MS_WH_RIGHT /* 0xFC */,
+
     /* Mousekey accel */
     KC_MS_ACCEL0,
     KC_MS_ACCEL1,

@@ -20,8 +20,8 @@ const isKeyboardLayoutKeyDefinition = (o: any): o is IKeyboardLayoutKeyDefinitio
 interface KeyboardLayoutProps {
     className?: string;
     layout: KeyboardLayoutArray;
-    styleHoveredKeys: boolean[];
-    stylePressedKeys: boolean[];
+    stylePressedKeys?: Map<string, boolean>;
+    styleHoveredKeys?: Map<string, boolean>;
     getKeycapText?: (layoutValue: string, keyIndex: number) => KeycapText;
     onMouseEnterKey?: (layoutValue: string, keyIndex: number) => () => void;
     onMouseLeaveKey?: (layoutValue: string, keyIndex: number) => () => void;
@@ -31,8 +31,8 @@ interface KeyboardLayoutProps {
 @observer
 export class KeyboardLayout extends React.Component<KeyboardLayoutProps, void> {
     static defaultProps: Partial<KeyboardLayoutProps> = {
-        styleHoveredKeys: [],
-        stylePressedKeys: [],
+        stylePressedKeys: new Map(),
+        styleHoveredKeys: new Map(),
         onClickKey: (v: string, n: number) => () => {},
         onMouseLeaveKey: (v: string, n: number) => () => {},
         onMouseEnterKey: (v: string, n: number) => () => {},
@@ -130,8 +130,8 @@ export class KeyboardLayout extends React.Component<KeyboardLayoutProps, void> {
 
                         // Style
                         style: {
-                            hovered: props.styleHoveredKeys[n],
-                            pressed: props.stylePressedKeys[n],
+                            hovered: props.styleHoveredKeys.get(k),
+                            pressed: props.stylePressedKeys.get(k),
                         },
 
                         // Events
