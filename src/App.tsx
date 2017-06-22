@@ -26,14 +26,14 @@ export class App extends React.Component<{}, {}> {
     @observable private keyboardLayoutIndex = 0;
 
     // Currently configured keys
-    @observable private configuredKeys: Map<string, keycode> = observable.map() as any;
+    @observable private configuredKeys = new Map<string, keycode>();
 
     @observable private selectedKey = "";
-    @observable private hoveredConfigureKeys: Map<string, boolean> = observable.map() as any;
+    @observable private hoveredConfigureKeys = new Map<string, boolean>();
 
     // Reference layout
-    @observable private selectedRefKeys: Map<keycode, boolean> = observable.map() as any;
-    @observable private hoveredRefKeys: Map<keycode, boolean> = observable.map() as any;
+    @observable private selectedRefKeys = new Map<keycode, boolean>();
+    @observable private hoveredRefKeys = new Map<keycode, boolean>();
 
     // Input line for C code
     private inputRef: HTMLInputElement | null = null;
@@ -53,7 +53,7 @@ export class App extends React.Component<{}, {}> {
             let setkeycode = this.configuredKeys.get(c);
             return (
                 (setkeycode && langMapping && langMapping.getKeycapText(setkeycode)) || {
-                    centered: setkeycode || c,
+                    centered: setkeycode,
                 }
             );
         };
@@ -110,7 +110,7 @@ export class App extends React.Component<{}, {}> {
                     <div className={styles.layout}>
                         <KeyboardLayout
                             styleHoveredKeys={this.hoveredConfigureKeys}
-                            stylePressedKeys={new Map([[this.selectedKey, true]])}
+                            stylePressedKeys={new Map().set(this.selectedKey, true)}
                             layout={keyboardLayout.layout}
                             onMouseLeaveKey={this.onMouseOutConfigureKey}
                             onMouseEnterKey={this.onMouseOverConfigureKey}
@@ -191,6 +191,7 @@ export class App extends React.Component<{}, {}> {
             if (this.inputRef) {
                 setTimeout(() => {
                     this.inputRef.focus();
+                    this.inputRef.select();
                 }, 100);
             }
         });

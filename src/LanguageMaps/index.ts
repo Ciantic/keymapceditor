@@ -54,7 +54,7 @@ export class Keymapping implements IKeymapping {
 
     // This can be overridden in some really weird mappings by inheriting from
     // this class
-    public getKeycapText = (c: keycode): KeycapText => {
+    public getKeycapText = (c: keycode): KeycapText | null => {
         if (c in this.mapping) {
             let m = this.mapping[c];
             if (
@@ -75,7 +75,7 @@ export class Keymapping implements IKeymapping {
                 topright: m.altgrshifted,
             };
         }
-        return {};
+        return null;
     };
 }
 
