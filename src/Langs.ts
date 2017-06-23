@@ -8,7 +8,7 @@ export const LANGS = {
     Ansi104: "ANSI-104",
     Iso105: "ISO-105",
     Ergodox: "Ergodox",
-    CFileTitle: "Generated C-file",
+    KeymapsPlaceholder: "KEYMAP configuration in the C file",
     LayoutInput: "Type the C code of the selected key here...",
     KeyboardLayers: "Keyboard layers",
     Add: "Add",

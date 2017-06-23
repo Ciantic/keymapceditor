@@ -1,6 +1,6 @@
 require("./App.scss");
 
-import { action, observable, computed } from "mobx";
+import { action, observable, computed, when, reaction, IReactionDisposer } from "mobx";
 import { observer } from "mobx-react";
 import * as React from "react";
 
@@ -31,16 +31,25 @@ export class App extends React.Component<{}, {}> {
     // Currently configured keys
     @observable private layoutLayers: Map<string, keycode>[] = [new Map()];
     @observable private layoutLayerIndex = 0;
-
     @observable private selectedKey = "";
     @observable private hoveredKeys = new Map<string, boolean>();
+    @observable private generatedKeymapsText = "";
 
     // Reference layout
-    @observable private selectedRefKeys = new Map<keycode, boolean>();
     @observable private hoveredRefKeys = new Map<keycode, boolean>();
 
     // Input line for C code
     private inputRef: HTMLInputElement | null = null;
+
+    private listenForLayoutChanges: IReactionDisposer;
+
+    constructor() {
+        super();
+        this.listenForLayoutChanges = reaction(
+            () => JSON.stringify(this.layoutLayers),
+            this.onChangeLayersData
+        );
+    }
 
     render() {
         let langMapping: IKeymapping | null = languageMappings[this.langMappingIndex];
@@ -117,7 +126,7 @@ export class App extends React.Component<{}, {}> {
                     selectedTabId={this.layoutLayerIndex}
                 >
                     {this.layoutLayers.map((t, i) =>
-                        <Tab2 title={`Layer ${i}`} id={i} panel={null} />
+                        <Tab2 key={i} title={`Layer ${i}`} id={i} panel={null} />
                     )}
                     <a className="pt-button pt-minimal pt-icon-add" onClick={this.onClickAddLayer}>
                         {LANGS.Add}
@@ -154,15 +163,35 @@ export class App extends React.Component<{}, {}> {
                         onClickKey={this.onClickReferenceKey}
                     />}
 
-                <div className="pt-running-text">
-                    <h2>{LANGS.CFileTitle}</h2>
-                    <p>
-                        <textarea className="pt-input pt-fill" />
-                    </p>
-                </div>
+                <textarea
+                    placeholder={LANGS.KeymapsPlaceholder}
+                    value={this.generatedKeymapsText}
+                    className={cns("pt-input pt-fill", styles.keymapsTextarea)}
+                    onChange={this.onChangeKeymapsTextarea}
+                />
             </div>
         );
     }
+
+    private onChangeLayersData = () => {
+        // Updates the keymaps textarea when layers data changes
+        let layout = keyboardLayouts[this.keyboardLayoutIndex];
+        let keymaps = [];
+        this.layoutLayers.forEach((t, i) => {
+            let str = [];
+            str.push(`[${i}] = KEYMAP(`);
+            let keys = new Array(layout.keyCount).fill("KC_NO");
+            t.forEach((v, k) => {
+                keys[+k] = v;
+            });
+            str.push(keys.join(", "));
+            str.push(")");
+            keymaps.push(str.join(""));
+        });
+        this.generatedKeymapsText = keymaps.join(",\n");
+    };
+
+    private onChangeKeymapsTextarea = (e: React.ChangeEvent<HTMLTextAreaElement>) => {};
 
     @action
     private onChangeLayer = (newTabId: number, prevTabId: number) => {
@@ -242,12 +271,13 @@ export class App extends React.Component<{}, {}> {
             if (this.selectedKey) {
                 this.layoutLayers[this.layoutLayerIndex].set(this.selectedKey, k);
             }
-            this.selectedRefKeys.set(k, !this.selectedRefKeys.get(k));
         });
 
     private onMouseOverReferenceKey = (k: keycode, n: number) =>
         action(() => {
-            this.hoveredRefKeys.set(k, true);
+            if (this.selectedKey) {
+                this.hoveredRefKeys.set(k, true);
+            }
         });
 
     private onMouseOutReferenceKey = (k: keycode, n: number) =>

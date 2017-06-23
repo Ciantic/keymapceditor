@@ -35,4 +35,5 @@ const ergodox: KeyboardLayoutArray = [
 export const ergodoxKeyboardLayout: IKeyboardLayout = {
     layout: ergodox,
     name: LANGS.Ergodox,
+    keyCount: 76,
 };
