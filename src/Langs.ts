@@ -13,4 +13,8 @@ export const LANGS = {
     KeyboardLayers: "Keyboard layers",
     Add: "Add",
     Remove: "Remove",
+    MyLayoutIsMissing: "Where is keyboard...?",
+    MyReferenceKeyboardIsMissing: "Where is keyboard...?",
+    MyLanguageMapIsMissing: "Where is language...?",
+    LayoutNotSelectedError: "Layout must be chosen for KEYMAPS to work",
 };

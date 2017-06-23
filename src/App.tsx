@@ -34,6 +34,7 @@ export class App extends React.Component<{}, {}> {
     @observable private selectedKey = "";
     @observable private hoveredKeys = new Map<string, boolean>();
     @observable private generatedKeymapsText = "";
+    @observable private layoutNotSelectedError = "";
 
     // Reference layout
     @observable private hoveredRefKeys = new Map<keycode, boolean>();
@@ -46,8 +47,8 @@ export class App extends React.Component<{}, {}> {
     constructor() {
         super();
         this.listenForLayoutChanges = reaction(
-            () => JSON.stringify(this.layoutLayers),
-            this.onChangeLayersData
+            () => JSON.stringify(this.layoutLayers) + this.keyboardLayoutIndex,
+            this.updateKeymapsTextarea
         );
     }
 
@@ -86,6 +87,7 @@ export class App extends React.Component<{}, {}> {
                                 {languageMappings.map((t, i) =>
                                     <option key={i} value={i}>{t.name}</option>
                                 )}
+                                <option value="-2">{LANGS.MyLanguageMapIsMissing}</option>
                             </select>
                         </div>
                         <div className="pt-select pt-fill .modifier">
@@ -99,6 +101,7 @@ export class App extends React.Component<{}, {}> {
                                 {keyboardLayouts.map((t, i) =>
                                     <option key={i} value={i}>{t.name}</option>
                                 )}
+                                <option value="-2">{LANGS.MyLayoutIsMissing}</option>
                             </select>
                         </div>
                         <div className="pt-select pt-fill .modifier">
@@ -112,6 +115,7 @@ export class App extends React.Component<{}, {}> {
                                 {referenceKeyboards.map((t, i) =>
                                     <option key={i} value={i}>{t.name}</option>
                                 )}
+                                <option value="-2">{LANGS.MyReferenceKeyboardIsMissing}</option>
                             </select>
                         </div>
                     </div>
@@ -132,15 +136,16 @@ export class App extends React.Component<{}, {}> {
                         {LANGS.Add}
                     </a>
                 </Tabs2>
-                <KeyboardLayout
-                    styleHoveredKeys={this.hoveredKeys}
-                    stylePressedKeys={new Map().set(this.selectedKey, true)}
-                    layout={keyboardLayout.layout}
-                    onMouseLeaveKey={this.onMouseOutConfigureKey}
-                    onMouseEnterKey={this.onMouseOverConfigureKey}
-                    getKeycapText={getConfigureKeycapText}
-                    onClickKey={this.onClickConfigureKey}
-                />
+                {keyboardLayout &&
+                    <KeyboardLayout
+                        styleHoveredKeys={this.hoveredKeys}
+                        stylePressedKeys={new Map().set(this.selectedKey, true)}
+                        layout={keyboardLayout.layout}
+                        onMouseLeaveKey={this.onMouseOutConfigureKey}
+                        onMouseEnterKey={this.onMouseOverConfigureKey}
+                        getKeycapText={getConfigureKeycapText}
+                        onClickKey={this.onClickConfigureKey}
+                    />}
 
                 <input
                     disabled={!this.selectedKey}
@@ -166,23 +171,41 @@ export class App extends React.Component<{}, {}> {
                 <textarea
                     placeholder={LANGS.KeymapsPlaceholder}
                     value={this.generatedKeymapsText}
-                    className={cns("pt-input pt-fill", styles.keymapsTextarea)}
+                    className={cns(
+                        "pt-input pt-fill",
+                        this.layoutNotSelectedError && "pt-intent-danger",
+                        styles.keymapsTextarea
+                    )}
                     onChange={this.onChangeKeymapsTextarea}
                 />
+                {this.layoutNotSelectedError &&
+                    <div className="pt-callout pt-intent-danger">
+                        {this.layoutNotSelectedError}
+                    </div>}
             </div>
         );
     }
 
-    private onChangeLayersData = () => {
+    @action
+    private updateKeymapsTextarea = () => {
         // Updates the keymaps textarea when layers data changes
-        let layout = keyboardLayouts[this.keyboardLayoutIndex];
+        let layout = keyboardLayouts[this.keyboardLayoutIndex] || null;
+        if (!layout) {
+            this.layoutNotSelectedError = LANGS.LayoutNotSelectedError;
+            return;
+        }
+        this.layoutNotSelectedError = "";
+
         let keymaps = [];
         this.layoutLayers.forEach((t, i) => {
             let str = [];
             str.push(`[${i}] = KEYMAP(`);
             let keys = new Array(layout.keyCount).fill("KC_NO");
             t.forEach((v, k) => {
-                keys[+k] = v;
+                let ki = +k;
+                if (keys.length < ki) {
+                    keys[ki] = v;
+                }
             });
             str.push(keys.join(", "));
             str.push(")");
