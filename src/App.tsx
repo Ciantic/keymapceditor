@@ -176,6 +176,8 @@ export class App extends React.Component<{}, {}> {
                         this.layoutNotSelectedError && "pt-intent-danger",
                         styles.keymapsTextarea
                     )}
+                    onFocus={this.onFocusKeymapsTextarea}
+                    onClick={this.onClickKeymapsTextarea}
                     onChange={this.onChangeKeymapsTextarea}
                 />
                 {this.layoutNotSelectedError &&
@@ -203,7 +205,7 @@ export class App extends React.Component<{}, {}> {
             let keys = new Array(layout.keyCount).fill("KC_NO");
             t.forEach((v, k) => {
                 let ki = +k;
-                if (keys.length < ki) {
+                if (layout.keyCount > ki) {
                     keys[ki] = v;
                 }
             });
@@ -212,6 +214,16 @@ export class App extends React.Component<{}, {}> {
             keymaps.push(str.join(""));
         });
         this.generatedKeymapsText = keymaps.join(",\n");
+    };
+
+    private onFocusKeymapsTextarea = (e: React.FocusEvent<HTMLTextAreaElement>) => {
+        e.currentTarget.select();
+    };
+
+    private onClickKeymapsTextarea = (e: React.MouseEvent<HTMLTextAreaElement>) => {
+        // if (document.activeElement !== e.currentTarget) {
+        //     e.currentTarget.select();
+        // }
     };
 
     private onChangeKeymapsTextarea = (e: React.ChangeEvent<HTMLTextAreaElement>) => {};
