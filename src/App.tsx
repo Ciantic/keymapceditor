@@ -5,7 +5,7 @@ import { observer } from "mobx-react";
 import * as React from "react";
 
 import { KeyboardLayout } from "./Components/Keyboard";
-import { IKeyboardLayout, keyboardLayouts } from "./KeyboardLayouts";
+import { IKeyboardLayout, keyboardLayouts, generateKeymapsText } from "./KeyboardLayouts";
 import { LANGS } from "./Langs";
 import { IKeymapping, languageMappings } from "./LanguageMaps";
 import { keycode } from "./QMK/keycodes";
@@ -190,6 +190,7 @@ export class App extends React.Component<{}, {}> {
 
     @action
     private updateKeymapsTextarea = () => {
+        console.log("update keymaps textarea");
         // Updates the keymaps textarea when layers data changes
         let layout = keyboardLayouts[this.keyboardLayoutIndex] || null;
         if (!layout) {
@@ -197,23 +198,7 @@ export class App extends React.Component<{}, {}> {
             return;
         }
         this.layoutNotSelectedError = "";
-
-        let keymaps = [];
-        this.layoutLayers.forEach((t, i) => {
-            let str = [];
-            str.push(`[${i}] = KEYMAP(`);
-            let keys = new Array(layout.keyCount).fill("KC_NO");
-            t.forEach((v, k) => {
-                let ki = +k;
-                if (layout.keyCount > ki) {
-                    keys[ki] = v;
-                }
-            });
-            str.push(keys.join(", "));
-            str.push(")");
-            keymaps.push(str.join(""));
-        });
-        this.generatedKeymapsText = keymaps.join(",\n");
+        this.generatedKeymapsText = generateKeymapsText(layout.keyCount, this.layoutLayers);
     };
 
     private onFocusKeymapsTextarea = (e: React.FocusEvent<HTMLTextAreaElement>) => {
@@ -226,7 +211,12 @@ export class App extends React.Component<{}, {}> {
         // }
     };
 
-    private onChangeKeymapsTextarea = (e: React.ChangeEvent<HTMLTextAreaElement>) => {};
+    @action
+    private onChangeKeymapsTextarea = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        console.log("change keymaps textarea");
+        // TODO: Parse the new value, set as new keymaps or show error
+        this.generatedKeymapsText = e.target.value;
+    };
 
     @action
     private onChangeLayer = (newTabId: number, prevTabId: number) => {
