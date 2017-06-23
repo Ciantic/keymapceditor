@@ -119,11 +119,7 @@ export class App extends React.Component<{}, {}> {
                     {this.layoutLayers.map((t, i) =>
                         <Tab2 title={`Layer ${i}`} id={i} panel={null} />
                     )}
-                    <a
-                        href="#"
-                        className="pt-button pt-minimal pt-icon-add"
-                        onClick={this.onClickAddLayer}
-                    >
+                    <a className="pt-button pt-minimal pt-icon-add" onClick={this.onClickAddLayer}>
                         {LANGS.Add}
                     </a>
                 </Tabs2>
@@ -178,6 +174,7 @@ export class App extends React.Component<{}, {}> {
     private onClickAddLayer = (e: React.MouseEvent<any>) => {
         e.preventDefault();
         this.layoutLayers.push(new Map());
+        this.layoutLayerIndex = this.layoutLayers.length - 1;
     };
 
     @computed
