@@ -13,6 +13,9 @@ import { IReferenceKeyboard, referenceKeyboards } from "./ReferenceKeyboards";
 import { initTools } from "./Tools";
 import { cns } from "./Utils/classnames";
 import { some } from "lodash";
+import { Tabs2, Tab2, FocusStyleManager } from "@blueprintjs/core";
+
+FocusStyleManager.onlyShowFocusOnTabs();
 
 const styles = require("./App.module.scss");
 
@@ -26,10 +29,11 @@ export class App extends React.Component<{}, {}> {
     @observable private keyboardLayoutIndex = 0;
 
     // Currently configured keys
-    @observable private configuredKeys = new Map<string, keycode>();
+    @observable private layoutLayers: Map<string, keycode>[] = [new Map()];
+    @observable private layoutLayerIndex = 0;
 
     @observable private selectedKey = "";
-    @observable private hoveredConfigureKeys = new Map<string, boolean>();
+    @observable private hoveredKeys = new Map<string, boolean>();
 
     // Reference layout
     @observable private selectedRefKeys = new Map<keycode, boolean>();
@@ -50,7 +54,7 @@ export class App extends React.Component<{}, {}> {
             getReferenceKeycapText = langMapping.getKeycapText;
         }
         let getConfigureKeycapText: typeof langMapping.getKeycapText = c => {
-            let setkeycode = this.configuredKeys.get(c);
+            let setkeycode = this.layoutLayers[this.layoutLayerIndex].get(c);
             return (
                 (setkeycode && langMapping && langMapping.getKeycapText(setkeycode)) || {
                     centered: setkeycode,
@@ -106,26 +110,42 @@ export class App extends React.Component<{}, {}> {
                         <button className="pt-button pt-minimal pt-icon-cog" />
                     </div>
                 </nav>
-                {keyboardLayout &&
-                    <div className={styles.layout}>
-                        <KeyboardLayout
-                            styleHoveredKeys={this.hoveredConfigureKeys}
-                            stylePressedKeys={new Map().set(this.selectedKey, true)}
-                            layout={keyboardLayout.layout}
-                            onMouseLeaveKey={this.onMouseOutConfigureKey}
-                            onMouseEnterKey={this.onMouseOverConfigureKey}
-                            getKeycapText={getConfigureKeycapText}
-                            onClickKey={this.onClickConfigureKey}
-                        />
-                        <input
-                            value={this.configuredKeys.get(this.selectedKey) || ""}
-                            ref={this.setInputRef}
-                            onChange={this.onChangeInput}
-                            type="text"
-                            className={cns("pt-input pt-fill pt-large", styles.layoutInput)}
-                            placeholder={LANGS.LayoutInput}
-                        />
-                    </div>}
+                <Tabs2
+                    className="pt-large"
+                    id="layouts"
+                    onChange={this.onChangeLayer}
+                    selectedTabId={this.layoutLayerIndex}
+                >
+                    {this.layoutLayers.map((t, i) =>
+                        <Tab2 title={`Layer ${i}`} id={i} panel={null} />
+                    )}
+                    <a
+                        href="#"
+                        className="pt-button pt-minimal pt-icon-add"
+                        onClick={this.onClickAddLayer}
+                    >
+                        {LANGS.Add}
+                    </a>
+                </Tabs2>
+                <KeyboardLayout
+                    styleHoveredKeys={this.hoveredKeys}
+                    stylePressedKeys={new Map().set(this.selectedKey, true)}
+                    layout={keyboardLayout.layout}
+                    onMouseLeaveKey={this.onMouseOutConfigureKey}
+                    onMouseEnterKey={this.onMouseOverConfigureKey}
+                    getKeycapText={getConfigureKeycapText}
+                    onClickKey={this.onClickConfigureKey}
+                />
+
+                <input
+                    disabled={!this.selectedKey}
+                    value={this.layoutLayers[this.layoutLayerIndex].get(this.selectedKey) || ""}
+                    ref={this.setInputRef}
+                    onChange={this.onChangeInput}
+                    type="text"
+                    className={cns("pt-input pt-fill pt-large", styles.layoutInput)}
+                    placeholder={LANGS.LayoutInput}
+                />
 
                 {refKeyboard &&
                     <KeyboardLayout
@@ -148,15 +168,28 @@ export class App extends React.Component<{}, {}> {
         );
     }
 
+    @action
+    private onChangeLayer = (newTabId: number, prevTabId: number) => {
+        this.selectedKey = "";
+        this.layoutLayerIndex = newTabId;
+    };
+
+    @action
+    private onClickAddLayer = (e: React.MouseEvent<any>) => {
+        e.preventDefault();
+        this.layoutLayers.push(new Map());
+    };
+
     @computed
     private get selectedRefKeysFromInput() {
-        let m = new Map([[this.configuredKeys.get(this.selectedKey) || "", true]]);
+        let val = this.layoutLayers[this.layoutLayerIndex].get(this.selectedKey);
+        let m = new Map().set(val || "", true);
         return m;
     }
 
     @action
     private onChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-        this.configuredKeys.set(this.selectedKey, e.target.value as keycode);
+        this.layoutLayers[this.layoutLayerIndex].set(this.selectedKey, e.target.value as keycode);
     };
 
     private setInputRef = (el: HTMLInputElement) => {
@@ -198,19 +231,19 @@ export class App extends React.Component<{}, {}> {
 
     private onMouseOverConfigureKey = (v: string, n: number) =>
         action(() => {
-            this.hoveredConfigureKeys.set(v, true);
+            this.hoveredKeys.set(v, true);
         });
 
     private onMouseOutConfigureKey = (v: string, n: number) =>
         action(() => {
-            this.hoveredConfigureKeys.set(v, false);
+            this.hoveredKeys.set(v, false);
         });
 
     // Reference keyboard layout
     private onClickReferenceKey = (k: keycode, n: number) =>
         action(() => {
             if (this.selectedKey) {
-                this.configuredKeys.set(this.selectedKey, k);
+                this.layoutLayers[this.layoutLayerIndex].set(this.selectedKey, k);
             }
             this.selectedRefKeys.set(k, !this.selectedRefKeys.get(k));
         });

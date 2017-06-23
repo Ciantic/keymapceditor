@@ -1,14 +1,11 @@
-.settings {
-    padding-bottom: 2em;
-}
+@import "./Lib.scss";
 
-.layout {
-    padding-top: 1em;
+.settings {
     padding-bottom: 2em;
 }
 
 .layoutInput {
     max-width: 500px;
     display: block;
-    margin: 1em auto 0 auto;
+    margin: 2em auto 2em auto;
 }

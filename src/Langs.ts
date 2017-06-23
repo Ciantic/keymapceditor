@@ -10,4 +10,7 @@ export const LANGS = {
     Ergodox: "Ergodox",
     CFileTitle: "Generated C-file",
     LayoutInput: "Type the C code of the selected key here...",
+    KeyboardLayers: "Keyboard layers",
+    Add: "Add",
+    Remove: "Remove",
 };
