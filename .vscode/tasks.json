@@ -14,6 +14,14 @@
             ],
             "isBuildCommand": true,
             "isBackground": true
+        },
+        {
+            "taskName": "testwatch",
+            "args": [
+                "testwatch"
+            ],
+            "isBuildCommand": true,
+            "isBackground": true
         }
     ]
 }
