@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { parseKeymapsText } from "../src/KeyboardLayouts/index";
+import { parseKeymapsText, parseKeyExpression } from "../src/KeyboardLayouts/index";
 
 const ERGODOX_DEFAULT = `
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -84,5 +84,33 @@ describe("parseKeymapsText", () => {
             ['VRSN', 'KC_F1', 'KC_F2', 'KC_F3', 'KC_F4', 'KC_F5', 'KC_TRNS', 'KC_TRNS', 'KC_EXLM', 'KC_AT', 'KC_LCBR', 'KC_RCBR', 'KC_PIPE', 'KC_TRNS', 'KC_TRNS', 'KC_HASH', 'KC_DLR', 'KC_LPRN', 'KC_RPRN', 'KC_GRV', 'KC_TRNS', 'KC_PERC', 'KC_CIRC', 'KC_LBRC', 'KC_RBRC', 'KC_TILD', 'KC_TRNS', 'EPRM', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'RGB_MOD', 'KC_TRNS', 'KC_TRNS', 'RGB_VAD', 'RGB_VAI', 'KC_TRNS', 'KC_TRNS', 'KC_F6', 'KC_F7', 'KC_F8', 'KC_F9', 'KC_F10', 'KC_F11', 'KC_TRNS', 'KC_UP', 'KC_7', 'KC_8', 'KC_9', 'KC_ASTR', 'KC_F12', 'KC_DOWN', 'KC_4', 'KC_5', 'KC_6', 'KC_PLUS', 'KC_TRNS', 'KC_TRNS', 'KC_AMPR', 'KC_1', 'KC_2', 'KC_3', 'KC_BSLS', 'KC_TRNS', 'KC_TRNS', 'KC_DOT', 'KC_0', 'KC_EQL', 'KC_TRNS', 'RGB_TOG', 'RGB_SLD', 'KC_TRNS', 'KC_TRNS', 'RGB_HUD', 'RGB_HUI'],
             ['KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_MS_U', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_MS_L', 'KC_MS_D', 'KC_MS_R', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_BTN1', 'KC_BTN2', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_MPLY', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_MPRV', 'KC_MNXT', 'KC_TRNS', 'KC_TRNS', 'KC_VOLU', 'KC_VOLD', 'KC_MUTE', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_WBAK']
         ]);
+    });
+});
+
+describe("parseKeyExpression", () => {
+    it("One param function should work", () => {
+        expect(parseKeyExpression("LSFT(KC_1)")).to.be.deep.equal({
+            func: "LSFT",
+            params: ["KC_1"],
+        });
+    });
+
+    it("Two param function should work", () => {
+        expect(parseKeyExpression("LT(SYMB,KC_GRV)")).to.be.deep.equal({
+            func: "LT",
+            params: ["SYMB", "KC_GRV"],
+        });
+    });
+
+    it("Function that takes function should work", () => {
+        expect(parseKeyExpression("LSFT(LALT(KC_A))")).to.be.deep.equal({
+            func: "LSFT",
+            params: [
+                {
+                    func: "LALT",
+                    params: ["KC_A"],
+                },
+            ],
+        });
     });
 });

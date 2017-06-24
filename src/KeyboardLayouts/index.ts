@@ -14,7 +14,7 @@ export interface IKeyboardLayout {
  * @param keyCount Key count of the layout
  * @param layoutLayers 
  */
-export const generateKeymapsText = (keyCount: number, layoutLayers: keycode[][]) => {
+export const generateKeymapsText = (keyCount: number, layoutLayers: string[][]) => {
     let keymaps = [];
     layoutLayers.forEach((t, i) => {
         let str = [];
@@ -130,6 +130,32 @@ export const parseKeymapsText = (keyCount: number, text: string) => {
     //     map.push(l);
     // });
     return keymaps;
+};
+
+export const parseKeyExpression = (expr: string) => {
+    let pos = 0;
+    let ret = null;
+    let token = [];
+    let o = {};
+    let j = o;
+    while (pos < expr.length) {
+        let char = expr[pos];
+        let nextchar = expr[pos + 1];
+        let pcount = 0;
+
+        // Entering a function
+        if (char === "(") {
+            pcount++;
+        } else if (char === ")") {
+            pcount--;
+        } else if (char === " ") {
+        } else {
+            token.push(char);
+        }
+        pos++;
+    }
+
+    return token.join("");
 };
 
 export const keyboardLayouts: IKeyboardLayout[] = [ergodoxKeyboardLayout];

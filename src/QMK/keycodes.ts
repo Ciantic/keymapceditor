@@ -1,6 +1,4 @@
-import { IKeyboardLayoutKeyDefinition } from "../KLE/keyboardlayout";
-
-export enum keys {
+export enum normalkeys {
     KC_NO = 0x00,
     KC_ROLL_OVER,
     KC_POST_FAIL,
@@ -266,15 +264,6 @@ export enum specialkeys {
     KC_MS_ACCEL2 /* 0xFF */,
 }
 
-export const usbcodeToKeycode: { [k: string]: string } = {};
-const addUsbcodeToKeycodes = (o: object) => {
-    Object.keys(o).forEach(t => {
-        usbcodeToKeycode[o[t]] = t;
-    });
-};
+export const keys = Object.assign({}, normalkeys, modifierkeys, specialkeys);
 
-addUsbcodeToKeycodes(keys);
-addUsbcodeToKeycodes(modifierkeys);
-addUsbcodeToKeycodes(specialkeys);
-
-export type keycode = keyof ((typeof keys) & (typeof modifierkeys) & (typeof specialkeys));
+export type keycode = keyof typeof keys;

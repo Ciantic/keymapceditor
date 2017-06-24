@@ -1,10 +1,8 @@
-import { keycode, usbcodeToKeycode } from "../QMK/keycodes";
+import { keycode } from "../QMK";
 import { KeycapText } from "../Components/Key";
 import { LANGS } from "../Langs";
 
-// export type mapping = Partial<{[k in keycode]: KeyProducedChars | KeyProducedCharsShort | string | [string, string, string, string] | [string, string, string] | [string, string] }>
-
-interface CSVFormat {
+interface LanguageCsvFormat {
     usbcode: number;
 
     // Symbols produced
@@ -13,7 +11,7 @@ interface CSVFormat {
     altgr: string;
     altgrshifted: string;
 
-    deadkeys: string;
+    deadkeys: string; // deadkeys separated by space, e.g. "normal shifted"
 
     // Presentation on keycap
     bottomleft: string; // normal
@@ -28,35 +26,35 @@ interface CSVFormat {
     name: string;
 }
 
-interface KeymappingOpts {
+interface LanguageMappingOpts {
     lang: string;
     name: string;
-    mapping: CSVFormat[];
+    mapping: LanguageCsvFormat[];
 }
 
-export interface IKeymapping {
+export interface ILanguageMapping {
     name: string;
-    getKeycapText(c: keycode): KeycapText;
+    getKeycapText(usbcode: number): KeycapText;
 }
 
-export class Keymapping implements IKeymapping {
+export class LanguageMapping implements ILanguageMapping {
     public readonly lang: string;
     public readonly name: string;
-    public readonly mapping: Readonly<{ [k in keycode]?: CSVFormat }>;
+    private readonly mapping: Map<number, LanguageCsvFormat>;
 
-    constructor(opts: KeymappingOpts) {
+    constructor(opts: LanguageMappingOpts) {
         this.name = opts.name;
-        this.mapping = {};
+        this.mapping = new Map();
         opts.mapping.forEach(t => {
-            this.mapping[usbcodeToKeycode[t.usbcode]] = t;
+            this.mapping.set(+t.usbcode, t);
         });
     }
 
     // This can be overridden in some really weird mappings by inheriting from
     // this class
-    public getKeycapText = (c: keycode): KeycapText | null => {
-        if (c in this.mapping) {
-            let m = this.mapping[c];
+    public getKeycapText = (usbcode: number): KeycapText | null => {
+        if (this.mapping.has(usbcode)) {
+            let m = this.mapping.get(usbcode);
             if (
                 m.bottomleft ||
                 m.topleft ||
@@ -79,13 +77,13 @@ export class Keymapping implements IKeymapping {
     };
 }
 
-export const languageMappings: IKeymapping[] = [
-    new Keymapping({
+export const languageMappings: ILanguageMapping[] = [
+    new LanguageMapping({
         lang: "UK",
         mapping: require("./Data/uk.csv"),
         name: LANGS.UkKeyboard,
     }),
-    new Keymapping({
+    new LanguageMapping({
         lang: "FI",
         mapping: require("./Data/fi.csv"),
         name: LANGS.FinnishStandardKeyboard,

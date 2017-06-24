@@ -12,8 +12,8 @@ import {
     parseKeymapsText,
 } from "./KeyboardLayouts";
 import { LANGS } from "./Langs";
-import { IKeymapping, languageMappings } from "./LanguageMaps";
-import { keycode } from "./QMK/keycodes";
+import { ILanguageMapping, languageMappings } from "./LanguageMaps";
+import { keycode, keys, keycodeToUsbcode } from "./QMK";
 import { IReferenceKeyboard, referenceKeyboards } from "./ReferenceKeyboards";
 import { initTools } from "./Tools";
 import { cns } from "./Utils/classnames";
@@ -39,7 +39,10 @@ export class App extends React.Component<{}, {}> {
     // Note that this is not fully omnidirectional data flow since layoutLayers
     // duplicates the value of the textarea. In omnidirectional data flow there
     // should be only textarea or layoutLayers which the inputs would edit.
-    @observable private layoutLayers: keycode[][] = [new Array(1024).fill("KC_NO")];
+    // prettier-ignore
+    @observable private layoutLayers: string[][] = [
+        new Array(1024).fill("KC_NO")
+    ];
     @observable private layoutLayerIndex = 0;
     @observable private selectedKey: number | null = null;
     @observable private hoveredKeys = new Map<string, boolean>();
@@ -205,7 +208,7 @@ export class App extends React.Component<{}, {}> {
     private getReferenceKeycapText = (c: keycode): KeycapText => {
         let langMapping = languageMappings[this.langMappingIndex];
         if (langMapping) {
-            let value = langMapping.getKeycapText(c);
+            let value = langMapping.getKeycapText(keys[c]);
             if (value) {
                 return value;
             }
@@ -216,20 +219,23 @@ export class App extends React.Component<{}, {}> {
     };
 
     private getConfigureKeycapText = (index: string): KeycapText => {
+        // Index string is the selected layout keyboard's KEYMAP position number
+        // as a string
         let langMapping = languageMappings[this.langMappingIndex];
-        let setkeycode = this.layoutLayers[this.layoutLayerIndex][+index];
-        if (langMapping && setkeycode) {
-            let value = langMapping.getKeycapText(setkeycode);
+        let value = this.layoutLayers[this.layoutLayerIndex][+index];
+        let usbcode = keycodeToUsbcode(value as keycode);
+        if (langMapping && value && usbcode !== null) {
+            let value = langMapping.getKeycapText(usbcode);
             if (value) {
                 return value;
             }
         }
-        if (setkeycode === "KC_NO") {
+        if (value === "KC_NO") {
             return {};
         }
 
         return {
-            centered: setkeycode,
+            centered: value,
         };
     };
 
