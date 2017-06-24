@@ -121,41 +121,57 @@ export const parseKeymapsText = (keyCount: number, text: string) => {
     if (keymaps.length === 0) {
         return 0;
     }
-    // let map = [];
-    // keymaps.forEach(layer => {
-    //     let l = new Map<string, keycode>();
-    //     layer.forEach((kc, index) => {
-    //         l.set("" + index, kc);
-    //     });
-    //     map.push(l);
-    // });
     return keymaps;
 };
 
 export const parseKeyExpression = (expr: string) => {
     let pos = 0;
-    let ret = null;
-    let token = [];
-    let o = {};
-    let j = o;
-    while (pos < expr.length) {
-        let char = expr[pos];
-        let nextchar = expr[pos + 1];
-        let pcount = 0;
+    let pcount = 0;
 
-        // Entering a function
-        if (char === "(") {
-            pcount++;
-        } else if (char === ")") {
-            pcount--;
-        } else if (char === " ") {
-        } else {
-            token.push(char);
+    const main = () => {
+        let arr = [];
+        let start = pos;
+        let addWord = () => {
+            if (pos - 1 > start) {
+                arr.push(expr.slice(start, pos - 1));
+            }
+        };
+        let addFunc = () => {
+            if (pos - 1 > start) {
+                arr.push({
+                    func: expr.slice(start, pos - 1),
+                    params: main(),
+                });
+            }
+        };
+
+        while (pos < expr.length) {
+            switch (expr[pos++]) {
+                case " ":
+                    continue;
+                case ",":
+                    addWord();
+                    start = pos;
+                    continue;
+                case "(":
+                    addFunc();
+                    pcount++;
+                    start = pos;
+                    continue;
+                case ")":
+                    addWord();
+                    pcount--;
+                    return arr;
+            }
         }
-        pos++;
+        addWord();
+        return arr;
+    };
+    let val = main();
+    if (pcount !== 0) {
+        return null;
     }
-
-    return token.join("");
+    return val[0];
 };
 
 export const keyboardLayouts: IKeyboardLayout[] = [ergodoxKeyboardLayout];
