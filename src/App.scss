@@ -8,4 +8,5 @@ body {
     margin: 0;
     padding: ($pt-grid-size * 2);
     padding-top: ($pt-navbar-height + $pt-grid-size * 2);
+    overflow-y: scroll;
 }

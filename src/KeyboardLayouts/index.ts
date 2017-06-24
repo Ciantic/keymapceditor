@@ -28,7 +28,9 @@ export const generateKeymapsText = (keyCount: number, layoutLayers: keycode[][])
 
 /**
  * Tries to parse KEYMAP() definitions from the text
- *  
+ * 
+ * @todo Change the parsing so that it returns offset of each key, this way it
+ * can be used to live edit the text
  * @param keyCount Key count of the layout
  * @param text
  * @return Numeric position of the error, or the parsed layout layers array
