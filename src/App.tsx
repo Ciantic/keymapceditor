@@ -5,7 +5,12 @@ import { observer } from "mobx-react";
 import * as React from "react";
 
 import { KeyboardLayout } from "./Components/Keyboard";
-import { IKeyboardLayout, keyboardLayouts, generateKeymapsText } from "./KeyboardLayouts";
+import {
+    IKeyboardLayout,
+    keyboardLayouts,
+    generateKeymapsText,
+    parseKeymapsText,
+} from "./KeyboardLayouts";
 import { LANGS } from "./Langs";
 import { IKeymapping, languageMappings } from "./LanguageMaps";
 import { keycode } from "./QMK/keycodes";
@@ -14,6 +19,7 @@ import { initTools } from "./Tools";
 import { cns } from "./Utils/classnames";
 import { some } from "lodash";
 import { Tabs2, Tab2, FocusStyleManager } from "@blueprintjs/core";
+import { KeycapText } from "./Components/Key";
 
 FocusStyleManager.onlyShowFocusOnTabs();
 
@@ -28,19 +34,27 @@ export class App extends React.Component<{}, {}> {
     @observable private referenceKeyboardIndex = 1;
     @observable private keyboardLayoutIndex = 0;
 
-    // Currently configured keys
-    @observable private layoutLayers: Map<string, keycode>[] = [new Map()];
+    // Currently configured keys.
+    //
+    // Note that this is not fully omnidirectional data flow since layoutLayers
+    // duplicates the value of the textarea. In omnidirectional data flow there
+    // should be only textarea or layoutLayers which the inputs would edit.
+    @observable private layoutLayers: keycode[][] = [new Array(1024).fill("KC_NO")];
     @observable private layoutLayerIndex = 0;
-    @observable private selectedKey = "";
+    @observable private selectedKey: number | null = null;
     @observable private hoveredKeys = new Map<string, boolean>();
-    @observable private generatedKeymapsText = "";
+    @observable private keymapsTextareaValue = "";
     @observable private layoutNotSelectedError = "";
+    @observable private keymapsParseError: number | null = null;
 
     // Reference layout
     @observable private hoveredRefKeys = new Map<keycode, boolean>();
 
     // Input line for C code
     private inputRef: HTMLInputElement | null = null;
+
+    // Textarea ref
+    private textareaRef: HTMLTextAreaElement | null = null;
 
     private listenForLayoutChanges: IReactionDisposer;
 
@@ -53,24 +67,9 @@ export class App extends React.Component<{}, {}> {
     }
 
     render() {
-        let langMapping: IKeymapping | null = languageMappings[this.langMappingIndex];
         let refKeyboard: IReferenceKeyboard | null =
             referenceKeyboards[this.referenceKeyboardIndex];
         let keyboardLayout: IKeyboardLayout | null = keyboardLayouts[this.keyboardLayoutIndex];
-        let getReferenceKeycapText: typeof langMapping.getKeycapText = c => ({
-            centered: c,
-        });
-        if (langMapping) {
-            getReferenceKeycapText = langMapping.getKeycapText;
-        }
-        let getConfigureKeycapText: typeof langMapping.getKeycapText = c => {
-            let setkeycode = this.layoutLayers[this.layoutLayerIndex].get(c);
-            return (
-                (setkeycode && langMapping && langMapping.getKeycapText(setkeycode)) || {
-                    centered: setkeycode,
-                }
-            );
-        };
 
         return (
             <div>
@@ -139,17 +138,17 @@ export class App extends React.Component<{}, {}> {
                 {keyboardLayout &&
                     <KeyboardLayout
                         styleHoveredKeys={this.hoveredKeys}
-                        stylePressedKeys={new Map().set(this.selectedKey, true)}
+                        stylePressedKeys={new Map().set("" + this.selectedKey, true)}
                         layout={keyboardLayout.layout}
                         onMouseLeaveKey={this.onMouseOutConfigureKey}
                         onMouseEnterKey={this.onMouseOverConfigureKey}
-                        getKeycapText={getConfigureKeycapText}
+                        getKeycapText={this.getConfigureKeycapText}
                         onClickKey={this.onClickConfigureKey}
                     />}
 
                 <input
-                    disabled={!this.selectedKey}
-                    value={this.layoutLayers[this.layoutLayerIndex].get(this.selectedKey) || ""}
+                    disabled={this.selectedKey === null}
+                    value={this.layoutLayers[this.layoutLayerIndex][this.selectedKey] || ""}
                     ref={this.setInputRef}
                     onChange={this.onChangeInput}
                     type="text"
@@ -164,18 +163,21 @@ export class App extends React.Component<{}, {}> {
                         layout={refKeyboard.keyboard}
                         onMouseLeaveKey={this.onMouseOutReferenceKey}
                         onMouseEnterKey={this.onMouseOverReferenceKey}
-                        getKeycapText={getReferenceKeycapText}
+                        getKeycapText={this.getReferenceKeycapText}
                         onClickKey={this.onClickReferenceKey}
                     />}
 
                 <textarea
+                    ref={this.setTextareaRef}
                     placeholder={LANGS.KeymapsPlaceholder}
-                    value={this.generatedKeymapsText}
+                    value={this.keymapsTextareaValue}
                     className={cns(
                         "pt-input pt-fill",
                         this.layoutNotSelectedError && "pt-intent-danger",
+                        this.keymapsParseError !== null && "pt-intent-danger",
                         styles.keymapsTextarea
                     )}
+                    onBlur={this.onBlurKeymapsTextarea}
                     onFocus={this.onFocusKeymapsTextarea}
                     onClick={this.onClickKeymapsTextarea}
                     onChange={this.onChangeKeymapsTextarea}
@@ -184,21 +186,78 @@ export class App extends React.Component<{}, {}> {
                     <div className="pt-callout pt-intent-danger">
                         {this.layoutNotSelectedError}
                     </div>}
+                {this.keymapsParseError !== null &&
+                    <div className="pt-callout pt-intent-danger">
+                        Parse error at {this.keymapsParseError}
+                    </div>}
             </div>
         );
     }
 
-    @action
-    private updateKeymapsTextarea = () => {
-        console.log("update keymaps textarea");
-        // Updates the keymaps textarea when layers data changes
+    private setInputRef = (el: HTMLInputElement) => {
+        this.inputRef = el;
+    };
+
+    private setTextareaRef = (el: HTMLTextAreaElement) => {
+        this.textareaRef = el;
+    };
+
+    private getReferenceKeycapText = (c: keycode): KeycapText => {
+        let langMapping = languageMappings[this.langMappingIndex];
+        if (langMapping) {
+            let value = langMapping.getKeycapText(c);
+            if (value) {
+                return value;
+            }
+        }
+        return {
+            centered: c,
+        };
+    };
+
+    private getConfigureKeycapText = (index: string): KeycapText => {
+        let langMapping = languageMappings[this.langMappingIndex];
+        let setkeycode = this.layoutLayers[this.layoutLayerIndex][+index];
+        if (langMapping && setkeycode) {
+            let value = langMapping.getKeycapText(setkeycode);
+            if (value) {
+                return value;
+            }
+        }
+        if (setkeycode === "KC_NO") {
+            return {};
+        }
+
+        return {
+            centered: setkeycode,
+        };
+    };
+
+    private getLayoutOrError = (): IKeyboardLayout | null => {
         let layout = keyboardLayouts[this.keyboardLayoutIndex] || null;
         if (!layout) {
             this.layoutNotSelectedError = LANGS.LayoutNotSelectedError;
-            return;
+            return null;
         }
         this.layoutNotSelectedError = "";
-        this.generatedKeymapsText = generateKeymapsText(layout.keyCount, this.layoutLayers);
+        return layout;
+    };
+
+    @action
+    private updateKeymapsTextarea = () => {
+        let layout: IKeyboardLayout;
+        if ((layout = this.getLayoutOrError())) {
+            if (document.activeElement !== this.textareaRef) {
+                this.keymapsTextareaValue = generateKeymapsText(layout.keyCount, this.layoutLayers);
+                this.keymapsParseError = null;
+            }
+        }
+    };
+
+    private onBlurKeymapsTextarea = (e: React.FocusEvent<HTMLTextAreaElement>) => {
+        if (this.keymapsParseError === null) {
+            this.updateKeymapsTextarea();
+        }
     };
 
     private onFocusKeymapsTextarea = (e: React.FocusEvent<HTMLTextAreaElement>) => {
@@ -214,37 +273,43 @@ export class App extends React.Component<{}, {}> {
     @action
     private onChangeKeymapsTextarea = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         console.log("change keymaps textarea");
-        // TODO: Parse the new value, set as new keymaps or show error
-        this.generatedKeymapsText = e.target.value;
+        let layout: IKeyboardLayout;
+        if ((layout = this.getLayoutOrError())) {
+            let parsed = parseKeymapsText(layout.keyCount, e.target.value);
+            if (typeof parsed === "number") {
+                this.keymapsParseError = parsed;
+            } else {
+                this.keymapsParseError = null;
+                this.layoutLayers = parsed;
+            }
+        }
+        this.keymapsTextareaValue = e.target.value;
     };
 
     @action
     private onChangeLayer = (newTabId: number, prevTabId: number) => {
-        this.selectedKey = "";
+        this.selectedKey = null;
         this.layoutLayerIndex = newTabId;
     };
 
     @action
     private onClickAddLayer = (e: React.MouseEvent<any>) => {
         e.preventDefault();
-        this.layoutLayers.push(new Map());
+        this.layoutLayers.push(new Array(1024).fill("KC_NO"));
         this.layoutLayerIndex = this.layoutLayers.length - 1;
+        this.selectedKey = null;
     };
 
     @computed
     private get selectedRefKeysFromInput() {
-        let val = this.layoutLayers[this.layoutLayerIndex].get(this.selectedKey);
+        let val = this.layoutLayers[this.layoutLayerIndex][this.selectedKey];
         let m = new Map().set(val || "", true);
         return m;
     }
 
     @action
     private onChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-        this.layoutLayers[this.layoutLayerIndex].set(this.selectedKey, e.target.value as keycode);
-    };
-
-    private setInputRef = (el: HTMLInputElement) => {
-        this.inputRef = el;
+        this.layoutLayers[this.layoutLayerIndex][this.selectedKey] = e.target.value as keycode;
     };
 
     // Drop downs at the top
@@ -266,10 +331,10 @@ export class App extends React.Component<{}, {}> {
     // Configure keyboard layout
     private onClickConfigureKey = (v: string, n: number) =>
         action(() => {
-            if (v === this.selectedKey) {
-                this.selectedKey = "";
+            if (+v === this.selectedKey) {
+                this.selectedKey = null;
             } else {
-                this.selectedKey = v;
+                this.selectedKey = +v;
             }
 
             if (this.inputRef) {
@@ -293,14 +358,14 @@ export class App extends React.Component<{}, {}> {
     // Reference keyboard layout
     private onClickReferenceKey = (k: keycode, n: number) =>
         action(() => {
-            if (this.selectedKey) {
-                this.layoutLayers[this.layoutLayerIndex].set(this.selectedKey, k);
+            if (this.selectedKey !== null) {
+                this.layoutLayers[this.layoutLayerIndex][this.selectedKey] = k;
             }
         });
 
     private onMouseOverReferenceKey = (k: keycode, n: number) =>
         action(() => {
-            if (this.selectedKey) {
+            if (this.selectedKey !== null) {
                 this.hoveredRefKeys.set(k, true);
             }
         });

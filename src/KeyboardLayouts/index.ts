@@ -8,25 +8,31 @@ export interface IKeyboardLayout {
     keyCount: number;
 }
 
-export const generateKeymapsText = (keyCount: number, layoutLayers: Map<string, keycode>[]) => {
+/**
+ * Generate keymaps text
+ * 
+ * @param keyCount Key count of the layout
+ * @param layoutLayers 
+ */
+export const generateKeymapsText = (keyCount: number, layoutLayers: keycode[][]) => {
     let keymaps = [];
     layoutLayers.forEach((t, i) => {
         let str = [];
         str.push(`[${i}] = KEYMAP(`);
-        let keys = new Array(keyCount).fill("KC_NO" as keycode);
-        t.forEach((v, k) => {
-            let ki = +k;
-            if (keyCount > ki) {
-                keys[ki] = v;
-            }
-        });
-        str.push(keys.join(", "));
+        str.push(t.slice(0, keyCount).join(", "));
         str.push(")");
         keymaps.push(str.join(""));
     });
-    return keymaps.join(",\n");
+    return keymaps.join(",\n\n");
 };
 
+/**
+ * Tries to parse KEYMAP() definitions from the text
+ *  
+ * @param keyCount Key count of the layout
+ * @param text
+ * @return Numeric position of the error, or the parsed layout layers array
+ */
 export const parseKeymapsText = (keyCount: number, text: string) => {
     let ret: Map<string, keycode>[] = [];
     let chars = [];
@@ -104,9 +110,23 @@ export const parseKeymapsText = (keyCount: number, text: string) => {
         }
         token.pop(); // Remove the trailing parenthesis
         keymap.push(token.join(""));
+        if (keymap.length > keyCount) {
+            return pos;
+        }
 
         keymaps.push(keymap);
     }
+    if (keymaps.length === 0) {
+        return 0;
+    }
+    // let map = [];
+    // keymaps.forEach(layer => {
+    //     let l = new Map<string, keycode>();
+    //     layer.forEach((kc, index) => {
+    //         l.set("" + index, kc);
+    //     });
+    //     map.push(l);
+    // });
     return keymaps;
 };
 
