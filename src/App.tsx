@@ -272,7 +272,6 @@ export class App extends React.Component<{}, {}> {
 
     @action
     private onChangeKeymapsTextarea = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        console.log("change keymaps textarea");
         let layout: IKeyboardLayout;
         if ((layout = this.getLayoutOrError())) {
             let parsed = parseKeymapsText(layout.keyCount, e.target.value);

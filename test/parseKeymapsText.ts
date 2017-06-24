@@ -76,7 +76,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 describe("parseKeymapsText", () => {
     it("should work", () => {
-        let c = parseKeymapsText(64, ERGODOX_DEFAULT);
+        let c = parseKeymapsText(76, ERGODOX_DEFAULT);
 
         // prettier-ignore
         expect(c).to.be.deep.equal([
