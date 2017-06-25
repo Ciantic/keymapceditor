@@ -265,5 +265,9 @@ export enum specialkeys {
 }
 
 export const keys = Object.assign({}, normalkeys, modifierkeys, specialkeys);
+export const isKeycode = (k: any): k is keycode => {
+    return typeof k === "string" && typeof keys[k] !== "undefined";
+};
 
 export type keycode = keyof typeof keys;
+export type modifierkeytype = keyof typeof modifierkeys;

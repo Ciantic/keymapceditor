@@ -24,10 +24,24 @@ $key-pressed-top-color: mix(darken($key-top-color, 10%), red, 85%);
         left: 0;
         top: 0;
     }
+    .tc {
+        position: absolute;
+        left: 0;
+        text-align: center;
+        right: 0;
+        top: 0;
+    }
     .tr {
         position: absolute;
         right: 0;
         top: 0;
+    }
+    .bc {
+        position: absolute;
+        right: 0;
+        left: 0;
+        top: 0;
+        text-align: center;
     }
     .bl {
         position: absolute;

@@ -26,11 +26,12 @@ export const generateKeymapsText = (keyCount: number, layoutLayers: string[][]) 
     return keymaps.join(",\n\n");
 };
 
+// TODO Create single parser for keymap and key expressions, which returns the
+// offsets so it can be live edited instead of regenerated
+
 /**
  * Tries to parse KEYMAP() definitions from the text
  * 
- * @todo Change the parsing so that it returns offset of each key, this way it
- * can be used to live edit the text
  * @param keyCount Key count of the layout
  * @param text
  * @return Numeric position of the error, or the parsed layout layers array
@@ -124,7 +125,9 @@ export const parseKeymapsText = (keyCount: number, text: string) => {
     return keymaps;
 };
 
-export const parseKeyExpression = (expr: string) => {
+type result = string | { func: string; params: result[] };
+
+export const parseKeyExpression = (expr: string): result | null => {
     let pos = 0;
     let pcount = 0;
 
@@ -178,6 +181,31 @@ export const parseKeyExpression = (expr: string) => {
         return null;
     }
     return val[0];
+};
+
+export interface Executor<T> {
+    [k: string]: () => T | string | null;
+}
+
+export const evalKeyExpression = <T>(expr: result | null, executor: Executor<T>): T => {
+    if (expr !== null) {
+        if (typeof expr === "string") {
+            return expr as any;
+        } else if (expr && typeof expr.func === "string") {
+            let evaledParams = [];
+            expr.params.forEach(t => {
+                evaledParams.push(evalKeyExpression(t, executor));
+            });
+            if (expr.func in executor) {
+                return executor[expr.func].apply(null, evaledParams) || null;
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+    return null;
 };
 
 export const keyboardLayouts: IKeyboardLayout[] = [ergodoxKeyboardLayout];

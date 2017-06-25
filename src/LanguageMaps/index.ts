@@ -1,6 +1,10 @@
-import { keycode } from "../QMK";
+import { keycode, keycodeToUsbcode } from "../QMK";
 import { KeycapText } from "../Components/Key";
 import { LANGS } from "../Langs";
+import { QmkFunctionResult } from "../QMK/functions";
+import { isKeycode } from "../QMK/keycodes";
+
+export type keytypes = "normal" | "shifted" | "altgr" | "altgrshifted";
 
 interface LanguageCsvFormat {
     usbcode: number;
@@ -35,6 +39,8 @@ interface LanguageMappingOpts {
 export interface ILanguageMapping {
     name: string;
     getKeycapText(usbcode: number): KeycapText;
+    getKeycapTextFromExpr(expr: QmkFunctionResult): KeycapText | null;
+    getSymbol(key: keytypes, usbcode: number): string;
 }
 
 export class LanguageMapping implements ILanguageMapping {
@@ -74,6 +80,20 @@ export class LanguageMapping implements ILanguageMapping {
             };
         }
         return null;
+    };
+
+    public getKeycapTextFromExpr = (expr: QmkFunctionResult | string): KeycapText | null => {
+        if (isKeycode(expr)) {
+            let usbcode = keycodeToUsbcode(expr);
+            if (usbcode !== null) {
+                return this.getKeycapText(usbcode);
+            }
+        }
+        return null;
+    };
+
+    getSymbol = (key: keytypes, usbcode: number): string | undefined => {
+        return this.mapping.get(usbcode)[key];
     };
 }
 

@@ -6,10 +6,10 @@ module.exports = function(config) {
     config.set({
         basePath: "",
         frameworks: ["mocha", "chai"], //, "sinon"],
-        files: ["test/**/*.ts"],
+        files: ["test/*.ts"],
         exclude: [],
         preprocessors: {
-            "test/**/*.ts": ["webpack"],
+            "test/*.ts": ["webpack"],
         },
         webpack: webpackDevConfig,
         mime: {

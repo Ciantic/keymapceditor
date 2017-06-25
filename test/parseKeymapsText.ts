@@ -1,5 +1,10 @@
 import { expect } from "chai";
-import { parseKeymapsText, parseKeyExpression } from "../src/KeyboardLayouts/index";
+import {
+    parseKeymapsText,
+    parseKeyExpression,
+    evalKeyExpression,
+    Executor,
+} from "../src/KeyboardLayouts/index";
 
 const ERGODOX_DEFAULT = `
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -139,5 +144,55 @@ describe("parseKeyExpression", () => {
                 "TEST2",
             ],
         });
+    });
+});
+
+describe("evalKeyExpression", () => {
+    it("Should work with strings", () => {
+        let v = evalKeyExpression("test", {});
+        expect(v).to.be.equal("test");
+    });
+
+    it("Should work with func", () => {
+        let executor;
+        executor = {
+            TEST: (a, b) => {
+                return "TEST(" + a + "," + b + ")";
+            },
+        };
+        let v = evalKeyExpression(
+            {
+                func: "TEST",
+                params: ["param1", "param2"],
+            },
+            executor
+        );
+        expect(v).to.be.equal("TEST(param1,param2)");
+    });
+
+    it("Should work with nested func", () => {
+        let executor;
+        executor = {
+            TEST: (a, b) => {
+                return "TEST(" + a + "," + b + ")";
+            },
+            TEST2: (a, b) => {
+                return "TEST2(" + a + "," + b + ")";
+            },
+        };
+        let v = evalKeyExpression(
+            {
+                func: "TEST",
+                params: [
+                    "a",
+                    {
+                        func: "TEST2",
+                        params: ["c", "d"],
+                    },
+                ],
+            },
+            executor
+        );
+        expect(v).to.be.equal("TEST(a,TEST2(c,d))");
     });
 });

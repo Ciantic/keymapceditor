@@ -12,8 +12,10 @@ export interface KeyStyle {
 
 export interface KeycapText {
     topleft?: React.ReactNode;
+    topcenter?: React.ReactNode;
     topright?: React.ReactNode;
     bottomleft?: React.ReactNode;
+    bottomcenter?: React.ReactNode;
     bottomright?: React.ReactNode;
     centerleft?: React.ReactNode;
     centered?: React.ReactNode;
@@ -106,6 +108,10 @@ export class Key extends React.Component<KeyProps, {}> {
                                     <div className={styles.tl}>
                                         {texts.topleft}
                                     </div>}
+                                {texts.topcenter &&
+                                    <div className={styles.tc}>
+                                        {texts.topcenter}
+                                    </div>}
                                 {texts.topright &&
                                     <div className={styles.tr}>
                                         {texts.topright}
@@ -113,6 +119,10 @@ export class Key extends React.Component<KeyProps, {}> {
                                 {texts.bottomleft &&
                                     <div className={styles.bl}>
                                         {texts.bottomleft}
+                                    </div>}
+                                {texts.bottomcenter &&
+                                    <div className={styles.bc}>
+                                        {texts.bottomcenter}
                                     </div>}
                                 {texts.bottomright &&
                                     <div className={styles.br}>
