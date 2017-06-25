@@ -88,6 +88,11 @@ describe("parseKeymapsText", () => {
 });
 
 describe("parseKeyExpression", () => {
+    it("One token  should work", () => {
+        let v = parseKeyExpression("JUST_A_TOKEN");
+        expect(v).to.be.deep.equal("JUST_A_TOKEN");
+    });
+
     it("One param function should work", () => {
         let v = parseKeyExpression("LSFT( KC_1 )");
         expect(v).to.be.deep.equal({

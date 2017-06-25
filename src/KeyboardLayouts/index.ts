@@ -132,16 +132,22 @@ export const parseKeyExpression = (expr: string) => {
         let arr = [];
         let start = pos;
         let addWord = () => {
-            if (pos - 1 > start) {
-                arr.push(expr.slice(start, pos - 1).trim());
+            if (pos > start) {
+                let token = expr.slice(start, pos).trim().replace(/[\s\\(\\),]+$/, "");
+                if (token !== "") {
+                    arr.push(token);
+                }
             }
         };
         let addFunc = () => {
-            if (pos - 1 > start) {
-                arr.push({
-                    func: expr.slice(start, pos - 1).trim(),
-                    params: main(),
-                });
+            if (pos > start) {
+                let token = expr.slice(start, pos).trim().replace(/[\s\\(\\),]+$/, "");
+                if (token !== "") {
+                    arr.push({
+                        func: token,
+                        params: main(),
+                    });
+                }
             }
         };
 
