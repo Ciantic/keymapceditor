@@ -133,13 +133,13 @@ export const parseKeyExpression = (expr: string) => {
         let start = pos;
         let addWord = () => {
             if (pos - 1 > start) {
-                arr.push(expr.slice(start, pos - 1));
+                arr.push(expr.slice(start, pos - 1).trim());
             }
         };
         let addFunc = () => {
             if (pos - 1 > start) {
                 arr.push({
-                    func: expr.slice(start, pos - 1),
+                    func: expr.slice(start, pos - 1).trim(),
                     params: main(),
                 });
             }

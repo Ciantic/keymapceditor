@@ -89,7 +89,7 @@ describe("parseKeymapsText", () => {
 
 describe("parseKeyExpression", () => {
     it("One param function should work", () => {
-        let v = parseKeyExpression("LSFT(KC_1)");
+        let v = parseKeyExpression("LSFT( KC_1 )");
         expect(v).to.be.deep.equal({
             func: "LSFT",
             params: ["KC_1"],
@@ -101,7 +101,7 @@ describe("parseKeyExpression", () => {
     });
 
     it("Two param function should work", () => {
-        let v = parseKeyExpression("LT(SYMB,KC_GRV)");
+        let v = parseKeyExpression("LT(SYMB, KC_GRV)");
         expect(v).to.be.deep.equal({
             func: "LT",
             params: ["SYMB", "KC_GRV"],
@@ -109,7 +109,7 @@ describe("parseKeyExpression", () => {
     });
 
     it("Function that takes function should work", () => {
-        let v = parseKeyExpression("LSFT(LALT(KC_A))");
+        let v = parseKeyExpression("LSFT( LALT(KC_A))");
         expect(v).to.be.deep.equal({
             func: "LSFT",
             params: [
@@ -117,6 +117,21 @@ describe("parseKeyExpression", () => {
                     func: "LALT",
                     params: ["KC_A"],
                 },
+            ],
+        });
+    });
+
+    it("Function that takes function, test should work", () => {
+        let v = parseKeyExpression("LSFT(TEST, LALT(KC_A), TEST2)");
+        expect(v).to.be.deep.equal({
+            func: "LSFT",
+            params: [
+                "TEST",
+                {
+                    func: "LALT",
+                    params: ["KC_A"],
+                },
+                "TEST2",
             ],
         });
     });
