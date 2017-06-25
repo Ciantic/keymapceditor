@@ -102,7 +102,7 @@ export class LanguageMapping implements ILanguageMapping {
                         centered: this.getSymbol("shifted", usbcode),
                     };
                 }
-                if (expr.mods[0] === "KC_RALT" || expr.mods[0] === "KC_RALT") {
+                if (expr.mods[0] === "KC_RALT") {
                     return {
                         centered: this.getSymbol("altgr", usbcode),
                     };
