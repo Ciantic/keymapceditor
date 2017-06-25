@@ -98,16 +98,26 @@ export class LanguageMapping implements ILanguageMapping {
             }
             if (expr.mods.length === 1) {
                 if (expr.mods[0] === "KC_LSHIFT" || expr.mods[0] === "KC_RSHIFT") {
-                    return {
-                        centered: this.getSymbol("shifted", usbcode),
-                    };
+                    let sym = this.getSymbol("shifted", usbcode);
+                    if (sym) {
+                        return {
+                            centered: sym,
+                        };
+                    }
                 }
                 if (expr.mods[0] === "KC_RALT") {
-                    return {
-                        centered: this.getSymbol("altgr", usbcode),
-                    };
+                    let sym = this.getSymbol("altgr", usbcode);
+                    if (sym) {
+                        return {
+                            centered: sym,
+                        };
+                    }
                 }
+            } else if (expr.mods.length === 2) {
+                // TODO: Check that modifiers are KC_RALT and (KC_LSHIFT or KC_RSHIFT)
             }
+
+            // TODO: Generic Win+Alt+Shift and Symbol thing
         }
         return null;
     };
