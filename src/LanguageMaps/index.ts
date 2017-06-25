@@ -96,11 +96,15 @@ export class LanguageMapping implements ILanguageMapping {
             if (!this.mapping.has(usbcode)) {
                 return null;
             }
-
             if (expr.mods.length === 1) {
                 if (expr.mods[0] === "KC_LSHIFT" || expr.mods[0] === "KC_RSHIFT") {
                     return {
                         centered: this.getSymbol("shifted", usbcode),
+                    };
+                }
+                if (expr.mods[0] === "KC_RALT" || expr.mods[0] === "KC_RALT") {
+                    return {
+                        centered: this.getSymbol("altgr", usbcode),
                     };
                 }
             }
