@@ -1,7 +1,7 @@
 import { keycode, keycodeToUsbcode } from "../QMK";
 import { KeycapText } from "../Components/Key";
 import { LANGS } from "../Langs";
-import { QmkFunctionResult } from "../QMK/functions";
+import { QmkFunctionResult, isModResult } from "../QMK/functions";
 import { isKeycode } from "../QMK/keycodes";
 
 export type keytypes = "normal" | "shifted" | "altgr" | "altgrshifted";
@@ -88,12 +88,31 @@ export class LanguageMapping implements ILanguageMapping {
             if (usbcode !== null) {
                 return this.getKeycapText(usbcode);
             }
+        } else if (isModResult(expr)) {
+            let usbcode = keycodeToUsbcode(expr.keycode);
+            if (usbcode === null) {
+                return null;
+            }
+            if (!this.mapping.has(usbcode)) {
+                return null;
+            }
+
+            if (expr.mods.length === 1) {
+                if (expr.mods[0] === "KC_LSHIFT" || expr.mods[0] === "KC_RSHIFT") {
+                    return {
+                        centered: this.getSymbol("shifted", usbcode),
+                    };
+                }
+            }
         }
         return null;
     };
 
     getSymbol = (key: keytypes, usbcode: number): string | undefined => {
-        return this.mapping.get(usbcode)[key];
+        let val = this.mapping.get(usbcode);
+        if (val) {
+            return val[key];
+        }
     };
 }
 
