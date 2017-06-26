@@ -15,7 +15,7 @@ import {
 } from "./KeyboardLayouts";
 import { LANGS } from "./Langs";
 import { ILanguageMapping, languageMappings } from "./LanguageMaps";
-import { keycode, keys, keycodeToUsbcode } from "./QMK";
+import { keycode, keys, keycodeToUsbcode, normalizeKeycode } from "./QMK";
 import { IReferenceKeyboard, referenceKeyboards } from "./ReferenceKeyboards";
 import { initTools } from "./Tools";
 import { cns } from "./Utils/classnames";
@@ -255,8 +255,8 @@ export class App extends React.Component<{}, {}> {
                 return evaledrender;
             }
         }
-
-        if (value === "KC_NO") {
+        let kc = normalizeKeycode(value);
+        if (kc === "KC_NO" || kc === "KC_ROLL_OVER") {
             return {};
         }
 

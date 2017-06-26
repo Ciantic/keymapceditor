@@ -30,9 +30,12 @@ export const isKeycode = (k: any): k is keycode => {
     return typeof k === "string" && (k in keys || k in keycodeAliases);
 };
 
-export const normalizeKeycode = (k: any) => {
+export const normalizeKeycode = (k: any): keycode | null => {
     if (k in keycodeAliases) {
         return usbcodeToKeycode(keycodeAliases[k]);
     }
-    return k;
+    if (k in keys) {
+        return k;
+    }
+    return null;
 };
