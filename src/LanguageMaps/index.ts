@@ -96,7 +96,9 @@ export class LanguageMapping implements ILanguageMapping {
             if (!this.mapping.has(usbcode)) {
                 return null;
             }
+
             if (expr.mods.length === 1) {
+                // Shifted symbol in CSV
                 if (expr.mods[0] === "KC_LSHIFT" || expr.mods[0] === "KC_RSHIFT") {
                     let sym = this.getSymbol("shifted", usbcode);
                     if (sym) {
@@ -105,6 +107,8 @@ export class LanguageMapping implements ILanguageMapping {
                         };
                     }
                 }
+
+                // Altgr symbol in CSV
                 if (expr.mods[0] === "KC_RALT") {
                     let sym = this.getSymbol("altgr", usbcode);
                     if (sym) {
@@ -114,9 +118,19 @@ export class LanguageMapping implements ILanguageMapping {
                     }
                 }
             } else if (expr.mods.length === 2) {
-                // TODO: Check that modifiers are KC_RALT and (KC_LSHIFT or KC_RSHIFT)
+                // Altgrshifted symbol in CSV
+                if (
+                    expr.mods.indexOf("KC_RALT") !== -1 &&
+                    (expr.mods.indexOf("KC_LSHIFT") !== -1 || expr.mods.indexOf("KC_RSHIFT") !== -1)
+                ) {
+                    let sym = this.getSymbol("altgrshifted", usbcode);
+                    if (sym) {
+                        return {
+                            centered: sym,
+                        };
+                    }
+                }
             }
-
             // TODO: Generic Win+Alt+Shift and Symbol thing
         }
         return null;
