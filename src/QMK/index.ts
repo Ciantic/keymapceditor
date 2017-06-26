@@ -17,11 +17,22 @@ export const usbcodeToKeycode = (usbcode: number): keycode | null => {
 };
 
 export const keycodeToUsbcode = (kc: keycode): number | null => {
-    if (typeof keycodeAliases[kc] !== "undefined") {
+    if (kc in keycodeAliases) {
         return keycodeAliases[kc];
     }
-    if (typeof keys[kc] !== "undefined") {
+    if (kc in keys) {
         return keys[kc];
     }
     return null;
+};
+
+export const isKeycode = (k: any): k is keycode => {
+    return typeof k === "string" && (k in keys || k in keycodeAliases);
+};
+
+export const normalizeKeycode = (k: any) => {
+    if (k in keycodeAliases) {
+        return usbcodeToKeycode(keycodeAliases[k]);
+    }
+    return k;
 };

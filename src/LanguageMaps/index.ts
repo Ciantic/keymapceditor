@@ -2,7 +2,7 @@ import { keycode, keycodeToUsbcode } from "../QMK";
 import { KeycapText } from "../Components/Key";
 import { LANGS } from "../Langs";
 import { QmkFunctionResult, isModResult } from "../QMK/functions";
-import { isKeycode } from "../QMK/keycodes";
+import { isKeycode } from "../QMK";
 
 export type keytypes = "normal" | "shifted" | "altgr" | "altgrshifted";
 

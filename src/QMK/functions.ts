@@ -1,7 +1,7 @@
-import { keycode, modifierkeys, modifierkeytype, isKeycode } from "./keycodes";
+import { keycode, modifierkeys, modifierkeytype } from "./keycodes";
 import { KeycapText } from "../Components/Key";
 import { ILanguageMapping, keytypes } from "../LanguageMaps/index";
-import { keycodeToUsbcode } from "./index";
+import { isKeycode } from "./index";
 import { Executor } from "../KeyboardLayouts/index";
 
 // https://github.com/qmk/qmk_firmware/blob/master/docs/key_functions.md
