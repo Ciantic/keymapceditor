@@ -1,7 +1,7 @@
 import { keycode, modifierkeys, modifierkeytype } from "./keycodes";
 import { KeycapText } from "../Components/Key";
 import { ILanguageMapping, keytypes } from "../LanguageMaps/index";
-import { isKeycode } from "./index";
+import { isKeycode, normalizeKeycode, isModifierKeytype } from "./index";
 import { Executor } from "../KeyboardLayouts/index";
 
 // https://github.com/qmk/qmk_firmware/blob/master/docs/key_functions.md
@@ -37,17 +37,25 @@ export const isRenderableResult = (res: QmkFunctionResult | IRenderable): res is
     return res && typeof res === "object" && "getKeycapText" in res;
 };
 
-class QmkFunctionsExecutor {
+export class QmkFunctionsExecutor {
     _MT = (kc: keycode | IModResult, key: modifierkeytype): IModResult | IParseError => {
         if (isKeycode(kc)) {
+            let kcn = normalizeKeycode(kc);
+            let mods = [key];
+            // Called using syntax: LALT(KC_LSHIFT), this is translated to
+            // LALT(LSFT(KC_NO)) equivalent
+            if (isModifierKeytype(kcn)) {
+                mods = [kcn, key];
+                kcn = "KC_NO";
+            }
             return {
                 type: "modresult",
-                keycode: kc,
-                mods: [key],
+                keycode: kcn,
+                mods: mods,
                 getKeycapText() {
                     return {
-                        centered: kc,
-                        bottomcenter: key,
+                        centered: kcn,
+                        bottomcenter: mods.join("+"),
                     };
                 },
             };
