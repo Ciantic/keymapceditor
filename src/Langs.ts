@@ -17,4 +17,8 @@ export const LANGS = {
     MyReferenceKeyboardIsMissing: "Where is keyboard...?",
     MyLanguageMapIsMissing: "Where is language...?",
     LayoutNotSelectedError: "Layout must be chosen for KEYMAPS to work",
+    CtrlSingleLetter: "C",
+    ShiftSingleLetter: "S",
+    AltSingleLetter: "A",
+    WinSingleLetter: "W",
 };

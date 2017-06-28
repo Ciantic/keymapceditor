@@ -2,7 +2,7 @@ import { keycode, keycodeToUsbcode } from "../QMK";
 import { KeycapText } from "../Components/Key";
 import { LANGS } from "../Langs";
 import { QmkFunctionResult, isModResult } from "../QMK/functions";
-import { isKeycode } from "../QMK";
+import { isKeycode, modifierkeytype } from "../QMK";
 
 export type keytypes = "normal" | "shifted" | "altgr" | "altgrshifted";
 
@@ -38,17 +38,18 @@ interface LanguageMappingOpts {
 
 export interface ILanguageMapping {
     name: string;
-    getKeycapText(usbcode: number): KeycapText;
+    getKeycapTextFromUsbcode(usbcode: number): KeycapText;
     getKeycapTextFromExpr(expr: QmkFunctionResult): KeycapText | null;
-    getSymbol(key: keytypes, usbcode: number): string;
+    // getSymbol(key: keytypes, usbcode: number): string;
 }
 
 export class LanguageMapping implements ILanguageMapping {
     public readonly lang: string;
     public readonly name: string;
-    private readonly mapping: Map<number, LanguageCsvFormat>;
+    protected readonly mapping: Map<number, LanguageCsvFormat>;
 
     constructor(opts: LanguageMappingOpts) {
+        this.lang = opts.lang;
         this.name = opts.name;
         this.mapping = new Map();
         opts.mapping.forEach(t => {
@@ -58,7 +59,7 @@ export class LanguageMapping implements ILanguageMapping {
 
     // This can be overridden in some really weird mappings by inheriting from
     // this class
-    public getKeycapText = (usbcode: number): KeycapText | null => {
+    public getKeycapTextFromUsbcode = (usbcode: number): KeycapText | null => {
         if (this.mapping.has(usbcode)) {
             let m = this.mapping.get(usbcode);
             if (
@@ -86,7 +87,7 @@ export class LanguageMapping implements ILanguageMapping {
         if (isKeycode(expr)) {
             let usbcode = keycodeToUsbcode(expr);
             if (usbcode !== null) {
-                return this.getKeycapText(usbcode);
+                return this.getKeycapTextFromUsbcode(usbcode);
             }
         } else if (isModResult(expr)) {
             let usbcode = keycodeToUsbcode(expr.keycode);
@@ -131,12 +132,57 @@ export class LanguageMapping implements ILanguageMapping {
                     }
                 }
             }
-            // TODO: Generic Win+Alt+Shift and Symbol thing
+
+            let sym = this.getSymbol("normal", usbcode);
+            return {
+                centered: sym,
+                bottomcenter: this.singleLetterModifierOrdering(expr.mods)
+                    .map(t => this.singleLetterModifier(t))
+                    .join("+"),
+            };
         }
         return null;
     };
 
-    getSymbol = (key: keytypes, usbcode: number): string | undefined => {
+    // Re-orders the letters in modifiers as C+S+A+W
+    protected singleLetterModifierOrdering = (modifiers: modifierkeytype[]) => {
+        let preferredOrdering: modifierkeytype[] = [
+            "KC_LCTRL",
+            "KC_RCTRL",
+            "KC_LSHIFT",
+            "KC_RSHIFT",
+            "KC_LALT",
+            "KC_RALT",
+            "KC_LGUI",
+            "KC_RGUI",
+        ];
+        let copy = modifiers.slice();
+        copy.sort((a, b) => {
+            return preferredOrdering.indexOf(a) - preferredOrdering.indexOf(b);
+        });
+        return copy;
+    };
+
+    // Single letter modifier abbreviations
+    protected singleLetterModifier = (modifier: modifierkeytype) => {
+        switch (modifier) {
+            case "KC_RALT":
+            case "KC_LALT":
+                return LANGS.AltSingleLetter;
+            case "KC_RCTRL":
+            case "KC_LCTRL":
+                return LANGS.CtrlSingleLetter;
+            case "KC_RGUI":
+            case "KC_LGUI":
+                return LANGS.WinSingleLetter;
+            case "KC_RSHIFT":
+            case "KC_LSHIFT":
+                return LANGS.ShiftSingleLetter;
+        }
+        return modifier;
+    };
+
+    protected getSymbol = (key: keytypes, usbcode: number): string | undefined => {
         let val = this.mapping.get(usbcode);
         if (val) {
             return val[key];
