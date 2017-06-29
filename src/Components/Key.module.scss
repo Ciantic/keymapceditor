@@ -13,12 +13,15 @@ $key-pressed-shadow-color: mix(darken($key-shadow-color, 10%), red, 85%);
 $key-pressed-top-color: mix(darken($key-top-color, 10%), red, 85%);
 
 .key {
-    font-size: 7px;
     z-index: 2;
 }
 
 .texts {
-    font-size: 15px;
+    font-size: 180%;
+
+    .smaller {
+        font-size: 70%;
+    }
     .tl {
         position: absolute;
         left: 0;

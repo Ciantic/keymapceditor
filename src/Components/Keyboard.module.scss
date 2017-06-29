@@ -1,3 +1,7 @@
 .keyboard {
     overflow: hidden;
+
+    /* vw font size totally kills the resizing performance, but makes the keys scale
+    correctly */
+    font-size: 0.6vw;
 }

@@ -40,6 +40,22 @@ export interface KeyProps {
     onClick?: () => void;
 }
 
+const Texts = (opts: { className: string; children: React.ReactNode }) => {
+    return (
+        <div
+            className={cns(
+                opts.className,
+                opts.className === styles.bc &&
+                    typeof opts.children === "string" &&
+                    opts.children.length > 5 &&
+                    styles.smaller
+            )}
+        >
+            {opts.children}
+        </div>
+    );
+};
+
 @observer
 export class Key extends React.Component<KeyProps, {}> {
     render() {
@@ -105,41 +121,41 @@ export class Key extends React.Component<KeyProps, {}> {
                         <div className={styles.top}>
                             <div className={styles.texts}>
                                 {texts.topleft &&
-                                    <div className={styles.tl}>
+                                    <Texts className={styles.tl}>
                                         {texts.topleft}
-                                    </div>}
+                                    </Texts>}
                                 {texts.topcenter &&
-                                    <div className={styles.tc}>
+                                    <Texts className={styles.tc}>
                                         {texts.topcenter}
-                                    </div>}
+                                    </Texts>}
                                 {texts.topright &&
-                                    <div className={styles.tr}>
+                                    <Texts className={styles.tr}>
                                         {texts.topright}
-                                    </div>}
+                                    </Texts>}
                                 {texts.bottomleft &&
-                                    <div className={styles.bl}>
+                                    <Texts className={styles.bl}>
                                         {texts.bottomleft}
-                                    </div>}
+                                    </Texts>}
                                 {texts.bottomcenter &&
-                                    <div className={styles.bc}>
+                                    <Texts className={styles.bc}>
                                         {texts.bottomcenter}
-                                    </div>}
+                                    </Texts>}
                                 {texts.bottomright &&
-                                    <div className={styles.br}>
+                                    <Texts className={styles.br}>
                                         {texts.bottomright}
-                                    </div>}
+                                    </Texts>}
                                 {texts.centered &&
-                                    <div className={styles.c}>
+                                    <Texts className={styles.c}>
                                         {texts.centered}
-                                    </div>}
+                                    </Texts>}
                                 {texts.centerright &&
-                                    <div className={styles.cr}>
+                                    <Texts className={styles.cr}>
                                         {texts.centerright}
-                                    </div>}
+                                    </Texts>}
                                 {texts.centerleft &&
-                                    <div className={styles.cl}>
+                                    <Texts className={styles.cl}>
                                         {texts.centerleft}
-                                    </div>}
+                                    </Texts>}
                                 {texts.node && texts.node}
                             </div>
                         </div>

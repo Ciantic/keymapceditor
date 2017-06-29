@@ -21,4 +21,9 @@ export const LANGS = {
     ShiftSingleLetter: "S",
     AltSingleLetter: "A",
     WinSingleLetter: "W",
+
+    CtrlThreeLetter: "Ctl",
+    ShiftThreeLetter: "Sft",
+    AltThreeLetter: "Alt",
+    WinThreeLetter: "Win",
 };

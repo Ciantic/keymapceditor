@@ -94,9 +94,6 @@ export class LanguageMapping implements ILanguageMapping {
             if (usbcode === null) {
                 return null;
             }
-            if (!this.mapping.has(usbcode)) {
-                return null;
-            }
 
             if (expr.mods.length === 1) {
                 // Shifted symbol in CSV
@@ -132,14 +129,32 @@ export class LanguageMapping implements ILanguageMapping {
                     }
                 }
             }
-
+            let modifierText = this.singleLetterModifierOrdering(expr.mods)
+                .map(
+                    t =>
+                        expr.mods.length > 2
+                            ? this.singleLetterModifier(t)
+                            : this.threeLetterModifier(t)
+                )
+                .join("+");
             let sym = this.getSymbol("normal", usbcode);
-            return {
-                centered: sym,
-                bottomcenter: this.singleLetterModifierOrdering(expr.mods)
-                    .map(t => this.singleLetterModifier(t))
-                    .join("+"),
-            };
+            if (sym) {
+                return {
+                    centered: sym,
+                    bottomcenter: modifierText,
+                };
+            } else {
+                if (expr.keycode === "KC_NO") {
+                    return {
+                        centered: modifierText,
+                    };
+                } else {
+                    return {
+                        centered: expr.keycode,
+                        bottomcenter: modifierText,
+                    };
+                }
+            }
         }
         return null;
     };
@@ -161,6 +176,25 @@ export class LanguageMapping implements ILanguageMapping {
             return preferredOrdering.indexOf(a) - preferredOrdering.indexOf(b);
         });
         return copy;
+    };
+
+    // Three letter modifier abbreviations
+    protected threeLetterModifier = (modifier: modifierkeytype) => {
+        switch (modifier) {
+            case "KC_RALT":
+            case "KC_LALT":
+                return LANGS.AltThreeLetter;
+            case "KC_RCTRL":
+            case "KC_LCTRL":
+                return LANGS.CtrlThreeLetter;
+            case "KC_RGUI":
+            case "KC_LGUI":
+                return LANGS.WinThreeLetter;
+            case "KC_RSHIFT":
+            case "KC_LSHIFT":
+                return LANGS.ShiftThreeLetter;
+        }
+        return modifier;
     };
 
     // Single letter modifier abbreviations
