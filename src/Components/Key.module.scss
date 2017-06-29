@@ -121,7 +121,7 @@ $key-pressed-top-color: mix(darken($key-top-color, 10%), red, 85%);
 .hovered {
     z-index: 3;
     .borders {
-        box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+        box-shadow: 0 0 25px rgba(255, 0, 0, 0.5);
     }
 }
 

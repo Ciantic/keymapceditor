@@ -26,4 +26,7 @@ export const LANGS = {
     ShiftThreeLetter: "Sft",
     AltThreeLetter: "Alt",
     WinThreeLetter: "Win",
+
+    Hyper: "Hyper",
+    Meh: "Meh",
 };
