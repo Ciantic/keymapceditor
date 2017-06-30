@@ -1,10 +1,12 @@
-import { expect } from "chai";
+import { expect, config } from "chai";
 import {
     parseKeymapsText,
     parseKeyExpression,
     evalKeyExpression,
     Executor,
+    parseKeymapsText2,
 } from "../src/KeyboardLayouts/index";
+config.truncateThreshold = 0;
 
 const ERGODOX_DEFAULT = `
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -90,6 +92,131 @@ describe("parseKeymapsText", () => {
             ['KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_MS_U', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_MS_L', 'KC_MS_D', 'KC_MS_R', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_BTN1', 'KC_BTN2', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_MPLY', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_MPRV', 'KC_MNXT', 'KC_TRNS', 'KC_TRNS', 'KC_VOLU', 'KC_VOLD', 'KC_MUTE', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_WBAK']
         ]);
     });
+});
+
+describe("parseKeymapsText2", () => {
+    it("simple word", () => {
+        let c = parseKeymapsText2("123456 KEYMAP(  TEST   )");
+        expect(c).to.be.deep.equal([
+            [
+                {
+                    type: "word",
+                    content: "TEST",
+                    offset: 16,
+                    end: 16 + 4 + 3,
+                },
+            ],
+        ]);
+    });
+
+    it("simple arg list", () => {
+        let c = parseKeymapsText2("123456 KEYMAP(TEST, TEST2)");
+        expect(c).to.be.deep.equal([
+            [
+                { type: "word", content: "TEST", offset: 14, end: 14 + 4 },
+                { type: "word", content: "TEST2", offset: 20, end: 20 + 5 },
+            ],
+        ]);
+    });
+
+    it("simple function one argument", () => {
+        let c = parseKeymapsText2("123456 KEYMAP(FUN(PARAM))");
+        expect(c).to.be.deep.equal([
+            [
+                {
+                    type: "func",
+                    func: "FUN",
+                    params: [{ type: "word", content: "PARAM", offset: 18, end: 23 }],
+                    offset: 14,
+                    end: 38,
+                    content: "FUN(PARAM)",
+                },
+            ],
+        ]);
+    });
+
+    it("simple function with two arguments", () => {
+        let c = parseKeymapsText2("123456 KEYMAP(FUN(PARAM, PARAM2))");
+        expect(c).to.be.deep.equal([
+            [
+                {
+                    type: "func",
+                    func: "FUN",
+                    params: [
+                        { type: "word", content: "PARAM", offset: 18, end: 23 },
+                        { type: "word", content: "PARAM2", offset: 25, end: 31 },
+                    ],
+                    offset: 14,
+                    end: 46,
+                    content: "FUN(PARAM, PARAM2)",
+                },
+            ],
+        ]);
+    });
+
+    it("simple function next to each other", () => {
+        let c = parseKeymapsText2("123456 KEYMAP(FUN(PARAM), FUN2(PARAM2))");
+        expect(c).to.be.deep.equal([
+            [
+                {
+                    type: "func",
+                    func: "FUN",
+                    params: [{ type: "word", content: "PARAM", offset: 18, end: 23 }],
+                    offset: 14,
+                    end: 38,
+                    content: "FUN(PARAM)",
+                },
+                {
+                    type: "func",
+                    func: "FUN2",
+                    params: [{ type: "word", content: "PARAM2", offset: 31, end: 37 }],
+                    offset: 26,
+                    end: 63,
+                    content: "FUN2(PARAM2)",
+                },
+            ],
+        ]);
+    });
+
+    it("block comment removal", () => {
+        let c = parseKeymapsText2("KEYMAP(TOKEN /* Importanto */)");
+        expect(c).to.be.deep.equal([[{ type: "word", content: "TOKEN", offset: 7, end: 13 }]]);
+    });
+
+    it("block comment removal two", () => {
+        let c = parseKeymapsText2("KEYMAP(TOKEN /* Importanto */, TOKEN2)");
+        expect(c).to.be.deep.equal([
+            [
+                { type: "word", content: "TOKEN", offset: 7, end: 13 },
+                { type: "word", content: "TOKEN2", offset: 31, end: 37 },
+            ],
+        ]);
+    });
+
+    // it("the ergodox", () => {
+    //     let c = parseKeymapsText2(ERGODOX_DEFAULT);
+    //     console.log(c);
+    //     expect(c).to.be.deep.equal([
+    //         [
+    //             {
+    //                 type: "func",
+    //                 func: "FUN",
+    //                 params: [{ type: "word", content: "PARAM", offset: 18, end: 23 }],
+    //                 offset: 14,
+    //                 end: 38,
+    //                 content: "FUN(PARAM)",
+    //             },
+    //             {
+    //                 type: "func",
+    //                 func: "FUN2",
+    //                 params: [{ type: "word", content: "PARAM2", offset: 31, end: 37 }],
+    //                 offset: 26,
+    //                 end: 63,
+    //                 content: "FUN2(PARAM2)",
+    //             },
+    //         ],
+    //     ]);
+    // });
 });
 
 describe("parseKeyExpression", () => {

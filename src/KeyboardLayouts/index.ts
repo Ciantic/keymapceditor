@@ -125,6 +125,120 @@ export const parseKeymapsText = (keyCount: number, text: string) => {
     return keymaps;
 };
 
+export const parseKeymapsText2 = (expr: string) => {
+    let pos = 0;
+    let keymaps = [];
+
+    const tokenWithoutSpaces = (s: string): [number, string] => {
+        let start = 0;
+        let end = s.length;
+        let leadingSpaces = /^\s+/.exec(s);
+        start += (leadingSpaces && leadingSpaces[0].length) || 0;
+
+        let trailingSpaces = /\s+$/.exec(s);
+        end -= (trailingSpaces && trailingSpaces[0].length) || 0;
+
+        return [start, s.slice(start, end)];
+    };
+
+    while (expr.indexOf("KEYMAP(", pos) !== -1) {
+        pos = expr.indexOf("KEYMAP(", pos);
+        pos += 6; // "KEYMAP"
+        let pcount = 0;
+        const main = (start: number) => {
+            let arr = [];
+            let addWord = (end: number) => {
+                if (end <= start) {
+                    return;
+                }
+                let [offset, token] = tokenWithoutSpaces(expr.slice(start, end));
+                if (token !== "") {
+                    arr.push({
+                        type: "word",
+                        content: token,
+                        offset: start + offset,
+                        end: end, // end includes the whitespace
+                    });
+                }
+            };
+
+            let addFunc = (end: number) => {
+                if (end <= start) {
+                    return;
+                }
+                let [offset, token] = tokenWithoutSpaces(expr.slice(start, end));
+                if (token !== "") {
+                    let params = main(end + 1);
+                    let paramsend = params.slice(-1)[0].end;
+                    arr.push({
+                        type: "func",
+                        func: token,
+                        params: params,
+                        offset: start + offset,
+                        end: start + paramsend + 1, // + 1 for the ending parenthesis
+                        content: expr.slice(start + offset, paramsend + 1),
+                    });
+                }
+            };
+
+            while (pos < expr.length) {
+                let char = expr[pos++];
+                let next = expr[pos];
+                switch (char + next) {
+                    case "/*":
+                        addWord(pos - 1);
+                        while (pos < expr.length) {
+                            let char = expr[pos++];
+                            let next = expr[pos];
+                            if (char + next === "*/") {
+                                pos++;
+                                start = pos;
+                                break;
+                            }
+                        }
+                        break;
+                    case "//":
+                        addWord(pos - 1);
+                        while (pos < expr.length) {
+                            let char = expr[pos++];
+                            let next = expr[pos + 1];
+                            if (char === "\n") {
+                                pos++;
+                                start = pos;
+                                break;
+                            }
+                        }
+                        break;
+                }
+                switch (char) {
+                    case " ":
+                        continue;
+                    case ",":
+                        addWord(pos - 1);
+                        start = pos;
+                        continue;
+                    case "(":
+                        addFunc(pos - 1);
+                        pcount++;
+                        start = pos;
+                        continue;
+                    case ")":
+                        addWord(pos - 1);
+                        pcount--;
+                        return arr;
+                }
+            }
+            return arr;
+        };
+        let keymap = main(pos);
+        if (pcount !== 0) {
+            return null;
+        }
+        keymaps.push(keymap);
+    }
+    return keymaps;
+};
+
 type result = string | { func: string; params: result[] };
 
 export const parseKeyExpression = (expr: string): result | null => {
