@@ -1,11 +1,11 @@
 import { expect, config } from "chai";
 import {
-    parseKeymapsText,
     parseKeyExpression,
     evalKeyExpression,
     Executor,
-    parseKeymapsText2,
+    parseKeymapsText,
 } from "../src/KeyboardLayouts/index";
+
 config.truncateThreshold = 0;
 
 const ERGODOX_DEFAULT = `
@@ -82,21 +82,30 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 `;
 
 describe("parseKeymapsText", () => {
-    it("should work", () => {
-        let c = parseKeymapsText(76, ERGODOX_DEFAULT);
-
-        // prettier-ignore
-        expect(c).to.be.deep.equal([
-            ['KC_EQL', 'KC_1', 'KC_2', 'KC_3', 'KC_4', 'KC_5', 'KC_LEFT', 'KC_DELT', 'KC_Q', 'KC_W', 'KC_E', 'KC_R', 'KC_T', 'TG(SYMB)', 'KC_BSPC', 'KC_A', 'KC_S', 'KC_D', 'KC_F', 'KC_G', 'KC_LSFT', 'CTL_T(KC_Z)', 'KC_X', 'KC_C', 'KC_V', 'KC_B', 'ALL_T(KC_NO)', 'LT(SYMB,KC_GRV)', 'KC_QUOT', 'LALT(KC_LSFT)', 'KC_LEFT', 'KC_RGHT', 'ALT_T(KC_APP)', 'KC_LGUI', 'KC_HOME', 'KC_SPC', 'KC_BSPC', 'KC_END', 'KC_RGHT', 'KC_6', 'KC_7', 'KC_8', 'KC_9', 'KC_0', 'KC_MINS', 'TG(SYMB)', 'KC_Y', 'KC_U', 'KC_I', 'KC_O', 'KC_P', 'KC_BSLS', 'KC_H', 'KC_J', 'KC_K', 'KC_L', 'LT(MDIA,KC_SCLN)', 'GUI_T(KC_QUOT)', 'MEH_T(KC_NO)', 'KC_N', 'KC_M', 'KC_COMM', 'KC_DOT', 'CTL_T(KC_SLSH)', 'KC_RSFT', 'KC_UP', 'KC_DOWN', 'KC_LBRC', 'KC_RBRC', 'KC_FN1', 'KC_LALT', 'CTL_T(KC_ESC)', 'KC_PGUP', 'KC_PGDN', 'KC_TAB', 'KC_ENT'],
-            ['VRSN', 'KC_F1', 'KC_F2', 'KC_F3', 'KC_F4', 'KC_F5', 'KC_TRNS', 'KC_TRNS', 'KC_EXLM', 'KC_AT', 'KC_LCBR', 'KC_RCBR', 'KC_PIPE', 'KC_TRNS', 'KC_TRNS', 'KC_HASH', 'KC_DLR', 'KC_LPRN', 'KC_RPRN', 'KC_GRV', 'KC_TRNS', 'KC_PERC', 'KC_CIRC', 'KC_LBRC', 'KC_RBRC', 'KC_TILD', 'KC_TRNS', 'EPRM', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'RGB_MOD', 'KC_TRNS', 'KC_TRNS', 'RGB_VAD', 'RGB_VAI', 'KC_TRNS', 'KC_TRNS', 'KC_F6', 'KC_F7', 'KC_F8', 'KC_F9', 'KC_F10', 'KC_F11', 'KC_TRNS', 'KC_UP', 'KC_7', 'KC_8', 'KC_9', 'KC_ASTR', 'KC_F12', 'KC_DOWN', 'KC_4', 'KC_5', 'KC_6', 'KC_PLUS', 'KC_TRNS', 'KC_TRNS', 'KC_AMPR', 'KC_1', 'KC_2', 'KC_3', 'KC_BSLS', 'KC_TRNS', 'KC_TRNS', 'KC_DOT', 'KC_0', 'KC_EQL', 'KC_TRNS', 'RGB_TOG', 'RGB_SLD', 'KC_TRNS', 'KC_TRNS', 'RGB_HUD', 'RGB_HUI'],
-            ['KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_MS_U', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_MS_L', 'KC_MS_D', 'KC_MS_R', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_BTN1', 'KC_BTN2', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_MPLY', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_MPRV', 'KC_MNXT', 'KC_TRNS', 'KC_TRNS', 'KC_VOLU', 'KC_VOLD', 'KC_MUTE', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_TRNS', 'KC_WBAK']
-        ]);
+    it("parse error, unbalanced KEYMAP", () => {
+        let c = parseKeymapsText("123456 KEYMAP(");
+        expect(c).to.be.deep.equal(null);
     });
-});
 
-describe("parseKeymapsText2", () => {
+    it("parse error, empty token before comma", () => {
+        expect(() => parseKeymapsText("123456 KEYMAP(,A)")).throws("Missing token at: 15");
+    });
+
+    it("parse error, empty token before closing parens", () => {
+        expect(() => parseKeymapsText("123456 KEYMAP(A,)")).throws("Missing token at: 17");
+    });
+    it("parse error, whitespaces are not allowed as words", () => {
+        expect(() => parseKeymapsText("123456 KEYMAP(A A)")).throws(
+            "Whitespaces are not allowed at: 14"
+        );
+    });
+    it("parse error, missing function name", () => {
+        expect(() => parseKeymapsText("123456 KEYMAP(A, (B))")).throws(
+            "Function name required at: 17"
+        );
+    });
     it("simple word", () => {
-        let c = parseKeymapsText2("123456 KEYMAP(  TEST   )");
+        let c = parseKeymapsText("123456 KEYMAP(  TEST   )");
         expect(c).to.be.deep.equal([
             [
                 {
@@ -110,7 +119,7 @@ describe("parseKeymapsText2", () => {
     });
 
     it("simple arg list", () => {
-        let c = parseKeymapsText2("123456 KEYMAP(TEST, TEST2)");
+        let c = parseKeymapsText("123456 KEYMAP(TEST, TEST2)");
         expect(c).to.be.deep.equal([
             [
                 { type: "word", content: "TEST", offset: 14, end: 14 + 4 },
@@ -120,7 +129,7 @@ describe("parseKeymapsText2", () => {
     });
 
     it("simple function one argument", () => {
-        let c = parseKeymapsText2("123456 KEYMAP(FUN(PARAM))");
+        let c = parseKeymapsText("123456 KEYMAP(FUN(PARAM))");
         expect(c).to.be.deep.equal([
             [
                 {
@@ -136,7 +145,7 @@ describe("parseKeymapsText2", () => {
     });
 
     it("simple function with two arguments", () => {
-        let c = parseKeymapsText2("123456 KEYMAP(FUN(PARAM, PARAM2))");
+        let c = parseKeymapsText("123456 KEYMAP(FUN(PARAM, PARAM2))");
         expect(c).to.be.deep.equal([
             [
                 {
@@ -155,7 +164,7 @@ describe("parseKeymapsText2", () => {
     });
 
     it("simple function next to each other", () => {
-        let c = parseKeymapsText2("123456 KEYMAP(FUN(PARAM), FUN2(PARAM2))");
+        let c = parseKeymapsText("123456 KEYMAP(FUN(PARAM), FUN2(PARAM2))");
         expect(c).to.be.deep.equal([
             [
                 {
@@ -179,12 +188,12 @@ describe("parseKeymapsText2", () => {
     });
 
     it("block comment removal", () => {
-        let c = parseKeymapsText2("KEYMAP(TOKEN /* Importanto */)");
+        let c = parseKeymapsText("KEYMAP(TOKEN /* Importanto */)");
         expect(c).to.be.deep.equal([[{ type: "word", content: "TOKEN", offset: 7, end: 13 }]]);
     });
 
     it("block comment removal two", () => {
-        let c = parseKeymapsText2("KEYMAP(TOKEN /* Importanto */, TOKEN2)");
+        let c = parseKeymapsText("KEYMAP(TOKEN /* Importanto */, TOKEN2)");
         expect(c).to.be.deep.equal([
             [
                 { type: "word", content: "TOKEN", offset: 7, end: 13 },
@@ -193,30 +202,18 @@ describe("parseKeymapsText2", () => {
         ]);
     });
 
-    // it("the ergodox", () => {
-    //     let c = parseKeymapsText2(ERGODOX_DEFAULT);
-    //     console.log(c);
-    //     expect(c).to.be.deep.equal([
-    //         [
-    //             {
-    //                 type: "func",
-    //                 func: "FUN",
-    //                 params: [{ type: "word", content: "PARAM", offset: 18, end: 23 }],
-    //                 offset: 14,
-    //                 end: 38,
-    //                 content: "FUN(PARAM)",
-    //             },
-    //             {
-    //                 type: "func",
-    //                 func: "FUN2",
-    //                 params: [{ type: "word", content: "PARAM2", offset: 31, end: 37 }],
-    //                 offset: 26,
-    //                 end: 63,
-    //                 content: "FUN2(PARAM2)",
-    //             },
-    //         ],
-    //     ]);
-    // });
+    it("the ergodox", () => {
+        let c = parseKeymapsText(ERGODOX_DEFAULT);
+        let contents = c.map(t => t.map(t => t.content));
+
+        // prettier-ignore
+        expect(contents).to.be.deep.equal(
+        [
+            ["KC_EQL","KC_1","KC_2","KC_3","KC_4","KC_5","KC_LEFT","KC_DELT","KC_Q","KC_W","KC_E","KC_R","KC_T","TG(SYMB)","KC_BSPC","KC_A","KC_S","KC_D","KC_F","KC_G","KC_LSFT","CTL_T(KC_Z)","KC_X","KC_C","KC_V","KC_B","ALL_T(KC_NO)","LT(SYMB,KC_GRV)","KC_QUOT","LALT(KC_LSFT)","KC_LEFT","KC_RGHT","ALT_T(KC_APP)","KC_LGUI","KC_HOME","KC_SPC","KC_BSPC","KC_END","KC_RGHT","KC_6","KC_7","KC_8","KC_9","KC_0","KC_MINS","TG(SYMB)","KC_Y","KC_U","KC_I","KC_O","KC_P","KC_BSLS","KC_H","KC_J","KC_K","KC_L","LT(MDIA, KC_SCLN)","GUI_T(KC_QUOT)","MEH_T(KC_NO)","KC_N","KC_M","KC_COMM","KC_DOT","CTL_T(KC_SLSH)","KC_RSFT","KC_UP","KC_DOWN","KC_LBRC","KC_RBRC","KC_FN1","KC_LALT","CTL_T(KC_ESC)","KC_PGUP","KC_PGDN","KC_TAB","KC_ENT"],
+            ["VRSN","KC_F1","KC_F2","KC_F3","KC_F4","KC_F5","KC_TRNS","KC_TRNS","KC_EXLM","KC_AT","KC_LCBR","KC_RCBR","KC_PIPE","KC_TRNS","KC_TRNS","KC_HASH","KC_DLR","KC_LPRN","KC_RPRN","KC_GRV","KC_TRNS","KC_PERC","KC_CIRC","KC_LBRC","KC_RBRC","KC_TILD","KC_TRNS","EPRM","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","RGB_MOD","KC_TRNS","KC_TRNS","RGB_VAD","RGB_VAI","KC_TRNS","KC_TRNS","KC_F6","KC_F7","KC_F8","KC_F9","KC_F10","KC_F11","KC_TRNS","KC_UP","KC_7","KC_8","KC_9","KC_ASTR","KC_F12","KC_DOWN","KC_4","KC_5","KC_6","KC_PLUS","KC_TRNS","KC_TRNS","KC_AMPR","KC_1","KC_2","KC_3","KC_BSLS","KC_TRNS","KC_TRNS","KC_DOT","KC_0","KC_EQL","KC_TRNS","RGB_TOG","RGB_SLD","KC_TRNS","KC_TRNS","RGB_HUD","RGB_HUI"],
+            ["KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_MS_U","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_MS_L","KC_MS_D","KC_MS_R","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_BTN1","KC_BTN2","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_MPLY","KC_TRNS","KC_TRNS","KC_TRNS","KC_MPRV","KC_MNXT","KC_TRNS","KC_TRNS","KC_VOLU","KC_VOLD","KC_MUTE","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_WBAK"]
+        ]);
+    });
 });
 
 describe("parseKeyExpression", () => {

@@ -26,108 +26,34 @@ export const generateKeymapsText = (keyCount: number, layoutLayers: string[][]) 
     return keymaps.join(",\n\n");
 };
 
-// TODO Create single parser for keymap and key expressions, which returns the
-// offsets so it can be live edited instead of regenerated
+interface AstComma {
+    type: "comma";
+    content: ",";
+    offset: number;
+    end: number;
+}
 
-/**
- * Tries to parse KEYMAP() definitions from the text
- * 
- * @param keyCount Key count of the layout
- * @param text
- * @return Numeric position of the error, or the parsed layout layers array
- */
-export const parseKeymapsText = (keyCount: number, text: string) => {
-    let ret: Map<string, keycode>[] = [];
-    let chars = [];
+interface AstWord {
+    type: "word";
+    content: string;
+    offset: number;
+    end: number;
+}
+
+interface AstFunction {
+    type: "func";
+    func: string;
+    params: AstNode[];
+    offset: number;
+    end: number;
+    content: string;
+}
+
+type AstNode = AstWord | AstFunction;
+
+export const parseKeymapsText = (expr: string): AstNode[][] => {
     let pos = 0;
-    let keymaps: keycode[][] = [];
-    while (text.indexOf("KEYMAP(", pos) !== -1) {
-        let keymap = [];
-        pos = text.indexOf("KEYMAP(", pos);
-
-        // "KEYMAP" == 6, then the "(" is removed by the while loop
-        pos += 6;
-
-        // Parenthesis counter
-        let pcount = 1; // First parenthesis on KEYMAP(
-        let token = [];
-        while (pcount >= 1) {
-            if (text.length < pos) {
-                // EOF failure
-                return pos;
-            }
-            pos += 1;
-            let char = text[pos];
-
-            // Parenthesis counter
-            if (char === "(") {
-                pcount++;
-            } else if (char === ")") {
-                pcount--;
-            }
-
-            // The normal // comments removal
-            if (char === "/" && text[pos + 1] === "/") {
-                for (var ci = 0; ci < text.length; ci++) {
-                    pos += 1;
-                    let cchar = text[pos];
-                    if (cchar === "\n") {
-                        break;
-                    }
-                }
-                continue;
-            }
-
-            // The asterisk /* comments */ removal
-            if (char === "/" && text[pos + 1] === "*") {
-                for (var ci = 0; ci < text.length; ci++) {
-                    pos += 1;
-                    let cchar = text[pos];
-                    if (cchar === "*" && text[pos + 1] === "/") {
-                        pos += 1;
-                        break;
-                    }
-                }
-                continue;
-            }
-
-            if (char === "," && pcount === 1) {
-                // Save token
-                if (token[0] === ",") {
-                    token.shift(); // Remove the prepended comma
-                }
-                keymap.push(token.join(""));
-
-                // Look for a new token
-                token = [];
-            }
-
-            if (char !== " " && char !== "\n") {
-                token.push(char);
-            }
-        }
-
-        // Save token
-        if (token[0] === ",") {
-            token.shift(); // Remove the prepended comma
-        }
-        token.pop(); // Remove the trailing parenthesis
-        keymap.push(token.join(""));
-        if (keymap.length > keyCount) {
-            return pos;
-        }
-
-        keymaps.push(keymap);
-    }
-    if (keymaps.length === 0) {
-        return 0;
-    }
-    return keymaps;
-};
-
-export const parseKeymapsText2 = (expr: string) => {
-    let pos = 0;
-    let keymaps = [];
+    let keymaps: AstNode[][] = [];
 
     const tokenWithoutSpaces = (s: string): [number, string] => {
         let start = 0;
@@ -143,42 +69,67 @@ export const parseKeymapsText2 = (expr: string) => {
 
     while (expr.indexOf("KEYMAP(", pos) !== -1) {
         pos = expr.indexOf("KEYMAP(", pos);
-        pos += 6; // "KEYMAP"
-        let pcount = 0;
+        pos += 7; // "KEYMAP("
+        let pcount = 1; // First parenthesis of KEYMAP(
         const main = (start: number) => {
-            let arr = [];
+            let arr: AstNode[] = [];
+            let lastToken = -1;
+
+            let ensureTokenExists = () => {
+                if (lastToken === arr.length || arr.length === 0) {
+                    throw new Error("Missing token at: " + pos);
+                }
+                lastToken = arr.length;
+            };
+
             let addWord = (end: number) => {
                 if (end <= start) {
-                    return;
+                    return false;
                 }
                 let [offset, token] = tokenWithoutSpaces(expr.slice(start, end));
-                if (token !== "") {
-                    arr.push({
+                if (token === "") {
+                    return false;
+                }
+                if (/\s/.test(token)) {
+                    throw new Error("Whitespaces are not allowed at: " + (start + offset));
+                }
+                arr.push(
+                    {
                         type: "word",
                         content: token,
                         offset: start + offset,
                         end: end, // end includes the whitespace
-                    });
-                }
+                    } as AstWord
+                );
+                return true;
             };
 
             let addFunc = (end: number) => {
                 if (end <= start) {
-                    return;
+                    throw new Error("Function name required at: " + end);
                 }
                 let [offset, token] = tokenWithoutSpaces(expr.slice(start, end));
-                if (token !== "") {
-                    let params = main(end + 1);
-                    let paramsend = params.slice(-1)[0].end;
-                    arr.push({
+                if (token === "") {
+                    throw new Error("Function name required at: " + (start + offset));
+                }
+                if (/\s/.test(token)) {
+                    throw new Error(
+                        "Function name can't have spaces, parse error at: " + (start + offset)
+                    );
+                }
+                let params = main(end + 1);
+                let paramsend = params.slice(-1)[0].end;
+                arr.push(
+                    {
                         type: "func",
                         func: token,
                         params: params,
                         offset: start + offset,
                         end: start + paramsend + 1, // + 1 for the ending parenthesis
                         content: expr.slice(start + offset, paramsend + 1),
-                    });
-                }
+                    } as AstFunction
+                );
+                return true;
             };
 
             while (pos < expr.length) {
@@ -215,6 +166,7 @@ export const parseKeymapsText2 = (expr: string) => {
                         continue;
                     case ",":
                         addWord(pos - 1);
+                        ensureTokenExists();
                         start = pos;
                         continue;
                     case "(":
@@ -224,6 +176,7 @@ export const parseKeymapsText2 = (expr: string) => {
                         continue;
                     case ")":
                         addWord(pos - 1);
+                        ensureTokenExists();
                         pcount--;
                         return arr;
                 }
@@ -241,6 +194,7 @@ export const parseKeymapsText2 = (expr: string) => {
 
 type result = string | { func: string; params: result[] };
 
+/// @deprecated
 export const parseKeyExpression = (expr: string): result | null => {
     let pos = 0;
     let pcount = 0;

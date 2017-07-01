@@ -9,9 +9,9 @@ import {
     IKeyboardLayout,
     keyboardLayouts,
     generateKeymapsText,
-    parseKeymapsText,
     parseKeyExpression,
     evalKeyExpression,
+    parseKeymapsText,
 } from "./KeyboardLayouts";
 import { LANGS } from "./Langs";
 import { ILanguageMapping, languageMappings } from "./LanguageMaps";
@@ -304,12 +304,12 @@ export class App extends React.Component<{}, {}> {
     private onChangeKeymapsTextarea = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         let layout: IKeyboardLayout;
         if ((layout = this.getLayoutOrError())) {
-            let parsed = parseKeymapsText(layout.keyCount, e.target.value);
-            if (typeof parsed === "number") {
-                this.keymapsParseError = parsed;
+            let parsed2 = parseKeymapsText(e.target.value);
+            if (typeof parsed2 === "number") {
+                this.keymapsParseError = parsed2;
             } else {
                 this.keymapsParseError = null;
-                this.layoutLayers = parsed;
+                this.layoutLayers = parsed2.map(t => t.map(j => j.content));
             }
         }
         this.keymapsTextareaValue = e.target.value;
