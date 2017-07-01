@@ -94,16 +94,19 @@ describe("parseKeymapsText", () => {
     it("parse error, empty token before closing parens", () => {
         expect(() => parseKeymapsText("123456 KEYMAP(A,)")).throws("Missing token at: 17");
     });
+
     it("parse error, whitespaces are not allowed as words", () => {
         expect(() => parseKeymapsText("123456 KEYMAP(A A)")).throws(
             "Whitespaces are not allowed at: 14"
         );
     });
+
     it("parse error, missing function name", () => {
         expect(() => parseKeymapsText("123456 KEYMAP(A, (B))")).throws(
             "Function name required at: 17"
         );
     });
+
     it("simple word", () => {
         let c = parseKeymapsText("123456 KEYMAP(  TEST   )");
         expect(c).to.be.deep.equal([
