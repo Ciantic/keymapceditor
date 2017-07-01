@@ -1,6 +1,6 @@
 require("./App.scss");
 
-import { action, observable, computed, when, reaction, IReactionDisposer } from "mobx";
+import { action, observable, computed, when, reaction, IReactionDisposer, autorun } from "mobx";
 import { observer } from "mobx-react";
 import * as React from "react";
 
@@ -38,8 +38,11 @@ export class App extends React.Component<{}, {}> {
     @observable private langMappingIndex = 1;
     @observable private referenceKeyboardIndex = 1;
     @observable private keyboardLayoutIndex = 0;
-    @observable private layoutLayerIndex = 0;
 
+    // Layer tab index
+    @observable private layerIndex = 0;
+
+    // Configure layout
     @observable private selectedKey: number | null = null;
     @observable private hoveredKeys = new Map<string, boolean>();
     @observable private layoutNotSelectedError = "";
@@ -48,32 +51,32 @@ export class App extends React.Component<{}, {}> {
     @observable private keymapsTextareaValue = "";
     @observable private keyInputValue = "";
     @observable private lastSuccessfulKeymapParsed: KeymapParseResult = [];
+    private inputRef: HTMLInputElement | null = null;
+    private textareaRef: HTMLTextAreaElement | null = null;
 
     // Reference layout
     @observable private hoveredRefKeys = new Map<keycode, boolean>();
 
-    // Input line for C code
-    private inputRef: HTMLInputElement | null = null;
-
-    // Textarea ref
-    private textareaRef: HTMLTextAreaElement | null = null;
-
-    private listenForLayoutChanges: IReactionDisposer;
-
     constructor() {
         super();
+
+        // This is almost like a caching trick, parsing happens only when these
+        // two changes
         reaction(
             t => [this.keymapsTextareaValue, this.keyboardLayoutIndex],
             this.reactionChangeKeymapsOrLayout
         );
+
+        // Somewhat bad way to update a keyInputValue
         reaction(
-            () => this.selectedKey,
+            () => [this.keyboardLayoutIndex, this.currentSelectedValue],
             () => {
                 this.keyValidationError = "";
                 this.keyInputValue =
                     (this.currentSelectedValue && this.currentSelectedValue.content) || "";
             }
         );
+
         this.keymapsTextareaValue = localStorage.getItem("keymap") || "";
     }
 
@@ -137,7 +140,7 @@ export class App extends React.Component<{}, {}> {
                     id="layouts"
                     onChange={this.onChangeLayer}
                     selectedTabId={Math.min(
-                        this.layoutLayerIndex,
+                        this.layerIndex,
                         this.lastSuccessfulKeymapParsed.length - 1
                     )}
                 >
@@ -219,7 +222,7 @@ export class App extends React.Component<{}, {}> {
 
     @computed
     private get currentSelectedValue() {
-        return this.safeGetKeymapValue(this.layoutLayerIndex, this.selectedKey);
+        return this.safeGetKeymapValue(this.layerIndex, this.selectedKey);
     }
 
     private safeGetKeymapValue = (layer: number, key: number) => {
@@ -256,7 +259,7 @@ export class App extends React.Component<{}, {}> {
         // Index string is the selected layout keyboard's KEYMAP position number
         // as a string
         let langMapping = languageMappings[this.langMappingIndex];
-        let parsed = this.safeGetKeymapValue(this.layoutLayerIndex, +index);
+        let parsed = this.safeGetKeymapValue(this.layerIndex, +index);
         if (!parsed) {
             return {
                 centered: "",
@@ -333,23 +336,20 @@ export class App extends React.Component<{}, {}> {
     @action
     private onChangeLayer = (newTabId: number, prevTabId: number) => {
         this.selectedKey = null;
-        this.layoutLayerIndex = newTabId;
+        this.layerIndex = newTabId;
     };
 
     @action
     private onClickAddLayer = (e: React.MouseEvent<any>) => {
         e.preventDefault();
-        this.keymapsTextareaValue = addLayerKeymaps(
-            this.keymapsTextareaValue,
-            this.lastSuccessfulKeymapParsed
-        );
-        this.layoutLayerIndex = this.lastSuccessfulKeymapParsed.length;
+        this.keymapsTextareaValue = addLayerKeymaps(this.keymapsTextareaValue);
+        this.layerIndex = this.lastSuccessfulKeymapParsed.length;
         this.selectedKey = null;
     };
 
     @computed
     private get selectedRefKeysFromInput() {
-        let value = this.safeGetKeymapValue(this.layoutLayerIndex, this.selectedKey);
+        let value = this.safeGetKeymapValue(this.layerIndex, this.selectedKey);
         if (value) {
             return new Map().set(value.content || "", true);
         }
@@ -363,7 +363,7 @@ export class App extends React.Component<{}, {}> {
             this.keyValidationError = "";
             this.keymapsTextareaValue = trySetKeymapsKey(
                 this.keymapsTextareaValue,
-                this.layoutLayerIndex,
+                this.layerIndex,
                 this.selectedKey,
                 e.target.value,
                 layout && layout.keyCount
@@ -428,7 +428,7 @@ export class App extends React.Component<{}, {}> {
                 try {
                     this.keymapsTextareaValue = trySetKeymapsKey(
                         this.keymapsTextareaValue,
-                        this.layoutLayerIndex,
+                        this.layerIndex,
                         this.selectedKey,
                         k,
                         layout && layout.keyCount

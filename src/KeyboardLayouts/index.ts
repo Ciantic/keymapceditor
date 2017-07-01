@@ -240,7 +240,7 @@ export const trySetKeymapsKey = (
     return newKeymap;
 };
 
-export const addLayerKeymaps = (keymapText: string, keymapParsed: KeymapParseResult) => {
+export const addLayerKeymaps = (keymapText: string) => {
     try {
         var keymaps = tryParseKeymapsText(keymapText, null, true);
     } catch (e) {
