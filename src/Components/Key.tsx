@@ -6,6 +6,7 @@ import { CSSProperties } from "react";
 const styles = require("./Key.module.scss");
 
 export interface KeyStyle {
+    disabled: boolean;
     hovered: boolean;
     pressed: boolean;
 }
@@ -67,6 +68,7 @@ export class Key extends React.Component<KeyProps, {}> {
             onClick: props.onClick,
         };
         let style: KeyStyle = props.style || {
+            disabled: false,
             hovered: false,
             pressed: false,
         };
@@ -93,6 +95,7 @@ export class Key extends React.Component<KeyProps, {}> {
             <div
                 className={cns(
                     styles.key,
+                    style.disabled && styles.disabled,
                     style.pressed && styles.pressed,
                     style.hovered && styles.hovered
                 )}

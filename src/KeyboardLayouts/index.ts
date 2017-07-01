@@ -26,13 +26,6 @@ export const generateKeymapsText = (keyCount: number, layoutLayers: string[][]) 
     return keymaps.join(",\n\n");
 };
 
-interface AstComma {
-    type: "comma";
-    content: ",";
-    offset: number;
-    end: number;
-}
-
 interface AstWord {
     type: "word";
     content: string;
@@ -51,7 +44,13 @@ interface AstFunction {
 
 type AstNode = AstWord | AstFunction;
 
-export const parseKeymapsText = (expr: string): AstNode[][] => {
+export type KeymapParseResult = AstNode[][];
+
+export const tryParseKeymapsText = (
+    expr: string,
+    keyCount: number | null = null,
+    _returnOnlyEndHack: boolean = false
+): KeymapParseResult => {
     let pos = 0;
     let keymaps: AstNode[][] = [];
 
@@ -125,7 +124,7 @@ export const parseKeymapsText = (expr: string): AstNode[][] => {
                         func: token,
                         params: params,
                         offset: start + offset,
-                        end: start + paramsend + 1, // + 1 for the ending parenthesis
+                        end: paramsend + 1, // + 1 for the ending parenthesis
                         content: expr.slice(start + offset, paramsend + 1),
                     } as AstFunction
                 );
@@ -185,81 +184,93 @@ export const parseKeymapsText = (expr: string): AstNode[][] => {
         };
         let keymap = main(pos);
         if (pcount !== 0) {
-            return null;
+            throw new Error("KEYMAP parenthesis unbalanced");
         }
         keymaps.push(keymap);
+    }
+    if (keymaps.length >= 1) {
+        if (keymaps.some(t => t.length !== keymaps[0].length)) {
+            throw new Error("Incompatible amount of keys in layers");
+        }
+        if (keyCount !== null && keymaps[0].length !== keyCount) {
+            throw new Error("Number of keys in KEYMAP are incorrect for this layout");
+        }
+    } else if (keymaps.length === 0) {
+        throw new Error("KEYMAPS not found");
+    }
+    if (_returnOnlyEndHack) {
+        (keymaps as any)._endParsingPosition = pos;
     }
     return keymaps;
 };
 
-type result = string | { func: string; params: result[] };
-
-/// @deprecated
-export const parseKeyExpression = (expr: string): result | null => {
-    let pos = 0;
-    let pcount = 0;
-
-    const main = () => {
-        let arr = [];
-        let start = pos;
-        let addWord = () => {
-            if (pos > start) {
-                let token = expr.slice(start, pos).trim().replace(/[\s\\(\\),]+$/, "");
-                if (token !== "") {
-                    arr.push(token);
-                }
-            }
-        };
-        let addFunc = () => {
-            if (pos > start) {
-                let token = expr.slice(start, pos).trim().replace(/[\s\\(\\),]+$/, "");
-                if (token !== "") {
-                    arr.push({
-                        func: token,
-                        params: main(),
-                    });
-                }
-            }
-        };
-
-        while (pos < expr.length) {
-            switch (expr[pos++]) {
-                case " ":
-                    continue;
-                case ",":
-                    addWord();
-                    start = pos;
-                    continue;
-                case "(":
-                    addFunc();
-                    pcount++;
-                    start = pos;
-                    continue;
-                case ")":
-                    addWord();
-                    pcount--;
-                    return arr;
-            }
-        }
-        addWord();
-        return arr;
-    };
-    let val = main();
-    if (pcount !== 0) {
-        return null;
+/**
+ * Returns the new keymapText with key set on to a newValue.
+ * 
+ * Throws an parsing error if the new value cannot be set. 
+ * 
+ * @param keymapText KeymapText value to modify
+ * @param layer Layer number
+ * @param key Selected key
+ * @param newValue Value to set at the key
+ * @param keyCount Expected key count of the layout, for parsing
+ */
+export const trySetKeymapsKey = (
+    keymapText: string,
+    layer: number,
+    key: number,
+    newValue: string,
+    keyCount: number = null
+) => {
+    let keymapParsed = tryParseKeymapsText(keymapText, keyCount);
+    let layerKeys = keymapParsed[layer];
+    if (!layerKeys) {
+        return keymapText;
     }
-    return val[0];
+
+    let keyValue = layerKeys[key];
+    if (typeof keyValue === "undefined") {
+        return keymapText;
+    }
+
+    let head = keymapText.substr(0, keyValue.offset);
+    let tail = keymapText.substr(keyValue.offset + keyValue.content.length);
+    let newKeymap = head + newValue + tail;
+    tryParseKeymapsText(newKeymap, keyCount);
+    return newKeymap;
+};
+
+export const addLayerKeymaps = (keymapText: string, keymapParsed: KeymapParseResult) => {
+    try {
+        var keymaps = tryParseKeymapsText(keymapText, null, true);
+    } catch (e) {
+        return keymapText;
+    }
+    let pos: number = (keymaps as any)._endParsingPosition;
+    let n = keymaps.length;
+    let empties = keymaps[0].map(t => "KC_TRANSPARENT");
+    return (
+        keymapText.substr(0, pos) +
+        ",\n [" +
+        n +
+        "] = KEYMAP(" +
+        empties.join(",") +
+        ")" +
+        keymapText.substr(pos)
+    );
 };
 
 export interface Executor<T> {
     [k: string]: () => T | string | null;
 }
 
-export const evalKeyExpression = <T>(expr: result | null, executor: Executor<T>): T => {
+export const evalKeyExpression = <T>(expr: AstNode | string, executor: Executor<T>): T => {
     if (expr !== null) {
         if (typeof expr === "string") {
             return expr as any;
-        } else if (expr && typeof expr.func === "string") {
+        } else if (expr.type === "word") {
+            return expr.content as any;
+        } else if (expr.type === "func") {
             let evaledParams = [];
             expr.params.forEach(t => {
                 evaledParams.push(evalKeyExpression(t, executor));

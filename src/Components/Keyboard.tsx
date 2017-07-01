@@ -20,6 +20,7 @@ const isKeyboardLayoutKeyDefinition = (o: any): o is IKeyboardLayoutKeyDefinitio
 interface KeyboardLayoutProps {
     className?: string;
     layout: KeyboardLayoutArray;
+    disabled?: boolean;
     stylePressedKeys?: Map<string, boolean>;
     styleHoveredKeys?: Map<string, boolean>;
     getKeycapText?: (layoutValue: string, keyIndex: number) => KeycapText;
@@ -31,6 +32,7 @@ interface KeyboardLayoutProps {
 @observer
 export class KeyboardLayout extends React.Component<KeyboardLayoutProps, void> {
     static defaultProps: Partial<KeyboardLayoutProps> = {
+        disabled: false,
         stylePressedKeys: new Map(),
         styleHoveredKeys: new Map(),
         onClickKey: (v: string, n: number) => () => {},
@@ -130,14 +132,15 @@ export class KeyboardLayout extends React.Component<KeyboardLayoutProps, void> {
 
                         // Style
                         style: {
-                            hovered: props.styleHoveredKeys.get(k),
-                            pressed: props.stylePressedKeys.get(k),
+                            disabled: props.disabled,
+                            hovered: !props.disabled && props.styleHoveredKeys.get(k),
+                            pressed: !props.disabled && props.stylePressedKeys.get(k),
                         },
 
                         // Events
-                        onMouseLeave: onMouseLeaveKey(k, n),
-                        onMouseEnter: onMouseEnterKey(k, n),
-                        onClick: onClickKey(k, n),
+                        onMouseLeave: !props.disabled && onMouseLeaveKey(k, n),
+                        onMouseEnter: !props.disabled && onMouseEnterKey(k, n),
+                        onClick: !props.disabled && onClickKey(k, n),
                     });
 
                     areaWidth = Math.max(areaWidth, x + w, x + x2 + w2);

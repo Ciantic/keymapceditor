@@ -1,10 +1,5 @@
 import { expect, config } from "chai";
-import {
-    parseKeyExpression,
-    evalKeyExpression,
-    Executor,
-    parseKeymapsText,
-} from "../src/KeyboardLayouts/index";
+import { evalKeyExpression, Executor, tryParseKeymapsText } from "../src/KeyboardLayouts/index";
 
 config.truncateThreshold = 0;
 
@@ -83,32 +78,31 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 describe("parseKeymapsText", () => {
     it("parse error, unbalanced KEYMAP", () => {
-        let c = parseKeymapsText("123456 KEYMAP(");
-        expect(c).to.be.deep.equal(null);
+        expect(() => tryParseKeymapsText("123456 KEYMAP(")).throws("KEYMAP parenthesis unbalanced");
     });
 
     it("parse error, empty token before comma", () => {
-        expect(() => parseKeymapsText("123456 KEYMAP(,A)")).throws("Missing token at: 15");
+        expect(() => tryParseKeymapsText("123456 KEYMAP(,A)")).throws("Missing token at: 15");
     });
 
     it("parse error, empty token before closing parens", () => {
-        expect(() => parseKeymapsText("123456 KEYMAP(A,)")).throws("Missing token at: 17");
+        expect(() => tryParseKeymapsText("123456 KEYMAP(A,)")).throws("Missing token at: 17");
     });
 
     it("parse error, whitespaces are not allowed as words", () => {
-        expect(() => parseKeymapsText("123456 KEYMAP(A A)")).throws(
+        expect(() => tryParseKeymapsText("123456 KEYMAP(A A)")).throws(
             "Whitespaces are not allowed at: 14"
         );
     });
 
     it("parse error, missing function name", () => {
-        expect(() => parseKeymapsText("123456 KEYMAP(A, (B))")).throws(
+        expect(() => tryParseKeymapsText("123456 KEYMAP(A, (B))")).throws(
             "Function name required at: 17"
         );
     });
 
     it("simple word", () => {
-        let c = parseKeymapsText("123456 KEYMAP(  TEST   )");
+        let c = tryParseKeymapsText("123456 KEYMAP(  TEST   )");
         expect(c).to.be.deep.equal([
             [
                 {
@@ -122,7 +116,7 @@ describe("parseKeymapsText", () => {
     });
 
     it("simple arg list", () => {
-        let c = parseKeymapsText("123456 KEYMAP(TEST, TEST2)");
+        let c = tryParseKeymapsText("123456 KEYMAP(TEST, TEST2)");
         expect(c).to.be.deep.equal([
             [
                 { type: "word", content: "TEST", offset: 14, end: 14 + 4 },
@@ -132,7 +126,7 @@ describe("parseKeymapsText", () => {
     });
 
     it("simple function one argument", () => {
-        let c = parseKeymapsText("123456 KEYMAP(FUN(PARAM))");
+        let c = tryParseKeymapsText("123456 KEYMAP(FUN(PARAM))");
         expect(c).to.be.deep.equal([
             [
                 {
@@ -140,7 +134,7 @@ describe("parseKeymapsText", () => {
                     func: "FUN",
                     params: [{ type: "word", content: "PARAM", offset: 18, end: 23 }],
                     offset: 14,
-                    end: 38,
+                    end: 24,
                     content: "FUN(PARAM)",
                 },
             ],
@@ -148,7 +142,7 @@ describe("parseKeymapsText", () => {
     });
 
     it("simple function with two arguments", () => {
-        let c = parseKeymapsText("123456 KEYMAP(FUN(PARAM, PARAM2))");
+        let c = tryParseKeymapsText("123456 KEYMAP(FUN(PARAM, PARAM2))");
         expect(c).to.be.deep.equal([
             [
                 {
@@ -159,7 +153,7 @@ describe("parseKeymapsText", () => {
                         { type: "word", content: "PARAM2", offset: 25, end: 31 },
                     ],
                     offset: 14,
-                    end: 46,
+                    end: 32,
                     content: "FUN(PARAM, PARAM2)",
                 },
             ],
@@ -167,7 +161,7 @@ describe("parseKeymapsText", () => {
     });
 
     it("simple function next to each other", () => {
-        let c = parseKeymapsText("123456 KEYMAP(FUN(PARAM), FUN2(PARAM2))");
+        let c = tryParseKeymapsText("123456 KEYMAP(FUN(PARAM), FUN2(PARAM2))");
         expect(c).to.be.deep.equal([
             [
                 {
@@ -175,7 +169,7 @@ describe("parseKeymapsText", () => {
                     func: "FUN",
                     params: [{ type: "word", content: "PARAM", offset: 18, end: 23 }],
                     offset: 14,
-                    end: 38,
+                    end: 24,
                     content: "FUN(PARAM)",
                 },
                 {
@@ -183,7 +177,7 @@ describe("parseKeymapsText", () => {
                     func: "FUN2",
                     params: [{ type: "word", content: "PARAM2", offset: 31, end: 37 }],
                     offset: 26,
-                    end: 63,
+                    end: 38,
                     content: "FUN2(PARAM2)",
                 },
             ],
@@ -191,12 +185,12 @@ describe("parseKeymapsText", () => {
     });
 
     it("block comment removal", () => {
-        let c = parseKeymapsText("KEYMAP(TOKEN /* Importanto */)");
+        let c = tryParseKeymapsText("KEYMAP(TOKEN /* Importanto */)");
         expect(c).to.be.deep.equal([[{ type: "word", content: "TOKEN", offset: 7, end: 13 }]]);
     });
 
     it("block comment removal two", () => {
-        let c = parseKeymapsText("KEYMAP(TOKEN /* Importanto */, TOKEN2)");
+        let c = tryParseKeymapsText("KEYMAP(TOKEN /* Importanto */, TOKEN2)");
         expect(c).to.be.deep.equal([
             [
                 { type: "word", content: "TOKEN", offset: 7, end: 13 },
@@ -205,8 +199,34 @@ describe("parseKeymapsText", () => {
         ]);
     });
 
+    it("parse error test", () => {
+        let c = tryParseKeymapsText("KEYMAP(OUTER(INNER(A)), AFTER)");
+        expect(c).to.be.deep.equal([
+            [
+                {
+                    type: "func",
+                    func: "OUTER",
+                    params: [
+                        {
+                            type: "func",
+                            func: "INNER",
+                            params: [{ type: "word", content: "A", offset: 19, end: 20 }],
+                            offset: 13,
+                            end: 21,
+                            content: "INNER(A)",
+                        },
+                    ],
+                    offset: 7,
+                    end: 22,
+                    content: "OUTER(INNER(A))",
+                },
+                { type: "word", content: "AFTER", offset: 24, end: 29 },
+            ],
+        ]);
+    });
+
     it("the ergodox", () => {
-        let c = parseKeymapsText(ERGODOX_DEFAULT);
+        let c = tryParseKeymapsText(ERGODOX_DEFAULT);
         let contents = c.map(t => t.map(t => t.content));
 
         // prettier-ignore
@@ -216,61 +236,6 @@ describe("parseKeymapsText", () => {
             ["VRSN","KC_F1","KC_F2","KC_F3","KC_F4","KC_F5","KC_TRNS","KC_TRNS","KC_EXLM","KC_AT","KC_LCBR","KC_RCBR","KC_PIPE","KC_TRNS","KC_TRNS","KC_HASH","KC_DLR","KC_LPRN","KC_RPRN","KC_GRV","KC_TRNS","KC_PERC","KC_CIRC","KC_LBRC","KC_RBRC","KC_TILD","KC_TRNS","EPRM","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","RGB_MOD","KC_TRNS","KC_TRNS","RGB_VAD","RGB_VAI","KC_TRNS","KC_TRNS","KC_F6","KC_F7","KC_F8","KC_F9","KC_F10","KC_F11","KC_TRNS","KC_UP","KC_7","KC_8","KC_9","KC_ASTR","KC_F12","KC_DOWN","KC_4","KC_5","KC_6","KC_PLUS","KC_TRNS","KC_TRNS","KC_AMPR","KC_1","KC_2","KC_3","KC_BSLS","KC_TRNS","KC_TRNS","KC_DOT","KC_0","KC_EQL","KC_TRNS","RGB_TOG","RGB_SLD","KC_TRNS","KC_TRNS","RGB_HUD","RGB_HUI"],
             ["KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_MS_U","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_MS_L","KC_MS_D","KC_MS_R","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_BTN1","KC_BTN2","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_MPLY","KC_TRNS","KC_TRNS","KC_TRNS","KC_MPRV","KC_MNXT","KC_TRNS","KC_TRNS","KC_VOLU","KC_VOLD","KC_MUTE","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_WBAK"]
         ]);
-    });
-});
-
-describe("parseKeyExpression", () => {
-    it("One token  should work", () => {
-        let v = parseKeyExpression("JUST_A_TOKEN");
-        expect(v).to.be.deep.equal("JUST_A_TOKEN");
-    });
-
-    it("One param function should work", () => {
-        let v = parseKeyExpression("LSFT( KC_1 )");
-        expect(v).to.be.deep.equal({
-            func: "LSFT",
-            params: ["KC_1"],
-        });
-    });
-    it("Broken one param function should error", () => {
-        let v = parseKeyExpression("LSFT(KC_1");
-        expect(v).to.be.deep.equal(null);
-    });
-
-    it("Two param function should work", () => {
-        let v = parseKeyExpression("LT(SYMB, KC_GRV)");
-        expect(v).to.be.deep.equal({
-            func: "LT",
-            params: ["SYMB", "KC_GRV"],
-        });
-    });
-
-    it("Function that takes function should work", () => {
-        let v = parseKeyExpression("LSFT( LALT(KC_A))");
-        expect(v).to.be.deep.equal({
-            func: "LSFT",
-            params: [
-                {
-                    func: "LALT",
-                    params: ["KC_A"],
-                },
-            ],
-        });
-    });
-
-    it("Function that takes function, test should work", () => {
-        let v = parseKeyExpression("LSFT(TEST, LALT(KC_A), TEST2)");
-        expect(v).to.be.deep.equal({
-            func: "LSFT",
-            params: [
-                "TEST",
-                {
-                    func: "LALT",
-                    params: ["KC_A"],
-                },
-                "TEST2",
-            ],
-        });
     });
 });
 
@@ -289,12 +254,29 @@ describe("evalKeyExpression", () => {
         };
         let v = evalKeyExpression(
             {
+                type: "func",
                 func: "TEST",
-                params: ["param1", "param2"],
+                params: [
+                    {
+                        type: "word",
+                        content: "PARAM1",
+                        offset: 0,
+                        end: 0,
+                    },
+                    {
+                        type: "word",
+                        content: "PARAM2",
+                        offset: 0,
+                        end: 0,
+                    },
+                ],
+                content: "",
+                offset: 0,
+                end: 0,
             },
             executor
         );
-        expect(v).to.be.equal("TEST(param1,param2)");
+        expect(v).to.be.equal("TEST(PARAM1,PARAM2)");
     });
 
     it("Should work with nested func", () => {
@@ -309,14 +291,40 @@ describe("evalKeyExpression", () => {
         };
         let v = evalKeyExpression(
             {
+                type: "func",
                 func: "TEST",
                 params: [
-                    "a",
                     {
+                        type: "word",
+                        content: "a",
+                        offset: 0,
+                        end: 0,
+                    },
+                    {
+                        type: "func",
                         func: "TEST2",
-                        params: ["c", "d"],
+                        params: [
+                            {
+                                type: "word",
+                                content: "c",
+                                offset: 0,
+                                end: 0,
+                            },
+                            {
+                                type: "word",
+                                content: "d",
+                                offset: 0,
+                                end: 0,
+                            },
+                        ],
+                        offset: 0,
+                        end: 0,
+                        content: "",
                     },
                 ],
+                offset: 0,
+                end: 0,
+                content: "",
             },
             executor
         );
