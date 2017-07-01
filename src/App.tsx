@@ -136,7 +136,10 @@ export class App extends React.Component<{}, {}> {
                     className="pt-large"
                     id="layouts"
                     onChange={this.onChangeLayer}
-                    selectedTabId={this.layoutLayerIndex}
+                    selectedTabId={Math.min(
+                        this.layoutLayerIndex,
+                        this.lastSuccessfulKeymapParsed.length - 1
+                    )}
                 >
                     {this.lastSuccessfulKeymapParsed.map((t, i) =>
                         <Tab2 key={i} title={`Layer ${i}`} id={i} panel={null} />
@@ -156,23 +159,26 @@ export class App extends React.Component<{}, {}> {
                         getKeycapText={this.getConfigureKeycapText}
                         onClickKey={this.onClickConfigureKey}
                     />}
-                <div className={styles.layoutInput}>
-                    <input
-                        disabled={!!this.keymapsParseError || this.selectedKey === null}
-                        value={this.keyInputValue}
-                        ref={this.setInputRef}
-                        onChange={this.onChangeInput}
-                        type="text"
-                        className={cns("pt-input pt-fill pt-large")}
-                        placeholder={LANGS.LayoutInput}
-                    />
-                    {(this.keyValidationError &&
-                        <div className="pt-callout pt-intent-danger">
-                            {this.keyValidationError}
-                        </div>) ||
-                        <div className="pt-callout" style={{ opacity: 0 }}>{LANGS.NoErrors}</div>}
+                {keyboardLayout &&
+                    <div className={styles.layoutInput}>
+                        <input
+                            disabled={!!this.keymapsParseError || this.selectedKey === null}
+                            value={this.keyInputValue}
+                            ref={this.setInputRef}
+                            onChange={this.onChangeInput}
+                            type="text"
+                            className={cns("pt-input pt-fill pt-large")}
+                            placeholder={LANGS.LayoutInput}
+                        />
+                        {(this.keyValidationError &&
+                            <div className="pt-callout pt-intent-danger">
+                                {this.keyValidationError}
+                            </div>) ||
+                            <div className="pt-callout" style={{ opacity: 0 }}>
+                                {LANGS.NoErrors}
+                            </div>}
 
-                </div>
+                    </div>}
 
                 {refKeyboard &&
                     <KeyboardLayout
