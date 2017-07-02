@@ -3,6 +3,7 @@ import { KeyboardLayoutArray } from "../KLE/keyboardlayout";
 import { keycode } from "../QMK/keycodes";
 
 export interface IKeyboardLayout {
+    qmkDirectory: string;
     layout: KeyboardLayoutArray;
     name: string;
     keyCount: number;

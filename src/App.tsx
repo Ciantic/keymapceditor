@@ -62,10 +62,7 @@ export class App extends React.Component<{}, {}> {
 
         // This is almost like a caching trick, parsing happens only when these
         // two changes
-        reaction(
-            t => [this.keymapsTextareaValue, this.keyboardLayoutIndex],
-            this.reactionChangeKeymapsOrLayout
-        );
+        reaction(t => [this.keymapsTextareaValue, this.keyboardLayoutIndex], this.parseKeymapsText);
 
         // Somewhat bad way to update a keyInputValue
         reaction(
@@ -220,6 +217,8 @@ export class App extends React.Component<{}, {}> {
         );
     }
 
+    private getKeymapFromUrl = (path: string) => {};
+
     @computed
     private get currentSelectedValue() {
         return this.safeGetKeymapValue(this.layerIndex, this.selectedKey);
@@ -310,7 +309,8 @@ export class App extends React.Component<{}, {}> {
     };
 
     @action
-    private reactionChangeKeymapsOrLayout = () => {
+    private parseKeymapsText = () => {
+        console.log("parse keymaps");
         let layout = this.getLayoutOrError();
         if (!layout) {
             return;

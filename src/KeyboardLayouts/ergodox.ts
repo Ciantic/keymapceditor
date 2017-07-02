@@ -33,6 +33,7 @@ const ergodox: KeyboardLayoutArray = [
 ];
 
 export const ergodoxKeyboardLayout: IKeyboardLayout = {
+    qmkDirectory: "ergodox",
     layout: ergodox,
     name: LANGS.Ergodox,
     keyCount: 76,
