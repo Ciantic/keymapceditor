@@ -1,6 +1,15 @@
 require("./App.scss");
 
-import { action, observable, computed, when, reaction, IReactionDisposer, autorun } from "mobx";
+import {
+    action,
+    observable,
+    computed,
+    when,
+    reaction,
+    IReactionDisposer,
+    autorun,
+    runInAction,
+} from "mobx";
 import { observer } from "mobx-react";
 import * as React from "react";
 
@@ -30,6 +39,34 @@ FocusStyleManager.onlyShowFocusOnTabs();
 
 const styles = require("./App.module.scss");
 
+const sendToExtension = (command: string, ...args: any[]) => {
+    if (window && window.parent && window.parent.postMessage) {
+        window.parent.postMessage(
+            {
+                // This is required to be "did-click-link" in all cases, this is
+                // some misfeature in vscode that actually sends the event to the
+                // command specified in data
+                //
+                // This pattern is used in the vscode/markdown extension itself
+                command: "did-click-link",
+                data: `command:${command}?${encodeURIComponent(JSON.stringify(args))}`,
+            },
+            "file://"
+        );
+    }
+};
+
+const sendConnectRequestToExtension = () => {
+    sendToExtension("_qmkmapper.connectedPreview");
+};
+
+let sendKeymapToExtension = (documentUri: string, keymap: string) => {
+    sendToExtension("_qmkmapper.keymapFromPreview", {
+        documentUri,
+        keymap,
+    });
+};
+
 initTools((window["QMTOOLS"] = {}));
 
 @observer
@@ -53,6 +90,7 @@ export class App extends React.Component<{}, {}> {
     @observable private lastSuccessfulKeymapParsed: KeymapParseResult = [];
     private inputRef: HTMLInputElement | null = null;
     private textareaRef: HTMLTextAreaElement | null = null;
+    private avoidResendCycleKeymapText = "";
 
     // Reference layout
     @observable private hoveredRefKeys = new Map<keycode, boolean>();
@@ -60,6 +98,22 @@ export class App extends React.Component<{}, {}> {
     constructor() {
         super();
 
+        addEventListener("message", e => {
+            if (!e || !e.data || !e.data.command) {
+                return;
+            }
+
+            switch (e.data.command) {
+                case "setKeymap":
+                    runInAction(() => {
+                        this.avoidResendCycleKeymapText = this.keymapsTextareaValue = e.data.keymap;
+                    });
+                    break;
+            }
+        });
+
+        sendToExtension("_qmkmapper.logging", "Howdy preview is done!");
+        sendConnectRequestToExtension();
         // This is almost like a caching trick, parsing happens only when these
         // two changes
         reaction(t => [this.keymapsTextareaValue, this.keyboardLayoutIndex], this.parseKeymapsText);
@@ -310,7 +364,6 @@ export class App extends React.Component<{}, {}> {
 
     @action
     private parseKeymapsText = () => {
-        console.log("parse keymaps");
         let layout = this.getLayoutOrError();
         if (!layout) {
             return;
@@ -321,6 +374,9 @@ export class App extends React.Component<{}, {}> {
                 layout.keyCount
             );
             this.keymapsParseError = "";
+            if (this.avoidResendCycleKeymapText !== this.keymapsTextareaValue) {
+                sendKeymapToExtension("", this.keymapsTextareaValue);
+            }
         } catch (e) {
             if (e instanceof Error) {
                 this.keymapsParseError = e.message;
