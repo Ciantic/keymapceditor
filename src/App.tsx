@@ -60,11 +60,19 @@ const sendConnectRequestToExtension = () => {
     sendToExtension("_qmkmapper.connectedPreview");
 };
 
+let throttleTimeout = null;
+
 let sendKeymapToExtension = (documentUri: string, keymap: string) => {
-    sendToExtension("_qmkmapper.keymapFromPreview", {
-        documentUri,
-        keymap,
-    });
+    // Throttle assumes that documentUri does not change
+    if (throttleTimeout) {
+        clearTimeout(throttleTimeout);
+    }
+    throttleTimeout = setTimeout(() => {
+        sendToExtension("_qmkmapper.keymapFromPreview", {
+            documentUri,
+            keymap,
+        });
+    }, 300);
 };
 
 initTools((window["QMTOOLS"] = {}));
