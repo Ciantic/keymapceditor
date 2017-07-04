@@ -160,7 +160,7 @@ export class App extends React.Component<{}, {}> {
             <div>
                 <nav className="pt-navbar pt-dark pt-fixed-top">
                     <div className="pt-navbar-group pt-align-left">
-                        <div className="pt-navbar-heading">QMKMapperÄÖ€</div>
+                        <div className="pt-navbar-heading">QMKMapper</div>
                     </div>
                     <div className="pt-navbar-group pt-control-group pt-align-left">
                         <div className="pt-select pt-fill">
