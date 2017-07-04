@@ -16,6 +16,12 @@
             "isBackground": true
         },
         {
+            "taskName": "build",
+            "args": [
+                "build"
+            ]
+        },
+        {
             "taskName": "testwatch",
             "args": [
                 "testwatch"
