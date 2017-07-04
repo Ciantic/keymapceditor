@@ -190,9 +190,6 @@ export class App extends React.Component<{}, {}> {
                             </select>
                         </div>
                     </div>
-                    <div className="pt-navbar-group pt-align-right">
-                        <button className="pt-button pt-minimal pt-icon-cog" />
-                    </div>
                 </nav>
                 <Tabs2
                     className="pt-large"

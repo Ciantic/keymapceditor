@@ -1,4 +1,6 @@
 $anim-speed: 0.1s;
+$key-texts-color: #000;
+$disabled-key-texts-color: gray;
 $key-hover-border-color: #a22;
 $key-outer-radius: 0.75em;
 $key-top-radius: 0.55em;
@@ -17,6 +19,7 @@ $key-pressed-top-color: mix(darken($key-top-color, 10%), red, 85%);
 }
 
 .texts {
+    color: $key-texts-color;
     font-size: 180%;
 
     .smaller {
@@ -145,6 +148,8 @@ $key-pressed-top-color: mix(darken($key-top-color, 10%), red, 85%);
     .borders {
         cursor: not-allowed;
     }
-
+    .texts {
+        color: $disabled-key-texts-color;
+    }
     opacity: 0.7;
 }
