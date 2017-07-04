@@ -3,6 +3,7 @@ var packageJson = require(path.join(__dirname, "package.json"));
 var webpack = require("webpack");
 var ExtractTextPlugin = require("extract-text-webpack-plugin");
 var HtmlWebpackPlugin = require("html-webpack-plugin");
+var BomPlugin = require("webpack-utf8-bom");
 var releaseDate = new Date().getTime();
 
 var appDir = path.resolve(__dirname, "src");
@@ -94,6 +95,10 @@ var config = {
             filename: `[name].css?${releaseDate}`,
             allChunks: true,
         }),
+
+        // Windows 10 does not like UTF8 file references without BOM in the VS
+        // Code extension
+        new BomPlugin(true, /\.(html|htm|css|js|map)/),
     ],
 };
 

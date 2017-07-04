@@ -39,7 +39,14 @@ FocusStyleManager.onlyShowFocusOnTabs();
 
 const styles = require("./App.module.scss");
 
+if (typeof VSC_MODE === "undefined") {
+    window["VSC_MODE"] = false;
+}
+
 const sendToExtension = (command: string, ...args: any[]) => {
+    if (!VSC_MODE) {
+        return;
+    }
     if (window && window.parent && window.parent.postMessage) {
         window.parent.postMessage(
             {
@@ -63,6 +70,9 @@ const sendConnectRequestToExtension = () => {
 let throttleTimeout = null;
 
 let sendKeymapToExtension = (documentUri: string, keymap: string) => {
+    if (!VSC_MODE) {
+        return;
+    }
     // Throttle assumes that documentUri does not change
     if (throttleTimeout) {
         clearTimeout(throttleTimeout);
@@ -98,7 +108,6 @@ export class App extends React.Component<{}, {}> {
     @observable private lastSuccessfulKeymapParsed: KeymapParseResult = [];
     private inputRef: HTMLInputElement | null = null;
     private textareaRef: HTMLTextAreaElement | null = null;
-    private avoidResendCycleKeymapText = "";
 
     // Reference layout
     @observable private hoveredRefKeys = new Map<keycode, boolean>();
@@ -106,22 +115,26 @@ export class App extends React.Component<{}, {}> {
     constructor() {
         super();
 
-        addEventListener("message", e => {
-            if (!e || !e.data || !e.data.command) {
-                return;
-            }
+        if (VSC_MODE) {
+            // Listen messages from VSC extension
+            addEventListener("message", e => {
+                if (!e || !e.data || !e.data.command) {
+                    return;
+                }
 
-            switch (e.data.command) {
-                case "setKeymap":
-                    runInAction(() => {
-                        this.avoidResendCycleKeymapText = this.keymapsTextareaValue = e.data.keymap;
-                    });
-                    break;
-            }
-        });
+                switch (e.data.command) {
+                    case "setKeymap":
+                        runInAction(() => {
+                            this.keymapsTextareaValue = e.data.keymap;
+                        });
+                        break;
+                }
+            });
 
-        sendToExtension("_qmkmapper.logging", "Howdy preview is done!");
-        sendConnectRequestToExtension();
+            // Send connect request to extension, for editor to send the initial keymap
+            sendConnectRequestToExtension();
+        }
+
         // This is almost like a caching trick, parsing happens only when these
         // two changes
         reaction(t => [this.keymapsTextareaValue, this.keyboardLayoutIndex], this.parseKeymapsText);
@@ -147,7 +160,7 @@ export class App extends React.Component<{}, {}> {
             <div>
                 <nav className="pt-navbar pt-dark pt-fixed-top">
                     <div className="pt-navbar-group pt-align-left">
-                        <div className="pt-navbar-heading">QMKMapper</div>
+                        <div className="pt-navbar-heading">QMKMapperÄÖ€</div>
                     </div>
                     <div className="pt-navbar-group pt-control-group pt-align-left">
                         <div className="pt-select pt-fill">
@@ -250,20 +263,21 @@ export class App extends React.Component<{}, {}> {
                         getKeycapText={this.getReferenceKeycapText}
                         onClickKey={this.onClickReferenceKey}
                     />}
-
-                <textarea
-                    ref={this.setTextareaRef}
-                    placeholder={LANGS.KeymapsPlaceholder}
-                    value={this.keymapsTextareaValue}
-                    className={cns(
-                        "pt-input pt-fill",
-                        this.layoutNotSelectedError && "pt-intent-danger",
-                        this.keymapsParseError !== "" && "pt-intent-danger",
-                        styles.keymapsTextarea
-                    )}
-                    onFocus={this.onFocusKeymapsTextarea}
-                    onChange={this.onChangeKeymapsTextarea}
-                />
+                {!VSC_MODE
+                    ? <textarea
+                          ref={this.setTextareaRef}
+                          placeholder={LANGS.KeymapsPlaceholder}
+                          value={this.keymapsTextareaValue}
+                          className={cns(
+                              "pt-input pt-fill",
+                              this.layoutNotSelectedError && "pt-intent-danger",
+                              this.keymapsParseError !== "" && "pt-intent-danger",
+                              styles.keymapsTextarea
+                          )}
+                          onFocus={this.onFocusKeymapsTextarea}
+                          onChange={this.onChangeKeymapsTextarea}
+                      />
+                    : null}
                 {this.layoutNotSelectedError &&
                     <div className="pt-callout pt-intent-danger">
                         {this.layoutNotSelectedError}
@@ -379,9 +393,7 @@ export class App extends React.Component<{}, {}> {
                 layout.keyCount
             );
             this.keymapsParseError = "";
-            if (this.avoidResendCycleKeymapText !== this.keymapsTextareaValue) {
-                sendKeymapToExtension("", this.keymapsTextareaValue);
-            }
+            sendKeymapToExtension("", this.keymapsTextareaValue);
         } catch (e) {
             if (e instanceof Error) {
                 this.keymapsParseError = e.message;
