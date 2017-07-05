@@ -38,6 +38,7 @@ import {
     sendConnectRequestToExtension,
     sendKeymapToExtension,
     listenMessageFromExtension,
+    initExtension,
 } from "./Extension";
 
 const styles = require("./App.module.scss");
@@ -77,6 +78,8 @@ export class App extends React.Component<{}, {}> {
             })
         );
 
+        initExtension();
+
         // Send connect request to extension, for editor to send the initial keymap
         sendConnectRequestToExtension();
 
@@ -104,9 +107,11 @@ export class App extends React.Component<{}, {}> {
         return (
             <div>
                 <nav className="pt-navbar pt-dark pt-fixed-top">
-                    <div className="pt-navbar-group pt-align-left">
-                        <div className="pt-navbar-heading">QMKMapper</div>
-                    </div>
+                    {!VSC_MODE
+                        ? <div className="pt-navbar-group pt-align-left">
+                              <div className="pt-navbar-heading">QMKMapper</div>
+                          </div>
+                        : null}
                     <div className="pt-navbar-group pt-control-group pt-align-left">
                         <div className="pt-select pt-fill">
                             <select value={this.langMappingIndex} onChange={this.changeMapping}>
@@ -222,7 +227,12 @@ export class App extends React.Component<{}, {}> {
                           onFocus={this.onFocusKeymapsTextarea}
                           onChange={this.onChangeKeymapsTextarea}
                       />
-                    : null}
+                    : <input
+                          value={VSC_URI}
+                          readOnly
+                          className={cns("pt-input", "pt-fill", styles.vscUri)}
+                      />}
+
                 {this.layoutNotSelectedError &&
                     <div className="pt-callout pt-intent-danger">
                         {this.layoutNotSelectedError}
@@ -338,7 +348,7 @@ export class App extends React.Component<{}, {}> {
                 layout.keyCount
             );
             this.keymapsParseError = "";
-            sendKeymapToExtension("", this.keymapsTextareaValue);
+            sendKeymapToExtension(this.keymapsTextareaValue);
         } catch (e) {
             if (e instanceof Error) {
                 this.keymapsParseError = e.message;
@@ -374,8 +384,20 @@ export class App extends React.Component<{}, {}> {
         return new Map();
     }
 
+    private throttleTimeoutInput = null;
+
     @action
     private onChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        this.keyInputValue = e.target.value;
+        if (this.throttleTimeoutInput) {
+            clearTimeout(this.throttleTimeoutInput);
+        }
+        this.throttleTimeoutInput = setTimeout(() => {
+            this.validateKeyChange(this.keyInputValue);
+        }, 300);
+    };
+
+    private validateKeyChange = (keymap: string) => {
         let layout = this.getLayoutOrError();
         try {
             this.keyValidationError = "";
@@ -383,7 +405,7 @@ export class App extends React.Component<{}, {}> {
                 this.keymapsTextareaValue,
                 this.layerIndex,
                 this.selectedKey,
-                e.target.value,
+                keymap,
                 layout && layout.keyCount
             );
         } catch (e) {
@@ -391,8 +413,6 @@ export class App extends React.Component<{}, {}> {
                 this.keyValidationError = e.message;
             }
         }
-
-        this.keyInputValue = e.target.value;
     };
 
     // Drop downs at the top

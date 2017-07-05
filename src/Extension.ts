@@ -1,8 +1,8 @@
 if (typeof VSC_MODE === "undefined") {
     window["VSC_MODE"] = false;
 }
-if (typeof VSC_MODE === "undefined") {
-    window["VSC_MODE"] = false;
+if (typeof VSC_URI === "undefined") {
+    window["VSC_URI"] = "";
 }
 
 const sendToExtension = (command: string, ...args: any[]) => {
@@ -26,13 +26,29 @@ const sendToExtension = (command: string, ...args: any[]) => {
 };
 
 export const sendConnectRequestToExtension = () => {
-    sendToExtension("_qmkmapper.connectedPreview");
+    sendToExtension("_qmkmapper.connectedPreview", {
+        uri: VSC_URI,
+    });
 };
 
 let throttleTimeout = null;
 
-export let sendKeymapToExtension = (documentUri: string, keymap: string) => {
+let sendSaveToExtension = () => {
+    setTimeout(() => {
+        sendToExtension("_qmkmapper.save", {
+            uri: VSC_URI,
+        });
+    }, 400); // 400 is greater than 300 below
+};
+
+let avoidResendCycle = "";
+
+export let sendKeymapToExtension = (keymap: string) => {
     if (!VSC_MODE) {
+        return;
+    }
+
+    if (keymap === avoidResendCycle) {
         return;
     }
 
@@ -42,7 +58,7 @@ export let sendKeymapToExtension = (documentUri: string, keymap: string) => {
     }
     throttleTimeout = setTimeout(() => {
         sendToExtension("_qmkmapper.keymapFromPreview", {
-            documentUri,
+            uri: VSC_URI,
             keymap,
         });
     }, 300);
@@ -64,6 +80,22 @@ export const listenMessageFromExtension: ExtensionMessages = (
         if (!e || !e.data || !e.data.command || e.data.command !== command) {
             return;
         }
+
+        if (e.data.command === "setKeymap") {
+            avoidResendCycle = e.data.keymap;
+        }
+
         cb(e.data);
+    });
+};
+
+export const initExtension = () => {
+    addEventListener("keydown", e => {
+        if ((e.key == "s" || e.key == "S") && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault();
+            sendSaveToExtension();
+            return false;
+        }
+        return true;
     });
 };
