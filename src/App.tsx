@@ -34,58 +34,13 @@ import { some } from "lodash";
 import { Tabs2, Tab2, FocusStyleManager } from "@blueprintjs/core";
 import { KeycapText } from "./Components/Key";
 import { qmkExecutor, isRenderableResult } from "./QMK/functions";
-
-FocusStyleManager.onlyShowFocusOnTabs();
+import {
+    sendConnectRequestToExtension,
+    sendKeymapToExtension,
+    listenMessageFromExtension,
+} from "./Extension";
 
 const styles = require("./App.module.scss");
-
-if (typeof VSC_MODE === "undefined") {
-    window["VSC_MODE"] = false;
-}
-
-const sendToExtension = (command: string, ...args: any[]) => {
-    if (!VSC_MODE) {
-        return;
-    }
-    if (window && window.parent && window.parent.postMessage) {
-        window.parent.postMessage(
-            {
-                // This is required to be "did-click-link" in all cases, this is
-                // some misfeature in vscode that actually sends the event to the
-                // command specified in data
-                //
-                // This pattern is used in the vscode/markdown extension itself
-                command: "did-click-link",
-                data: `command:${command}?${encodeURIComponent(JSON.stringify(args))}`,
-            },
-            "file://"
-        );
-    }
-};
-
-const sendConnectRequestToExtension = () => {
-    sendToExtension("_qmkmapper.connectedPreview");
-};
-
-let throttleTimeout = null;
-
-let sendKeymapToExtension = (documentUri: string, keymap: string) => {
-    if (!VSC_MODE) {
-        return;
-    }
-    // Throttle assumes that documentUri does not change
-    if (throttleTimeout) {
-        clearTimeout(throttleTimeout);
-    }
-    throttleTimeout = setTimeout(() => {
-        sendToExtension("_qmkmapper.keymapFromPreview", {
-            documentUri,
-            keymap,
-        });
-    }, 300);
-};
-
-initTools((window["QMTOOLS"] = {}));
 
 @observer
 export class App extends React.Component<{}, {}> {
@@ -115,25 +70,15 @@ export class App extends React.Component<{}, {}> {
     constructor() {
         super();
 
-        if (VSC_MODE) {
-            // Listen messages from VSC extension
-            addEventListener("message", e => {
-                if (!e || !e.data || !e.data.command) {
-                    return;
-                }
+        // Listen messages from VSC extension
+        listenMessageFromExtension("setKeymap", data =>
+            runInAction("setKeymap from extension", () => {
+                this.keymapsTextareaValue = data.keymap;
+            })
+        );
 
-                switch (e.data.command) {
-                    case "setKeymap":
-                        runInAction(() => {
-                            this.keymapsTextareaValue = e.data.keymap;
-                        });
-                        break;
-                }
-            });
-
-            // Send connect request to extension, for editor to send the initial keymap
-            sendConnectRequestToExtension();
-        }
+        // Send connect request to extension, for editor to send the initial keymap
+        sendConnectRequestToExtension();
 
         // This is almost like a caching trick, parsing happens only when these
         // two changes
@@ -522,3 +467,10 @@ export class App extends React.Component<{}, {}> {
             this.hoveredRefKeys.set(k, false);
         });
 }
+
+// Blueprint js focus system which hides the ugly focus rings when navigating
+// with mouse. With keyboard tab navigation the focus rings are preserved.
+FocusStyleManager.onlyShowFocusOnTabs();
+
+// Inject some helpers to use with JS console
+initTools((window["QMTOOLS"] = {}));

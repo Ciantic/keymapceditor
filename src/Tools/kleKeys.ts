@@ -1,3 +1,8 @@
+/**
+ * Helper for KLE creation
+ * 
+ * @param layout The layout from keyboard-layout-editor.com
+ */
 export const kleKeys = (layout: any[][]) => {
     let keys = [];
     layout.forEach(r => {
