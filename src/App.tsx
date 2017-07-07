@@ -97,8 +97,9 @@ export class App extends React.Component<{}, {}> {
         );
 
         // This format may change
-        if (location.hash) {
-            let parts = location.hash.slice(1).split("|");
+        let hash = location.href.indexOf("#");
+        if (hash !== -1) {
+            let parts = location.href.slice(hash + 1).split("|");
             if (parts.length > 0) {
                 keyboardLayouts.forEach((t, i) => {
                     if (t.qmkDirectory === parts[0]) {
