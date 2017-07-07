@@ -15,3 +15,16 @@ export const kleKeys = (layout: any[][]) => {
 
     return keys;
 };
+
+export const kleNumberify = (layout: any[][]) => {
+    let keys = [];
+    let j = 0;
+    layout.forEach(r => {
+        r.forEach((c, i) => {
+            if (typeof c === "string") {
+                r[i] = "" + j++;
+            }
+        });
+    });
+    return JSON.stringify(layout);
+};

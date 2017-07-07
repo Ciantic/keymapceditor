@@ -1,8 +1,8 @@
-import { keycode, keycodeToUsbcode } from "../QMK";
+import { keycode, modifierkeytype } from "../QMK/keycodes";
+import { keycodeToUsbcode, isKeycode } from "../QMK";
 import { KeycapText } from "../Components/Key";
 import { LANGS } from "../Langs";
 import { QmkFunctionResult, isModResult, isModLikeResult } from "../QMK/functions";
-import { isKeycode, modifierkeytype } from "../QMK";
 
 export type keytypes = "normal" | "shifted" | "altgr" | "altgrshifted";
 

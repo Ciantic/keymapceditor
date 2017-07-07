@@ -14,25 +14,24 @@ import { observer } from "mobx-react";
 import * as React from "react";
 
 import { KeyboardLayout } from "./Components/Keyboard";
-import {
-    IKeyboardLayout,
-    keyboardLayouts,
-    generateKeymapsText,
-    evalKeyExpression,
-    tryParseKeymapsText,
-    KeymapParseResult,
-    addLayerKeymaps,
-    trySetKeymapsKey,
-} from "./KeyboardLayouts";
+import { IKeyboardLayout, keyboardLayouts } from "./KeyboardLayouts";
 import { LANGS } from "./Langs";
 import { ILanguageMapping, languageMappings } from "./LanguageMaps";
-import { keycode, keys, keycodeToUsbcode, normalizeKeycode } from "./QMK";
+import { keycodeToUsbcode, normalizeKeycode } from "./QMK";
+import { keycode, keys } from "./QMK/keycodes";
 import { IReferenceKeyboard, referenceKeyboards } from "./ReferenceKeyboards";
 import { initTools } from "./Tools";
 import { cns } from "./Utils/classnames";
 import { some } from "lodash";
 import { Tabs2, Tab2, FocusStyleManager } from "@blueprintjs/core";
 import { KeycapText } from "./Components/Key";
+import {
+    evalKeyExpression,
+    tryParseKeymapsText,
+    KeymapParseResult,
+    addLayerKeymaps,
+    trySetKeymapsKey,
+} from "./QMK/parsing";
 import { qmkExecutor, isRenderableResult } from "./QMK/functions";
 import {
     sendConnectRequestToExtension,
@@ -96,6 +95,34 @@ export class App extends React.Component<{}, {}> {
                     (this.currentSelectedValue && this.currentSelectedValue.content) || "";
             }
         );
+
+        // This format may change
+        if (location.hash) {
+            let parts = location.hash.slice(1).split("|");
+            if (parts.length > 0) {
+                keyboardLayouts.forEach((t, i) => {
+                    if (t.qmkDirectory === parts[0]) {
+                        this.keyboardLayoutIndex = i;
+                    }
+                });
+            }
+
+            if (parts.length > 1) {
+                let layoutUrl = parts[1];
+                if (layoutUrl.indexOf("%3A") !== -1) {
+                    layoutUrl = decodeURIComponent(layoutUrl);
+                }
+                let xhr = new XMLHttpRequest();
+                let self = this;
+                xhr.open("GET", layoutUrl, true);
+                xhr.onreadystatechange = function() {
+                    if (this.readyState === 4 && this.status === 200) {
+                        self.keymapsTextareaValue = this.responseText;
+                    }
+                };
+                xhr.send();
+            }
+        }
 
         this.keymapsTextareaValue = localStorage.getItem("keymap") || "";
     }

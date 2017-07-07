@@ -1,8 +1,6 @@
 import { keys, keycode, modifierkeys, normalkeys, specialkeys, modifierkeytype } from "./keycodes";
 import { keycodeAliases } from "./aliases";
 
-export { keys, keycode, normalkeys, modifierkeys, specialkeys, modifierkeytype, keycodeAliases };
-
 const _usbcodeToKeycode: { [k: string]: keycode } = {};
 Object.keys(keys).forEach((t: keycode) => {
     _usbcodeToKeycode["" + keys[t]] = t;

@@ -1,16 +1,11 @@
 import { keycode, modifierkeys, modifierkeytype } from "./keycodes";
 import { KeycapText } from "../Components/Key";
-import { ILanguageMapping, keytypes } from "../LanguageMaps/index";
 import { isKeycode, normalizeKeycode, isModifierKeytype } from "./index";
-import { Executor } from "../KeyboardLayouts/index";
+import { Executor } from "./parsing";
 import { LANGS } from "../Langs";
 
 // https://github.com/qmk/qmk_firmware/blob/master/docs/key_functions.md
 // https://github.com/qmk/qmk_firmware/blob/master/quantum/quantum_keycodes.h
-
-interface Context {
-    langMapping: ILanguageMapping;
-}
 
 interface IRenderable {
     getKeycapText(): KeycapText;

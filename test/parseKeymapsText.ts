@@ -1,5 +1,5 @@
 import { expect, config } from "chai";
-import { evalKeyExpression, Executor, tryParseKeymapsText } from "../src/KeyboardLayouts/index";
+import { evalKeyExpression, Executor, tryParseKeymapsText } from "../src/QMK/parsing";
 
 config.truncateThreshold = 0;
 
