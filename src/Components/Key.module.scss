@@ -7,6 +7,7 @@ $key-top-radius: 0.55em;
 $key-border-color: #444;
 $key-shadow-color: #CCCCCC;
 $key-top-color: #eee;
+$key-text-spacing: 3px;
 $key-shadow-sides-size: 0.8em;
 $key-shadow-top-size: 0.6em;
 $key-shadow-bottom-size: 1.5em;
@@ -27,57 +28,57 @@ $key-pressed-top-color: mix(darken($key-top-color, 10%), red, 85%);
     }
     .tl {
         position: absolute;
-        left: 0;
-        top: 0;
+        left: $key-text-spacing;
+        top: $key-text-spacing;
     }
     .tc {
         position: absolute;
-        left: 0;
+        left: $key-text-spacing;
         text-align: center;
-        right: 0;
-        top: 0;
+        right: $key-text-spacing;
+        top: $key-text-spacing;
     }
     .tr {
         position: absolute;
-        right: 0;
-        top: 0;
+        right: $key-text-spacing;
+        top: $key-text-spacing;
     }
     .bc {
         position: absolute;
-        right: 0;
-        left: 0;
-        bottom: 0;
+        right: $key-text-spacing;
+        left: $key-text-spacing;
+        bottom: $key-text-spacing;
         text-align: center;
     }
     .bl {
         position: absolute;
-        left: 0;
-        bottom: 0;
+        left: $key-text-spacing;
+        bottom: $key-text-spacing;
     }
     .br {
         position: absolute;
-        right: 0;
-        bottom: 0;
+        right: $key-text-spacing;
+        bottom: $key-text-spacing;
     }
     .c {
         position: absolute;
         top: 50%;
         transform: translateY(-50%);
-        left: 0;
-        right: 0;
+        left: $key-text-spacing;
+        right: $key-text-spacing;
         text-align: center;
     }
     .cr {
         position: absolute;
         top: 50%;
         transform: translateY(-50%);
-        right: 0;
+        right: $key-text-spacing;
     }
     .cl {
         position: absolute;
         top: 50%;
         transform: translateY(-50%);
-        left: 0;
+        left: $key-text-spacing;
     }
 }
 
