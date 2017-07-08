@@ -32,12 +32,7 @@ import {
     trySetKeymapsKey,
 } from "./QMK/parsing";
 import { qmkExecutor, isRenderableResult } from "./QMK/functions";
-import {
-    sendConnectRequestToExtension,
-    sendKeymapToExtension,
-    listenMessageFromExtension,
-    initExtension,
-} from "./Extension";
+import { sendKeymapToExtension, listenMessageFromExtension, initExtension } from "./Extension";
 
 const styles = require("./App.module.scss");
 
@@ -77,9 +72,6 @@ export class App extends React.Component<{}, {}> {
         );
 
         initExtension();
-
-        // Send connect request to extension, for editor to send the initial keymap
-        sendConnectRequestToExtension();
 
         // This is almost like a caching trick, parsing happens only when these
         // two changes

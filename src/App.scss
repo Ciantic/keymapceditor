@@ -10,3 +10,19 @@ body {
     padding-top: ($pt-navbar-height + $pt-grid-size * 2);
     overflow-y: scroll;
 }
+
+::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: $dark-gray1;
+}
+
+::-webkit-scrollbar-track {
+    background: $dark-gray4;
+}
+::-webkit-resizer {
+    background: $dark-gray3;
+}

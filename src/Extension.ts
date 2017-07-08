@@ -90,12 +90,16 @@ export const listenMessageFromExtension: ExtensionMessages = (
 };
 
 export const initExtension = () => {
-    addEventListener("keydown", e => {
-        if ((e.key == "s" || e.key == "S") && (e.ctrlKey || e.metaKey)) {
-            e.preventDefault();
-            sendSaveToExtension();
-            return false;
-        }
-        return true;
-    });
+    // This doesn't seem to work with VSCode, it overrides keyboard shortcuts
+    // and some work (e.g. building and saving still seems to work from the
+    // preview) and some doesn't addEventListener("keydown", e => { if ((e.key
+
+    // == "s" || e.key == "S") && (e.ctrlKey || e.metaKey)) {
+    // e.preventDefault(); sendSaveToExtension(); return false;
+    //     }
+    //     return true;
+    // });
+
+    // Send connect request to extension, for editor to send the initial keymap
+    sendConnectRequestToExtension();
 };

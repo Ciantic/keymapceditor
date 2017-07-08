@@ -199,6 +199,26 @@ describe("parseKeymapsText", () => {
         ]);
     });
 
+    it("// comment removal", () => {
+        let c = tryParseKeymapsText("KEYMAP(TOKEN // Importanto \n, TOKEN2)");
+        expect(c).to.be.deep.equal([
+            [
+                { type: "word", content: "TOKEN", offset: 7, end: 13 },
+                { type: "word", content: "TOKEN2", offset: 30, end: 36 },
+            ],
+        ]);
+    });
+
+    it("\\ end of line escape removal", () => {
+        let c = tryParseKeymapsText("KEYMAP(TOKEN, \\\n TOKEN2)");
+        expect(c).to.be.deep.equal([
+            [
+                { type: "word", content: "TOKEN", offset: 7, end: 12 },
+                { type: "word", content: "TOKEN2", offset: 17, end: 23 },
+            ],
+        ]);
+    });
+
     it("parse error test", () => {
         let c = tryParseKeymapsText("KEYMAP(OUTER(INNER(A)), AFTER)");
         expect(c).to.be.deep.equal([

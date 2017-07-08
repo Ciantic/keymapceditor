@@ -113,7 +113,7 @@ export class LanguageMapping implements ILanguageMapping {
             // Key with modifiers, e.g. Ctrl+E
             let nsym = this.getSymbol("normal", usbcode);
             return {
-                centered: nsym || expr.keycode,
+                centered: (nsym && nsym.toUpperCase()) || expr.keycode,
                 bottomcenter: expr.modifierText,
             };
         } else if (isModLikeResult(expr)) {
