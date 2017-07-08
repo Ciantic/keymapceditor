@@ -22,7 +22,6 @@ import { keycode, keys } from "./QMK/keycodes";
 import { IReferenceKeyboard, referenceKeyboards } from "./ReferenceKeyboards";
 import { initTools } from "./Tools";
 import { cns } from "./Utils/classnames";
-import { some } from "lodash";
 import { Tabs2, Tab2, FocusStyleManager } from "@blueprintjs/core";
 import { KeycapText } from "./Components/Key";
 import {
