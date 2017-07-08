@@ -37,6 +37,7 @@ interface LanguageMappingOpts {
 }
 
 export interface ILanguageMapping {
+    lang: string;
     name: string;
     getKeycapTextFromUsbcode(usbcode: number): KeycapText;
     getKeycapTextFromExpr(expr: QmkFunctionResult): KeycapText | null;

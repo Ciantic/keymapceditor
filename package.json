@@ -13,9 +13,10 @@
   "devDependencies": {
     "@types/chai": "^4.0.1",
     "@types/mocha": "^2.2.41",
-    "@types/react": "^15.0.28",
+    "@types/react": "^15.0.35",
     "@types/react-dom": "^15.5.0",
     "@types/react-hot-loader": "^3.0.1",
+    "@types/react-router-dom": "^4.0.6",
     "chai": "^4.0.2",
     "css-loader": "^0.28.0",
     "csv-loader": "^2.1.1",

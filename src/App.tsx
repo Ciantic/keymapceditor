@@ -43,6 +43,9 @@ export class App extends React.Component<{}, {}> {
     @observable private referenceKeyboardIndex = 1;
     @observable private keyboardLayoutIndex = 0;
 
+    // Keymap.c from url
+    @observable private keymapLayoutUrl = "";
+
     // Layer tab index
     @observable private layerIndex = 0;
 
@@ -87,36 +90,13 @@ export class App extends React.Component<{}, {}> {
             }
         );
 
-        // This format may change
-        let hash = location.href.indexOf("#");
-        if (hash !== -1) {
-            let parts = location.href.slice(hash + 1).split("|");
-            if (parts.length > 0) {
-                keyboardLayouts.forEach((t, i) => {
-                    if (t.qmkDirectory === parts[0]) {
-                        this.keyboardLayoutIndex = i;
-                    }
-                });
-            }
+        // Ajax keymap content
+        reaction(() => this.keymapLayoutUrl, this.downloadKeymapUrl);
 
-            if (parts.length > 1) {
-                let layoutUrl = parts[1];
-                if (layoutUrl.indexOf("%3A") !== -1) {
-                    layoutUrl = decodeURIComponent(layoutUrl);
-                }
-                let xhr = new XMLHttpRequest();
-                let self = this;
-                xhr.open("GET", layoutUrl, true);
-                xhr.onreadystatechange = function() {
-                    if (this.readyState === 4 && this.status === 200) {
-                        self.keymapsTextareaValue = this.responseText;
-                    }
-                };
-                xhr.send();
-            }
-        }
-
-        this.keymapsTextareaValue = localStorage.getItem("keymap") || "";
+        // Routing / URL Handling
+        this.updateFromUrl();
+        addEventListener("hashchange", this.updateFromUrl);
+        autorun(this.updateUrl);
     }
 
     render() {
@@ -138,9 +118,13 @@ export class App extends React.Component<{}, {}> {
                                     {LANGS.ChooseReferenceMapping}
                                 </option>
                                 {languageMappings.map((t, i) =>
-                                    <option key={i} value={i}>{t.name}</option>
+                                    <option key={i} value={i}>
+                                        {t.name}
+                                    </option>
                                 )}
-                                <option value="-2">{LANGS.MyLanguageMapIsMissing}</option>
+                                <option value="-2">
+                                    {LANGS.MyLanguageMapIsMissing}
+                                </option>
                             </select>
                         </div>
                         <div className="pt-select pt-fill .modifier">
@@ -152,9 +136,13 @@ export class App extends React.Component<{}, {}> {
                                     {LANGS.ChooseKeyboardLayout}
                                 </option>
                                 {keyboardLayouts.map((t, i) =>
-                                    <option key={i} value={i}>{t.name}</option>
+                                    <option key={i} value={i}>
+                                        {t.name}
+                                    </option>
                                 )}
-                                <option value="-2">{LANGS.MyLayoutIsMissing}</option>
+                                <option value="-2">
+                                    {LANGS.MyLayoutIsMissing}
+                                </option>
                             </select>
                         </div>
                         <div className="pt-select pt-fill .modifier">
@@ -166,9 +154,13 @@ export class App extends React.Component<{}, {}> {
                                     {LANGS.ChooseReferenceKeyboard}
                                 </option>
                                 {referenceKeyboards.map((t, i) =>
-                                    <option key={i} value={i}>{t.name}</option>
+                                    <option key={i} value={i}>
+                                        {t.name}
+                                    </option>
                                 )}
-                                <option value="-2">{LANGS.MyReferenceKeyboardIsMissing}</option>
+                                <option value="-2">
+                                    {LANGS.MyReferenceKeyboardIsMissing}
+                                </option>
                             </select>
                         </div>
                     </div>
@@ -218,7 +210,6 @@ export class App extends React.Component<{}, {}> {
                             <div className="pt-callout" style={{ opacity: 0 }}>
                                 {LANGS.NoErrors}
                             </div>}
-
                     </div>}
 
                 {refKeyboard &&
@@ -264,12 +255,76 @@ export class App extends React.Component<{}, {}> {
         );
     }
 
+    private updateUrl = () => {
+        let parts = ["", "", ""];
+        let langMapping = languageMappings[this.langMappingIndex];
+        if (langMapping) {
+            parts[0] = langMapping.lang;
+        }
+
+        let keyboard = keyboardLayouts[this.keyboardLayoutIndex];
+        if (keyboard) {
+            parts[1] = keyboard.qmkDirectory;
+        }
+
+        if (this.keymapLayoutUrl) {
+            parts[2] = this.keymapLayoutUrl;
+        }
+        window.location.replace("#" + parts.join("|"));
+    };
+
+    @action
+    private updateFromUrl = () => {
+        console.log("updateFromUrl", location.href);
+        // This format may change
+        let hash = location.href.indexOf("#");
+        if (hash !== -1) {
+            let [lang, qmkDirectory, layoutUrl] = location.href.slice(hash + 1).split("|");
+
+            if (lang) {
+                languageMappings.forEach((t, i) => {
+                    if (t.lang === lang) {
+                        this.langMappingIndex = i;
+                    }
+                });
+            }
+
+            if (qmkDirectory) {
+                keyboardLayouts.forEach((t, i) => {
+                    if (t.qmkDirectory === qmkDirectory) {
+                        this.keyboardLayoutIndex = i;
+                    }
+                });
+            }
+
+            if (layoutUrl) {
+                if (layoutUrl.indexOf("%3A") !== -1) {
+                    layoutUrl = decodeURIComponent(layoutUrl);
+                }
+                this.keymapLayoutUrl = layoutUrl;
+            }
+        }
+    };
+
     private getKeymapFromUrl = (path: string) => {};
 
     @computed
     private get currentSelectedValue() {
         return this.safeGetKeymapValue(this.layerIndex, this.selectedKey);
     }
+
+    @action
+    private downloadKeymapUrl = () => {
+        let xhr = new XMLHttpRequest();
+        let self = this;
+        xhr.open("GET", this.keymapLayoutUrl, true);
+        xhr.onreadystatechange = function() {
+            if (this.readyState === 4 && this.status === 200) {
+                self.keymapsTextareaValue = this.responseText;
+            }
+        };
+        xhr.send();
+    };
 
     private safeGetKeymapValue = (layer: number, key: number) => {
         if (this.lastSuccessfulKeymapParsed[layer]) {
