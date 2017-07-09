@@ -8,6 +8,9 @@ export const LANGS = {
     Ansi104: "ANSI-104",
     Iso105: "ISO-105",
     Ergodox: "Ergodox",
+    KeymapUriPlaceholder: "URL of the keymap.c",
+    KeymapModifiedPlaceholder:
+        "The KEYMAP is modified, URL can't be changed, press reset from right to change URL...",
     KeymapsPlaceholder: "Insert contents of keymap.c here...",
     LayoutInput: "Type the code of the selected key here...",
     KeyboardLayers: "Keyboard layers",
@@ -16,6 +19,9 @@ export const LANGS = {
     MyLayoutIsMissing: "Where is keyboard...?",
     MyReferenceKeyboardIsMissing: "Where is keyboard...?",
     MyLanguageMapIsMissing: "Where is language...?",
+
+    StoredKeymaps: "All stored keymaps...",
+
     LayoutNotSelectedError: "Layout must be chosen for KEYMAPS to work",
     NoErrors: "No Errors",
 

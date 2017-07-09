@@ -3,6 +3,7 @@ import { keycodeToUsbcode, isKeycode } from "../QMK";
 import { KeycapText } from "../Components/Key";
 import { LANGS } from "../Langs";
 import { QmkFunctionResult, isModResult, isModLikeResult } from "../QMK/functions";
+import { ReferenceKeyboardKey } from "../ReferenceKeyboards/index";
 
 export type keytypes = "normal" | "shifted" | "altgr" | "altgrshifted";
 
@@ -33,12 +34,14 @@ interface LanguageCsvFormat {
 interface LanguageMappingOpts {
     lang: string;
     name: string;
+    referenceKeyboard: ReferenceKeyboardKey;
     mapping: LanguageCsvFormat[];
 }
 
 export interface ILanguageMapping {
     lang: string;
     name: string;
+    referenceKeyboard: ReferenceKeyboardKey;
     getKeycapTextFromUsbcode(usbcode: number): KeycapText;
     getKeycapTextFromExpr(expr: QmkFunctionResult): KeycapText | null;
     // getSymbol(key: keytypes, usbcode: number): string;
@@ -47,12 +50,14 @@ export interface ILanguageMapping {
 export class LanguageMapping implements ILanguageMapping {
     public readonly lang: string;
     public readonly name: string;
+    public readonly referenceKeyboard: ReferenceKeyboardKey;
     protected readonly mapping: Map<number, LanguageCsvFormat>;
 
     constructor(opts: LanguageMappingOpts) {
         this.lang = opts.lang;
         this.name = opts.name;
         this.mapping = new Map();
+        this.referenceKeyboard = opts.referenceKeyboard;
         opts.mapping.forEach(t => {
             this.mapping.set(+t.usbcode, t);
         });
@@ -179,15 +184,21 @@ export class LanguageMapping implements ILanguageMapping {
     };
 }
 
-export const languageMappings: ILanguageMapping[] = [
-    new LanguageMapping({
-        lang: "UK",
+const languageMappingIndex = {
+    uk: new LanguageMapping({
+        lang: "EN-GB",
         mapping: require("./Data/uk.csv"),
         name: LANGS.UkKeyboard,
+        referenceKeyboard: "ansi104",
     }),
-    new LanguageMapping({
+    fi: new LanguageMapping({
         lang: "FI",
         mapping: require("./Data/fi.csv"),
         name: LANGS.FinnishStandardKeyboard,
+        referenceKeyboard: "ansi104",
     }),
-];
+};
+
+export const languageMappings: { [k: string]: ILanguageMapping } = languageMappingIndex;
+
+export type LanguageMappingKey = keyof typeof languageMappingIndex;

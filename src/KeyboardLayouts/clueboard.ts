@@ -12,7 +12,8 @@ const clueboard: KeyboardLayoutArray = [
 ];
 
 export const clueboardKeyboardLayout: IKeyboardLayout = {
-    qmkDirectory: "clueboard",
+    defaultKeymapUrl:
+        "https://raw.githubusercontent.com/qmk/qmk_firmware/master/keyboards/clueboard/keymaps/default/keymap.c",
     layout: clueboard,
     name: "Clueboard",
     keyCount: 73,

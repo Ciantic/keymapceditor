@@ -10,7 +10,11 @@ export interface IReferenceKeyboard {
     name: string;
 }
 
-export const referenceKeyboards: IReferenceKeyboard[] = [
-    ansi104ReferenceKeyboard,
-    iso105ReferenceKeyboard,
-];
+const referenceKeyboardIndex = {
+    ansi104: ansi104ReferenceKeyboard,
+    iso105: iso105ReferenceKeyboard,
+};
+
+export const referenceKeyboards: { [k: string]: IReferenceKeyboard } = referenceKeyboardIndex;
+
+export type ReferenceKeyboardKey = keyof typeof referenceKeyboardIndex;

@@ -33,7 +33,8 @@ const ergodox: KeyboardLayoutArray = [
 ];
 
 export const ergodoxKeyboardLayout: IKeyboardLayout = {
-    qmkDirectory: "ergodox",
+    defaultKeymapUrl:
+        "https://raw.githubusercontent.com/qmk/qmk_firmware/master/keyboards/ergodox/keymaps/default/keymap.c",
     layout: ergodox,
     name: LANGS.Ergodox,
     keyCount: 76,
