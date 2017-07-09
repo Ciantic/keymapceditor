@@ -122,6 +122,20 @@ export class App extends React.Component<{}, {}> {
             if (m && m[1]) {
                 this.keyboardLayoutKey = m[1] as KeyboardLayoutKey;
             }
+
+            if (window.localStorage) {
+                let lang = localStorage.getItem("language");
+                if (lang) {
+                    this.languageMappingKey = lang as LanguageMappingKey;
+                }
+
+                reaction(
+                    () => this.languageMappingKey,
+                    () => {
+                        localStorage.setItem("language", this.languageMappingKey);
+                    }
+                );
+            }
         }
     }
 
