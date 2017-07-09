@@ -210,9 +210,13 @@ export class App extends React.Component<{}, {}> {
                             </select>
                         </div>
                     </div>
-                    <div className="pt-navbar-group pt-control-group pt-align-right">
-                        <button className="pt-button pt-icon-delete" onClick={this.onClickDelete} />
-                    </div>
+                    {!VSC_MODE &&
+                        <div className="pt-navbar-group pt-control-group pt-align-right">
+                            <button
+                                className="pt-button pt-icon-delete"
+                                onClick={this.onClickDelete}
+                            />
+                        </div>}
                 </nav>
                 {keyboardLayout &&
                     <Tabs2
