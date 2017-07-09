@@ -95,6 +95,8 @@ export class App extends React.Component<{}, {}> {
             }
         );
 
+        reaction(() => this.languageMappingKey, this.updateReferenceKeyboard);
+
         // Ajax keymap content
         if (!VSC_MODE) {
             reaction(() => this.keymapLayoutUrl, this.downloadKeymapUrl);
@@ -529,6 +531,14 @@ export class App extends React.Component<{}, {}> {
     };
 
     @action
+    private updateReferenceKeyboard = () => {
+        let newLanguageMapping = languageMappings[this.languageMappingKey];
+        if (newLanguageMapping) {
+            this.referenceKeyboardKey = newLanguageMapping.referenceKeyboard;
+        }
+    };
+
+    @action
     private resetUrl = () => {
         // if () {
         //     this.keymapLayoutUrl = "";
@@ -623,10 +633,6 @@ export class App extends React.Component<{}, {}> {
     @action
     private onChangeLanguageMappingKey = (e: React.ChangeEvent<HTMLSelectElement>) => {
         this.languageMappingKey = e.target.value as LanguageMappingKey;
-        let newLanguageMapping = languageMappings[this.languageMappingKey];
-        if (newLanguageMapping) {
-            this.referenceKeyboardKey = newLanguageMapping.referenceKeyboard;
-        }
     };
 
     @action
