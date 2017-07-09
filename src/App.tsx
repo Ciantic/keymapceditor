@@ -32,7 +32,12 @@ import {
     trySetKeymapsKey,
 } from "./QMK/parsing";
 import { qmkExecutor, isRenderableResult } from "./QMK/functions";
-import { sendKeymapToExtension, listenMessageFromExtension, initExtension } from "./Extension";
+import {
+    sendKeymapToExtension,
+    listenMessageFromExtension,
+    initExtension,
+    sendLogToExtension,
+} from "./Extension";
 const styles = require("./App.module.scss");
 
 @observer
@@ -72,15 +77,6 @@ export class App extends React.Component<{}, {}> {
     constructor() {
         super();
 
-        // Listen messages from VSC extension
-        listenMessageFromExtension("setKeymap", data =>
-            runInAction("setKeymap from extension", () => {
-                this.keymapsTextareaValue = data.keymap;
-            })
-        );
-
-        initExtension();
-
         // This is almost like a caching trick, parsing happens only when these
         // two changes
         reaction(t => [this.keymapsTextareaValue, this.keyboardLayoutKey], this.parseKeymapsText);
@@ -109,6 +105,23 @@ export class App extends React.Component<{}, {}> {
             autorun(this.updateUrl);
 
             this.parseKeymapsText();
+        }
+
+        if (VSC_MODE) {
+            // Listen messages from VSC extension
+            listenMessageFromExtension("setKeymap", data =>
+                runInAction("setKeymap from extension", () => {
+                    this.keymapsTextareaValue = data.keymap;
+                })
+            );
+
+            initExtension();
+
+            // Get keyboard key from a url
+            let m = VSC_URI.match(/\/keyboards\/(.*?)\//);
+            if (m && m[1]) {
+                this.keyboardLayoutKey = m[1] as KeyboardLayoutKey;
+            }
         }
     }
 

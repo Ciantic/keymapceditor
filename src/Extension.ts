@@ -31,6 +31,10 @@ export const sendConnectRequestToExtension = () => {
     });
 };
 
+export const sendLogToExtension = (a: any) => {
+    sendToExtension("_qmkmapper.logging", a);
+};
+
 let throttleTimeout = null;
 
 let sendSaveToExtension = () => {
