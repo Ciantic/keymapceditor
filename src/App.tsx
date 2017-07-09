@@ -286,8 +286,12 @@ export class App extends React.Component<{}, {}> {
                               spellCheck={false}
                               className={cns(
                                   "pt-input pt-fill",
-                                  this.layoutNotSelectedError && "pt-intent-danger",
-                                  this.keymapsParseError !== "" && "pt-intent-danger",
+                                  this.keymapsTextareaValue &&
+                                      this.layoutNotSelectedError &&
+                                      "pt-intent-danger",
+                                  this.keymapsTextareaValue &&
+                                      this.keymapsParseError !== "" &&
+                                      "pt-intent-danger",
                                   styles.keymapsTextarea
                               )}
                               onFocus={this.onFocusKeymapsTextarea}
@@ -300,11 +304,13 @@ export class App extends React.Component<{}, {}> {
                           className={cns("pt-input", "pt-fill", styles.keymapUri)}
                       />}
 
-                {this.layoutNotSelectedError &&
+                {this.keymapsTextareaValue &&
+                    this.layoutNotSelectedError &&
                     <div className="pt-callout pt-intent-danger">
                         {this.layoutNotSelectedError}
                     </div>}
-                {this.keymapsParseError !== "" &&
+                {this.keymapsTextareaValue &&
+                    this.keymapsParseError !== "" &&
                     <div className="pt-callout pt-intent-danger">
                         {this.keymapsParseError}
                     </div>}

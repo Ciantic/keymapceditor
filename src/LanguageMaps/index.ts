@@ -189,13 +189,13 @@ const languageMappingIndex = {
         lang: "EN-GB",
         mapping: require("./Data/uk.csv"),
         name: LANGS.UkKeyboard,
-        referenceKeyboard: "ansi104",
+        referenceKeyboard: "iso105",
     }),
     fi: new LanguageMapping({
         lang: "FI",
         mapping: require("./Data/fi.csv"),
         name: LANGS.FinnishStandardKeyboard,
-        referenceKeyboard: "ansi104",
+        referenceKeyboard: "iso105",
     }),
 };
 
