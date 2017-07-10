@@ -129,10 +129,22 @@ export class App extends React.Component<{}, {}> {
                     this.languageMappingKey = lang as LanguageMappingKey;
                 }
 
+                let ref = localStorage.getItem("referenceKeyboard");
+                if (ref) {
+                    this.referenceKeyboardKey = ref as ReferenceKeyboardKey;
+                }
+
                 reaction(
                     () => this.languageMappingKey,
                     () => {
                         localStorage.setItem("language", this.languageMappingKey);
+                    }
+                );
+
+                reaction(
+                    () => this.referenceKeyboardKey,
+                    () => {
+                        localStorage.setItem("referenceKeyboard", this.referenceKeyboardKey);
                     }
                 );
             }
@@ -252,6 +264,7 @@ export class App extends React.Component<{}, {}> {
                 {keyboardLayout &&
                     <div className={styles.layoutInput}>
                         <input
+                            spellCheck={false}
                             disabled={!!this.keymapsParseError || this.selectedKey === null}
                             value={this.keyInputValue}
                             ref={this.setInputRef}
@@ -347,6 +360,11 @@ export class App extends React.Component<{}, {}> {
                     <div className="pt-callout pt-intent-danger">
                         {this.keymapsParseError}
                     </div>}
+
+                {!VSC_MODE &&
+                    <p className="pt-callout pt-icon-lightbulb">
+                        {LANGS.VscCallout}
+                    </p>}
             </div>
         );
     }

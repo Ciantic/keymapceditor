@@ -51,7 +51,10 @@ export const isRenderableResult = (res: QmkFunctionResult | IRenderable): res is
 };
 
 export class QmkFunctionsExecutor {
-    _MT = (kc: keycode | IModResult, key: modifierkeytype): IModResult | IParseError => {
+    _MT = (
+        kc: keycode | IModResult | IParseError,
+        key: modifierkeytype
+    ): IModResult | IParseError => {
         if (isKeycode(kc)) {
             let kcn = normalizeKeycode(kc);
             let mods = [key];
@@ -88,15 +91,23 @@ export class QmkFunctionsExecutor {
     // TG = (layer: number) => {};
     // TO = (layer: number) => {};
     // TT = (layer: number) => {};
+    LT = (n: string, kc: keycode) => {
+        return {
+            type: "modlikeresult",
+            keycode: kc,
+            modifierText: "LT → " + n,
+        };
+    };
 
-    LCTL = (kc: keycode | IModResult) => this._MT(kc, "KC_LCTRL");
-    LSFT = (kc: keycode | IModResult) => this._MT(kc, "KC_LSHIFT");
-    LALT = (kc: keycode | IModResult) => this._MT(kc, "KC_LALT");
-    LGUI = (kc: keycode | IModResult) => this._MT(kc, "KC_LGUI");
-    RCTL = (kc: keycode | IModResult) => this._MT(kc, "KC_RCTRL");
-    RSFT = (kc: keycode | IModResult) => this._MT(kc, "KC_RSHIFT");
-    RALT = (kc: keycode | IModResult) => this._MT(kc, "KC_RALT");
-    RGUI = (kc: keycode | IModResult) => this._MT(kc, "KC_RGUI");
+    LCTL = (kc: keycode | IModResult | IParseError) => this._MT(kc, "KC_LCTRL");
+    LSFT = (kc: keycode | IModResult | IParseError) => this._MT(kc, "KC_LSHIFT");
+    LALT = (kc: keycode | IModResult | IParseError) => this._MT(kc, "KC_LALT");
+    LGUI = (kc: keycode | IModResult | IParseError) => this._MT(kc, "KC_LGUI");
+    RCTL = (kc: keycode | IModResult | IParseError) => this._MT(kc, "KC_RCTRL");
+    RSFT = (kc: keycode | IModResult | IParseError) => this._MT(kc, "KC_RSHIFT");
+    RALT = (kc: keycode | IModResult | IParseError) => this._MT(kc, "KC_RALT");
+    RGUI = (kc: keycode | IModResult | IParseError) => this._MT(kc, "KC_RGUI");
+    LCAG = (kc: keycode | IModResult | IParseError) => this.LCTL(this.LALT(this.LGUI(kc)));
     HYPR = (kc: keycode): IModLikeResult | IParseError => {
         if (isKeycode(kc)) {
             return {
