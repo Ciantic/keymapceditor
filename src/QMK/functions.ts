@@ -8,22 +8,27 @@ import { LANGS } from "../Langs";
 // https://github.com/qmk/qmk_firmware/blob/master/quantum/quantum_keycodes.h
 
 interface IRenderable {
-    getKeycapText(): KeycapText;
+    rendered?: KeycapText;
 }
 
-interface IModLikeResult {
+interface IKeycodeResult extends IRenderable {
+    type: "keycode";
+    keycode: keycode;
+}
+
+interface IModLikeResult extends IRenderable {
     type: "modlikeresult";
     keycode: keycode;
     modifierText: string;
 }
 
-interface IParseError {
+interface IParseError extends IRenderable {
     type: "error";
     error: "parse";
     data: string;
 }
 
-interface IModResult {
+interface IModResult extends IRenderable {
     type: "modresult";
     keycode: keycode;
     mods: modifierkeytype[];
@@ -31,6 +36,7 @@ interface IModResult {
 }
 
 export type QmkFunctionResult =
+    | IKeycodeResult
     | IModResult
     | IParseError
     | IModLikeResult
@@ -47,11 +53,11 @@ export const isModLikeResult = (res: QmkFunctionResult): res is IModLikeResult =
 };
 
 export const isRenderableResult = (res: QmkFunctionResult | IRenderable): res is IRenderable => {
-    return res && typeof res === "object" && "getKeycapText" in res;
+    return res && typeof res === "object" && "rendered" in res;
 };
 
 export class QmkFunctionsExecutor {
-    _MT = (
+    _MOD = (
         kc: keycode | IModResult | IParseError,
         key: modifierkeytype
     ): IModResult | IParseError => {
@@ -87,6 +93,15 @@ export class QmkFunctionsExecutor {
         }
     };
 
+    _MT = (mod: IModResult | IModLikeResult | IParseError) => {
+        if (isModResult(mod) || isModLikeResult(mod)) {
+            mod.modifierText = "• " + mod.modifierText;
+            return mod;
+        }
+
+        return mod;
+    };
+
     // LT = (layer: number, kc: keycode) => {};
     // TG = (layer: number) => {};
     // TO = (layer: number) => {};
@@ -98,15 +113,38 @@ export class QmkFunctionsExecutor {
             modifierText: "LT → " + n,
         };
     };
+    MO = (n: string) => {
+        return {
+            getKeycapText: () => ({
+                centered: "MO → " + n,
+            }),
+        };
+    };
+    TG = (n: string) => {
+        return {
+            getKeycapText: () => ({
+                centered: "TG → " + n,
+            }),
+        };
+    };
 
-    LCTL = (kc: keycode | IModResult | IParseError) => this._MT(kc, "KC_LCTRL");
-    LSFT = (kc: keycode | IModResult | IParseError) => this._MT(kc, "KC_LSHIFT");
-    LALT = (kc: keycode | IModResult | IParseError) => this._MT(kc, "KC_LALT");
-    LGUI = (kc: keycode | IModResult | IParseError) => this._MT(kc, "KC_LGUI");
-    RCTL = (kc: keycode | IModResult | IParseError) => this._MT(kc, "KC_RCTRL");
-    RSFT = (kc: keycode | IModResult | IParseError) => this._MT(kc, "KC_RSHIFT");
-    RALT = (kc: keycode | IModResult | IParseError) => this._MT(kc, "KC_RALT");
-    RGUI = (kc: keycode | IModResult | IParseError) => this._MT(kc, "KC_RGUI");
+    CTL_T = (kc: keycode) => this._MT(this.LCTL(kc));
+    SFT_T = (kc: keycode) => this._MT(this.LSFT(kc));
+    ALT_T = (kc: keycode) => this._MT(this.LALT(kc));
+    ALGR_T = (kc: keycode) => this._MT(this.RALT(kc));
+    GUI_T = (kc: keycode) => this._MT(this.LGUI(kc));
+    ALL_T = (kc: keycode) => this._MT(this.HYPR(kc));
+    LCAG_T = (kc: keycode) => this._MT(this.LCAG(kc));
+    MEH_T = (kc: keycode) => this._MT(this.MEH(kc));
+
+    LCTL = (kc: keycode | IModResult | IParseError) => this._MOD(kc, "KC_LCTRL");
+    LSFT = (kc: keycode | IModResult | IParseError) => this._MOD(kc, "KC_LSHIFT");
+    LALT = (kc: keycode | IModResult | IParseError) => this._MOD(kc, "KC_LALT");
+    LGUI = (kc: keycode | IModResult | IParseError) => this._MOD(kc, "KC_LGUI");
+    RCTL = (kc: keycode | IModResult | IParseError) => this._MOD(kc, "KC_RCTRL");
+    RSFT = (kc: keycode | IModResult | IParseError) => this._MOD(kc, "KC_RSHIFT");
+    RALT = (kc: keycode | IModResult | IParseError) => this._MOD(kc, "KC_RALT");
+    RGUI = (kc: keycode | IModResult | IParseError) => this._MOD(kc, "KC_RGUI");
     LCAG = (kc: keycode | IModResult | IParseError) => this.LCTL(this.LALT(this.LGUI(kc)));
     HYPR = (kc: keycode): IModLikeResult | IParseError => {
         if (isKeycode(kc)) {

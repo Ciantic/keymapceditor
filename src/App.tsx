@@ -545,17 +545,11 @@ export class App extends React.Component<{}, {}> {
         }
 
         if (langMapping) {
-            let langvalue = langMapping.getKeycapTextFromExpr(evaled);
-            if (langvalue !== null) {
-                return langvalue;
-            }
+            evaled = langMapping.renderExpr(evaled);
         }
 
         if (isRenderableResult(evaled)) {
-            let evaledrender = evaled.getKeycapText();
-            if (evaledrender) {
-                return evaledrender;
-            }
+            return evaled.rendered;
         }
         let kc = normalizeKeycode(parsed.content);
         if (kc === "KC_NO" || kc === "KC_ROLL_OVER") {

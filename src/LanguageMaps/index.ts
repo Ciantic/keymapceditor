@@ -43,8 +43,7 @@ export interface ILanguageMapping {
     name: string;
     referenceKeyboard: ReferenceKeyboardKey;
     getKeycapTextFromUsbcode(usbcode: number): KeycapText;
-    getKeycapTextFromExpr(expr: QmkFunctionResult): KeycapText | null;
-    // getSymbol(key: keytypes, usbcode: number): string;
+    renderExpr(expr: QmkFunctionResult): QmkFunctionResult | null;
 }
 
 export class LanguageMapping implements ILanguageMapping {
@@ -89,65 +88,75 @@ export class LanguageMapping implements ILanguageMapping {
         return null;
     };
 
-    public getKeycapTextFromExpr = (expr: QmkFunctionResult | string): KeycapText | null => {
+    public renderExpr = (expr: QmkFunctionResult | string): QmkFunctionResult => {
         if (isKeycode(expr)) {
             let usbcode = keycodeToUsbcode(expr);
             if (usbcode !== null) {
-                return this.getKeycapTextFromUsbcode(usbcode);
+                return {
+                    type: "keycode",
+                    keycode: expr,
+                    rendered: this.getKeycapTextFromUsbcode(usbcode),
+                };
             }
         } else if (isModResult(expr)) {
             let usbcode = keycodeToUsbcode(expr.keycode);
             if (usbcode === null) {
-                return null;
+                return expr;
             }
 
             // Normal symbol with modifiers
             let sym = this.getSymbolWithModifiers(expr.mods, usbcode);
             if (sym) {
-                return {
+                expr.rendered = {
                     centered: sym,
                 };
+                return expr;
             }
 
             // Only modifiers
             if (expr.keycode === "KC_NO") {
-                return {
+                expr.rendered = {
                     centered: expr.modifierText,
                 };
+                return expr;
             }
 
             // Key with modifiers, e.g. Ctrl+E
-            let nsym = this.getSymbol("normal", usbcode);
-            return {
+            let nsym = this.getSymbol("normal", usbcode) || this.getCenteredText(usbcode);
+            expr.rendered = {
                 centered: (nsym && nsym.toUpperCase()) || expr.keycode,
                 bottomcenter: expr.modifierText,
             };
+            return expr;
         } else if (isModLikeResult(expr)) {
             let usbcode = keycodeToUsbcode(expr.keycode);
-            let sym = this.getSymbol("normal", usbcode);
+            let sym = this.getSymbol("normal", usbcode) || this.getCenteredText(usbcode);
 
             // Symbol and modifier below
             if (sym) {
-                return {
-                    centered: sym,
+                expr.rendered = {
+                    centered: sym && sym.toUpperCase(),
                     bottomcenter: expr.modifierText,
                 };
+                return expr;
             }
 
             // Only the modifier
             if (expr.keycode === "KC_NO") {
-                return {
+                expr.rendered = {
                     centered: expr.modifierText,
                 };
+                return expr;
             }
 
             // Fallback on showing modifier below
-            return {
+            expr.rendered = {
                 centered: expr.keycode,
                 bottomcenter: expr.modifierText,
             };
+            return expr;
         }
-        return null;
+        return expr;
     };
 
     protected getSymbolWithModifiers = (
@@ -180,6 +189,12 @@ export class LanguageMapping implements ILanguageMapping {
         let val = this.mapping.get(usbcode);
         if (val) {
             return val[key];
+        }
+    };
+    protected getCenteredText = (usbcode: number): string | undefined => {
+        let val = this.mapping.get(usbcode);
+        if (val) {
+            return val["centered"];
         }
     };
 }

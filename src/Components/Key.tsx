@@ -42,16 +42,16 @@ export interface KeyProps {
 }
 
 const Texts = (opts: { className: string; children: React.ReactNode }) => {
+    let fz = "";
+    if (typeof opts.children === "string") {
+        if (opts.children.length >= 6) {
+            fz = styles.smallest;
+        } else if (opts.children.length >= 4) {
+            fz = styles.smaller;
+        }
+    }
     return (
-        <div
-            className={cns(
-                opts.className,
-                opts.className === styles.bc &&
-                    typeof opts.children === "string" &&
-                    opts.children.length > 5 &&
-                    styles.smaller
-            )}
-        >
+        <div className={cns(opts.className, fz)}>
             {opts.children}
         </div>
     );

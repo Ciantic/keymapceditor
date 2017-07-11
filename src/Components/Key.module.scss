@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto+Condensed:300,400,700');
+
 $anim-speed: 0.1s;
 $key-texts-color: #000;
 $disabled-key-texts-color: gray;
@@ -5,7 +7,7 @@ $key-hover-border-color: #a22;
 $key-outer-radius: 0.75em;
 $key-top-radius: 0.55em;
 $key-border-color: #444;
-$key-shadow-color: #CCCCCC;
+$key-shadow-color: #cccccc;
 $key-top-color: #eee;
 $key-text-spacing: 0.2em;
 $key-shadow-sides-size: 0.8em;
@@ -22,10 +24,13 @@ $key-pressed-top-color: mix(darken($key-top-color, 10%), red, 85%);
 .texts {
     color: $key-texts-color;
     font-size: 180%;
-
-    .smaller {
-        font-size: 70%;
+    font-family: 'Roboto Condensed';
+    font-weight: 400;
+    > div {
+        overflow: hidden;
     }
+    // text-transform: uppercase;
+
     .tl {
         position: absolute;
         left: $key-text-spacing;
@@ -49,6 +54,8 @@ $key-pressed-top-color: mix(darken($key-top-color, 10%), red, 85%);
         left: $key-text-spacing;
         bottom: $key-text-spacing;
         text-align: center;
+        font-size: 64%;
+        font-weight: 700;
     }
     .bl {
         position: absolute;
@@ -133,7 +140,8 @@ $key-pressed-top-color: mix(darken($key-top-color, 10%), red, 85%);
     .top {
         background: $key-pressed-top-color;
     }
-    .borders, .shadow {
+    .borders,
+    .shadow {
         background: $key-pressed-shadow-color;
     }
 
