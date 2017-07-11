@@ -156,7 +156,7 @@ export class QmkFunctionsExecutor {
             layer: n,
             rendered: {
                 centered: kc,
-                bottomcenter: "LT → " + n,
+                bottomcenter: "LT → " + n,
             },
         };
     };
@@ -165,7 +165,7 @@ export class QmkFunctionsExecutor {
             type: "momentarylayer",
             layer: n,
             rendered: {
-                centered: "MO → " + n,
+                centered: "MO → " + n,
             },
         };
     };
@@ -174,7 +174,7 @@ export class QmkFunctionsExecutor {
             type: "togglelayer",
             layer: n,
             rendered: {
-                centered: "TG → " + n,
+                centered: "TG → " + n,
             },
         };
     };
