@@ -492,7 +492,11 @@ export class App extends React.Component<{}, {}> {
 
     @computed
     private get currentSelectedValue() {
-        return this.safeGetKeymapValue(this.layerIndex, this.selectedKey);
+        if (this.lastSuccessfulKeymapParsed.length > this.layerIndex) {
+            if (this.lastSuccessfulKeymapParsed[this.layerIndex][this.selectedKey]) {
+                return this.lastSuccessfulKeymapParsed[this.layerIndex][this.selectedKey];
+            }
+        }
     }
 
     @action
@@ -562,15 +566,6 @@ export class App extends React.Component<{}, {}> {
             };
             xhr.send();
         }, this.throttleDownloadKeymapUrlTimeout ? 1000 : 0);
-    };
-
-    private safeGetKeymapValue = (layer: number, key: number) => {
-        if (this.lastSuccessfulKeymapParsed.length > layer) {
-            if (this.lastSuccessfulKeymapParsed[layer][key]) {
-                return this.lastSuccessfulKeymapParsed[layer][key];
-            }
-        }
-        return null;
     };
 
     private setChangeUrlInputRef = (el: HTMLInputElement) => {
@@ -655,7 +650,7 @@ export class App extends React.Component<{}, {}> {
 
     @computed
     private get selectedRefKeysFromInput() {
-        let value = this.safeGetKeymapValue(this.layerIndex, this.selectedKey);
+        let value = this.currentSelectedValue;
         if (value) {
             return new Map().set(value.content || "", true);
         }
