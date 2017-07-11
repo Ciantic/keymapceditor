@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css?family=Roboto+Condensed:300,400,700');
+@import url('https://fonts.googleapis.com/css?family=Roboto+Condensed:400');
 
 $anim-speed: 0.1s;
 $key-texts-color: #000;
@@ -55,7 +55,6 @@ $key-pressed-top-color: mix(darken($key-top-color, 10%), red, 85%);
         bottom: $key-text-spacing;
         text-align: center;
         font-size: 64%;
-        font-weight: 700;
     }
     .bl {
         position: absolute;

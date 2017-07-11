@@ -15,13 +15,6 @@ interface IKeycodeResult extends IRenderable {
     type: "keycode";
     keycode: keycode;
 }
-
-interface IModLikeResult extends IRenderable {
-    type: "modlikeresult";
-    keycode: keycode;
-    modifierText: string;
-}
-
 interface IParseError extends IRenderable {
     type: "error";
     error: "parse";
@@ -35,28 +28,59 @@ interface IModResult extends IRenderable {
     modifierText: string;
 }
 
+interface IModTapResult extends IRenderable {
+    type: "modtapresult";
+    keycode: keycode;
+    mods: modifierkeytype[];
+    modifierText: string;
+}
+
+interface ILayerTapResult extends IRenderable {
+    type: "layertapresult";
+    keycode: keycode;
+    layer: string;
+}
+
+interface IMomentaryLayerResult extends IRenderable {
+    type: "momentarylayer";
+    layer: string;
+}
+
+interface IToggleLayerResult extends IRenderable {
+    type: "togglelayer";
+    layer: string;
+}
+
 export type QmkFunctionResult =
-    | IKeycodeResult
-    | IModResult
     | IParseError
-    | IModLikeResult
-    | string
-    | undefined
-    | null;
+    | IModResult
+    | IModTapResult
+    | ILayerTapResult
+    | IMomentaryLayerResult
+    | IToggleLayerResult
+    | IKeycodeResult
+    | string;
 
 export const isModResult = (res: QmkFunctionResult): res is IModResult => {
     return res && typeof res === "object" && res.type === "modresult";
 };
 
-export const isModLikeResult = (res: QmkFunctionResult): res is IModLikeResult => {
-    return res && typeof res === "object" && res.type === "modlikeresult";
+export const isModTapResult = (res: QmkFunctionResult): res is IModTapResult => {
+    return res && typeof res === "object" && res.type === "modtapresult";
+};
+
+export const isLayerTapResult = (res: QmkFunctionResult): res is ILayerTapResult => {
+    return res && typeof res === "object" && res.type === "layertapresult";
 };
 
 export const isRenderableResult = (res: QmkFunctionResult | IRenderable): res is IRenderable => {
-    return res && typeof res === "object" && "rendered" in res;
+    return res && typeof res === "object" && !!res.rendered;
 };
 
 export class QmkFunctionsExecutor {
+    eval = (t: string): string => {
+        return t;
+    };
     _MOD = (
         kc: keycode | IModResult | IParseError,
         key: modifierkeytype
@@ -70,18 +94,28 @@ export class QmkFunctionsExecutor {
                 mods = [kcn, key];
                 kcn = "KC_NO";
             }
+            let modifierText = modifierTextShortened(mods);
             return {
                 type: "modresult",
                 keycode: kcn,
                 mods: mods,
-                modifierText: modifierTextShortened(mods),
+                modifierText: modifierText,
+                rendered: {
+                    centered: (kcn === "KC_NO" && modifierText) || kcn,
+                    bottomcenter: kcn !== "KC_NO" && modifierText,
+                },
             };
         } else if (isModResult(kc)) {
+            let modifierText = modifierTextShortened(kc.mods.concat(key));
             return {
                 type: "modresult",
                 keycode: kc.keycode,
                 mods: kc.mods.concat(key),
-                modifierText: modifierTextShortened(kc.mods.concat(key)),
+                modifierText: modifierText,
+                rendered: {
+                    centered: (kc.keycode === "KC_NO" && modifierText) || kc.keycode,
+                    bottomcenter: kc.keycode !== "KC_NO" && modifierText,
+                },
             };
         } else {
             // MT called with incorrect data
@@ -93,10 +127,19 @@ export class QmkFunctionsExecutor {
         }
     };
 
-    _MT = (mod: IModResult | IModLikeResult | IParseError) => {
-        if (isModResult(mod) || isModLikeResult(mod)) {
+    _MT = (mod: IModResult | IParseError): IModTapResult | IParseError => {
+        if (isModResult(mod)) {
             mod.modifierText = "• " + mod.modifierText;
-            return mod;
+            return {
+                type: "modtapresult",
+                keycode: mod.keycode,
+                mods: mod.mods,
+                modifierText: mod.modifierText,
+                rendered: {
+                    centered: (mod.keycode === "KC_NO" && mod.modifierText) || mod.keycode,
+                    bottomcenter: mod.keycode !== "KC_NO" && mod.modifierText,
+                },
+            };
         }
 
         return mod;
@@ -106,25 +149,33 @@ export class QmkFunctionsExecutor {
     // TG = (layer: number) => {};
     // TO = (layer: number) => {};
     // TT = (layer: number) => {};
-    LT = (n: string, kc: keycode) => {
+    LT = (n: string, kc: keycode): ILayerTapResult => {
         return {
-            type: "modlikeresult",
+            type: "layertapresult",
             keycode: kc,
-            modifierText: "LT → " + n,
+            layer: n,
+            rendered: {
+                centered: kc,
+                bottomcenter: "LT → " + n,
+            },
         };
     };
-    MO = (n: string) => {
+    MO = (n: string): IMomentaryLayerResult => {
         return {
-            getKeycapText: () => ({
+            type: "momentarylayer",
+            layer: n,
+            rendered: {
                 centered: "MO → " + n,
-            }),
+            },
         };
     };
-    TG = (n: string) => {
+    TG = (n: string): IToggleLayerResult => {
         return {
-            getKeycapText: () => ({
+            type: "togglelayer",
+            layer: n,
+            rendered: {
                 centered: "TG → " + n,
-            }),
+            },
         };
     };
 
@@ -146,11 +197,12 @@ export class QmkFunctionsExecutor {
     RALT = (kc: keycode | IModResult | IParseError) => this._MOD(kc, "KC_RALT");
     RGUI = (kc: keycode | IModResult | IParseError) => this._MOD(kc, "KC_RGUI");
     LCAG = (kc: keycode | IModResult | IParseError) => this.LCTL(this.LALT(this.LGUI(kc)));
-    HYPR = (kc: keycode): IModLikeResult | IParseError => {
+    HYPR = (kc: keycode): IModResult | IParseError => {
         if (isKeycode(kc)) {
             return {
-                type: "modlikeresult",
+                type: "modresult",
                 keycode: kc,
+                mods: ["KC_LALT", "KC_LCTRL", "KC_LGUI", "KC_LSHIFT"],
                 modifierText: LANGS.Hyper,
             };
         } else {
@@ -161,11 +213,12 @@ export class QmkFunctionsExecutor {
             };
         }
     };
-    MEH = (kc: keycode): IModLikeResult | IParseError => {
+    MEH = (kc: keycode): IModResult | IParseError => {
         if (isKeycode(kc)) {
             return {
-                type: "modlikeresult",
+                type: "modresult",
                 keycode: kc,
+                mods: ["KC_LALT", "KC_LCTRL", "KC_LSHIFT"],
                 modifierText: LANGS.Meh,
             };
         } else {

@@ -11,6 +11,7 @@ describe("qmk functions", () => {
             keycode: "KC_NO",
             mods: ["KC_LALT"],
             modifierText: "Alt",
+            rendered: { centered: "Alt", bottomcenter: false },
         });
     });
     it("modifier combinations nested", () => {
@@ -21,6 +22,7 @@ describe("qmk functions", () => {
             keycode: "KC_NO",
             mods: ["KC_LSHIFT", "KC_LALT"],
             modifierText: "Sft+Alt",
+            rendered: { centered: "Sft+Alt", bottomcenter: false },
         });
     });
     it("modifier combinations LALT", () => {
@@ -29,6 +31,7 @@ describe("qmk functions", () => {
             keycode: "KC_NO",
             mods: ["KC_LSHIFT", "KC_LALT"],
             modifierText: "Sft+Alt",
+            rendered: { centered: "Sft+Alt", bottomcenter: false },
         });
     });
 });

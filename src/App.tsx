@@ -17,7 +17,7 @@ import { KeyboardLayout } from "./Components/Keyboard";
 import { IKeyboardLayout, keyboardLayouts, KeyboardLayoutKey } from "./KeyboardLayouts";
 import { LANGS } from "./Langs";
 import { ILanguageMapping, languageMappings, LanguageMappingKey } from "./LanguageMaps";
-import { keycodeToUsbcode, normalizeKeycode } from "./QMK";
+import { keycodeToUsbcode, normalizeKeycode, isKeycode } from "./QMK";
 import { keycode, keys } from "./QMK/keycodes";
 import { IReferenceKeyboard, referenceKeyboards, ReferenceKeyboardKey } from "./ReferenceKeyboards";
 import { initTools } from "./Tools";
@@ -258,7 +258,7 @@ export class App extends React.Component<{}, {}> {
                         layout={keyboardLayout.layout}
                         onMouseLeaveKey={this.onMouseOutConfigureKey}
                         onMouseEnterKey={this.onMouseOverConfigureKey}
-                        getKeycapText={this.getConfigureKeycapText}
+                        keycapTexts={this.configureKeycapTexts}
                         onClickKey={this.onClickConfigureKey}
                     />}
                 {keyboardLayout &&
@@ -290,7 +290,7 @@ export class App extends React.Component<{}, {}> {
                         layout={refKeyboard.keyboard}
                         onMouseLeaveKey={this.onMouseOutReferenceKey}
                         onMouseEnterKey={this.onMouseOverReferenceKey}
-                        getKeycapText={this.getReferenceKeycapText}
+                        keycapTexts={this.referenceKeycapTexts}
                         onClickKey={this.onClickReferenceKey}
                     />}
                 {!VSC_MODE
@@ -367,6 +367,79 @@ export class App extends React.Component<{}, {}> {
                     </p>}
             </div>
         );
+    }
+
+    @computed
+    private get configureKeycapTexts() {
+        if (!this.lastSuccessfulKeymapParsed || !this.lastSuccessfulKeymapParsed[this.layerIndex]) {
+            return null;
+        }
+        let rendered = new Map<string, KeycapText>();
+        let i = 0;
+        for (let parsed of this.lastSuccessfulKeymapParsed[this.layerIndex]) {
+            let langMapping = languageMappings[this.languageMappingKey];
+            if (!parsed) {
+                rendered.set("" + i++, {
+                    centered: "",
+                });
+                continue;
+            }
+            let fallback = {
+                centered: parsed.content,
+            };
+            let evaled = evalKeyExpression(parsed, qmkExecutor);
+            if (typeof evaled === "object" && evaled.type === "error") {
+                rendered.set("" + i++, fallback);
+                continue;
+            }
+
+            if (langMapping) {
+                evaled = langMapping.renderExpr(evaled);
+            }
+
+            if (isRenderableResult(evaled)) {
+                rendered.set("" + i++, evaled.rendered);
+                continue;
+            }
+
+            let kc = normalizeKeycode(parsed.content);
+            if (kc === "KC_NO" || kc === "KC_ROLL_OVER") {
+                rendered.set("" + i++, {});
+                continue;
+            }
+
+            rendered.set("" + i++, fallback);
+            continue;
+        }
+        return rendered;
+    }
+
+    @computed
+    private get referenceKeycapTexts() {
+        let refkeyboard = referenceKeyboards[this.referenceKeyboardKey];
+        if (!refkeyboard) {
+            return new Map<string, KeycapText>();
+        }
+        let langMapping = languageMappings[this.languageMappingKey];
+        let rendered = new Map<string, KeycapText>();
+        for (let row of refkeyboard.keyboard) {
+            for (let k of row) {
+                if (!isKeycode(k)) {
+                    continue;
+                }
+                if (langMapping) {
+                    let value = langMapping.getKeycapTextFromUsbcode(keycodeToUsbcode(k));
+                    if (value) {
+                        rendered.set(k, value);
+                        continue;
+                    }
+                }
+                rendered.set(k, {
+                    centered: k,
+                });
+            }
+        }
+        return rendered;
     }
 
     private updateUrl = () => {
@@ -510,53 +583,6 @@ export class App extends React.Component<{}, {}> {
 
     private setTextareaRef = (el: HTMLTextAreaElement) => {
         this.textareaRef = el;
-    };
-
-    private getReferenceKeycapText = (c: keycode): KeycapText => {
-        let langMapping = languageMappings[this.languageMappingKey];
-        if (langMapping) {
-            let value = langMapping.getKeycapTextFromUsbcode(keys[c]);
-            if (value) {
-                return value;
-            }
-        }
-        return {
-            centered: c,
-        };
-    };
-
-    private getConfigureKeycapText = (index: string): KeycapText => {
-        // Index string is the selected layout keyboard's KEYMAP position number
-        // as a string
-        let langMapping = languageMappings[this.languageMappingKey];
-        let parsed = this.safeGetKeymapValue(this.layerIndex, +index);
-        if (!parsed) {
-            return {
-                centered: "",
-            };
-        }
-
-        let fallback = {
-            centered: parsed.content,
-        };
-        let evaled = evalKeyExpression(parsed, qmkExecutor);
-        if (evaled === null) {
-            return fallback;
-        }
-
-        if (langMapping) {
-            evaled = langMapping.renderExpr(evaled);
-        }
-
-        if (isRenderableResult(evaled)) {
-            return evaled.rendered;
-        }
-        let kc = normalizeKeycode(parsed.content);
-        if (kc === "KC_NO" || kc === "KC_ROLL_OVER") {
-            return {};
-        }
-
-        return fallback;
     };
 
     private getLayoutOrError = (): IKeyboardLayout | null => {

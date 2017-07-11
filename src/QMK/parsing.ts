@@ -242,15 +242,16 @@ export const addLayerKeymaps = (keymapText: string) => {
 };
 
 export interface Executor<T> {
-    [k: string]: () => T | string | null;
+    [k: string]: (...args: any[]) => T | string | null;
+    eval: (t: string) => T;
 }
 
-export const evalKeyExpression = <T>(expr: AstNode | string, executor: Executor<T>): T => {
+export const evalKeyExpression = <T>(expr: AstNode, executor: Executor<T>): T => {
     if (expr !== null) {
         if (typeof expr === "string") {
-            return expr as any;
+            throw new Error("Got here for some reason");
         } else if (expr.type === "word") {
-            return expr.content as any;
+            return executor.eval(expr.content);
         } else if (expr.type === "func") {
             let evaledParams = [];
             expr.params.forEach(t => {

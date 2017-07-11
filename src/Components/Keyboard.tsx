@@ -23,7 +23,7 @@ interface KeyboardLayoutProps {
     disabled?: boolean;
     stylePressedKeys?: Map<string, boolean>;
     styleHoveredKeys?: Map<string, boolean>;
-    getKeycapText?: (layoutValue: string, keyIndex: number) => KeycapText;
+    keycapTexts?: Map<string, KeycapText>;
     onMouseEnterKey?: (layoutValue: string, keyIndex: number) => () => void;
     onMouseLeaveKey?: (layoutValue: string, keyIndex: number) => () => void;
     onClickKey?: (layoutValue: string, keyIndex: number) => () => void;
@@ -128,7 +128,7 @@ export class KeyboardLayout extends React.Component<KeyboardLayoutProps, {}> {
                         h2: h2,
 
                         // Text
-                        texts: props.getKeycapText && props.getKeycapText(k, n),
+                        texts: props.keycapTexts && props.keycapTexts.get(k),
 
                         // Style
                         style: {

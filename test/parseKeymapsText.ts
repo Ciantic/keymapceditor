@@ -261,13 +261,24 @@ describe("parseKeymapsText", () => {
 
 describe("evalKeyExpression", () => {
     it("Should work with strings", () => {
-        let v = evalKeyExpression("test", {});
-        expect(v).to.be.equal("test");
+        let v = evalKeyExpression(
+            {
+                type: "word",
+                content: "test",
+                offset: 0,
+                end: 4,
+            },
+            {
+                eval: t => "evaled:" + t,
+            }
+        );
+        expect(v).to.be.equal("evaled:test");
     });
 
     it("Should work with func", () => {
         let executor;
         executor = {
+            eval: t => t,
             TEST: (a, b) => {
                 return "TEST(" + a + "," + b + ")";
             },
@@ -302,6 +313,7 @@ describe("evalKeyExpression", () => {
     it("Should work with nested func", () => {
         let executor;
         executor = {
+            eval: t => t,
             TEST: (a, b) => {
                 return "TEST(" + a + "," + b + ")";
             },
