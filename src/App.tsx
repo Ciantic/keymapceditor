@@ -91,6 +91,17 @@ export class App extends React.Component<{}, {}> {
             }
         );
 
+        // Update reference keyboard from language mapping change
+        reaction(
+            () => this.languageMappingKey,
+            () => {
+                let languageMap = languageMappings[this.languageMappingKey];
+                if (languageMap && languageMap.referenceKeyboard) {
+                    this.referenceKeyboardKey = languageMap.referenceKeyboard;
+                }
+            }
+        );
+
         // Ajax keymap content
         if (!VSC_MODE) {
             reaction(() => this.keymapLayoutUrl, this.downloadKeymapUrl);
