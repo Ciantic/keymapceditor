@@ -1,8 +1,8 @@
 if (typeof VSC_MODE === "undefined") {
-    window["VSC_MODE"] = false;
+    (window as any)["VSC_MODE"] = false;
 }
 if (typeof VSC_URI === "undefined") {
-    window["VSC_URI"] = "";
+    (window as any)["VSC_URI"] = "";
 }
 
 const sendToExtension = (command: string, ...args: any[]) => {
@@ -35,7 +35,7 @@ export const sendLogToExtension = (a: any) => {
     sendToExtension("_qmkmapper.logging", a);
 };
 
-let throttleTimeout = null;
+let throttleTimeout: number | null = null;
 
 let sendSaveToExtension = () => {
     setTimeout(() => {

@@ -1,6 +1,13 @@
 import { expect, config } from "chai";
 import { QmkFunctionsExecutor } from "../src/QMK/functions";
-import { omit } from "lodash";
+
+const omit = (obj: object, keys: string[]) => {
+    let a = Object.assign({}, obj);
+    for (let k of keys) {
+        delete (a as any)[k];
+    }
+    return a;
+};
 
 config.truncateThreshold = 0;
 describe("qmk functions", () => {

@@ -2,7 +2,6 @@ import * as React from "react";
 import { Key, KeyStyle, KeyProps, KeycapText } from "./Key";
 import { observable, action, runInAction } from "mobx";
 import { observer } from "mobx-react";
-import { asDefaultMap } from "../Utils/asDefaultMap";
 import {
     IKeyboardLayoutNextKey,
     IKeyboardLayoutSubsequentKey,
@@ -35,9 +34,6 @@ export class KeyboardLayout extends React.Component<KeyboardLayoutProps, {}> {
         disabled: false,
         stylePressedKeys: new Map(),
         styleHoveredKeys: new Map(),
-        onClickKey: (v: string, n: number) => () => {},
-        onMouseLeaveKey: (v: string, n: number) => () => {},
-        onMouseEnterKey: (v: string, n: number) => () => {},
     };
 
     render() {
@@ -74,21 +70,21 @@ export class KeyboardLayout extends React.Component<KeyboardLayoutProps, {}> {
                     }
 
                     // Rotation
-                    if ("rx" in k) {
+                    if ("rx" in k && typeof k.rx === "number") {
                         rx = k.rx;
                         x = k.rx; // notify!
                     }
-                    if ("ry" in k) {
+                    if ("ry" in k && typeof k.ry === "number") {
                         ry = k.ry;
                         y = k.ry; // notify!
                     }
-                    if ("r" in k) {
+                    if ("r" in k && typeof k.r === "number") {
                         r = k.r;
                     }
 
                     // These specify x and y values to be added to the current coordinates.
-                    x += "x" in k ? k.x : 0;
-                    y += "y" in k ? k.y : 0;
+                    x += "x" in k && typeof k.x === "number" ? k.x : 0;
+                    y += "y" in k && typeof k.y === "number" ? k.y : 0;
 
                     // Width and height of the main key
                     w = k.w || 1;
@@ -96,10 +92,10 @@ export class KeyboardLayout extends React.Component<KeyboardLayoutProps, {}> {
 
                     // Additional rectangle e.g. for special enter in Ansi 104
                     if ("x2" in k || "y2" in k || "w2" in k || "h2" in k) {
-                        x2 = "x2" in k ? k.x2 : 0;
-                        y2 = "y2" in k ? k.y2 : 0;
-                        w2 = "w2" in k ? k.w2 : 0;
-                        h2 = "h2" in k ? k.h2 : 0;
+                        x2 = "x2" in k && typeof k.x2 === "number" ? k.x2 : 0;
+                        y2 = "y2" in k && typeof k.y2 === "number" ? k.y2 : 0;
+                        w2 = "w2" in k && typeof k.w2 === "number" ? k.w2 : 0;
+                        h2 = "h2" in k && typeof k.h2 === "number" ? k.h2 : 0;
                     }
                 } else if (typeof k === "string") {
                     // Rotate the keys along the points rx and ry, notice the
@@ -132,15 +128,23 @@ export class KeyboardLayout extends React.Component<KeyboardLayoutProps, {}> {
 
                         // Style
                         style: {
-                            disabled: props.disabled,
-                            hovered: !props.disabled && props.styleHoveredKeys.get(k),
-                            pressed: !props.disabled && props.stylePressedKeys.get(k),
+                            disabled: !!props.disabled,
+                            hovered:
+                                !props.disabled &&
+                                !!(props.styleHoveredKeys && props.styleHoveredKeys.get(k)),
+                            pressed:
+                                !props.disabled &&
+                                !!(props.stylePressedKeys && props.stylePressedKeys.get(k)),
                         },
 
                         // Events
-                        onMouseLeave: !props.disabled && onMouseLeaveKey(k, n),
-                        onMouseEnter: !props.disabled && onMouseEnterKey(k, n),
-                        onClick: !props.disabled && onClickKey(k, n),
+                        onMouseLeave:
+                            (!props.disabled && onMouseLeaveKey && onMouseLeaveKey(k, n)) ||
+                            undefined,
+                        onMouseEnter:
+                            (!props.disabled && onMouseEnterKey && onMouseEnterKey(k, n)) ||
+                            undefined,
+                        onClick: (!props.disabled && onClickKey && onClickKey(k, n)) || undefined,
                     });
 
                     areaWidth = Math.max(areaWidth, x + w, x + x2 + w2);
@@ -167,7 +171,7 @@ export class KeyboardLayout extends React.Component<KeyboardLayoutProps, {}> {
         });
 
         // Convert the value to percentages
-        const c = v => {
+        const c = (v: number) => {
             return v / areaWidth * 100;
         };
 

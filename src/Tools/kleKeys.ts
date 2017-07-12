@@ -4,9 +4,9 @@
  * @param layout The layout from keyboard-layout-editor.com
  */
 export const kleKeys = (layout: any[][]) => {
-    let keys = [];
-    layout.forEach(r => {
-        r.forEach(c => {
+    let keys: string[] = [];
+    layout.forEach((r: any) => {
+        r.forEach((c: any) => {
             if (typeof c === "string") {
                 keys.push(c);
             }

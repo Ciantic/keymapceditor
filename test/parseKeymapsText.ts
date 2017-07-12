@@ -278,8 +278,8 @@ describe("evalKeyExpression", () => {
     it("Should work with func", () => {
         let executor;
         executor = {
-            eval: t => t,
-            TEST: (a, b) => {
+            eval: (t: string) => t,
+            TEST: (a: string, b: string) => {
                 return "TEST(" + a + "," + b + ")";
             },
         };
@@ -313,11 +313,11 @@ describe("evalKeyExpression", () => {
     it("Should work with nested func", () => {
         let executor;
         executor = {
-            eval: t => t,
-            TEST: (a, b) => {
+            eval: (t: string) => t,
+            TEST: (a: string, b: string) => {
                 return "TEST(" + a + "," + b + ")";
             },
-            TEST2: (a, b) => {
+            TEST2: (a: string, b: string) => {
                 return "TEST2(" + a + "," + b + ")";
             },
         };

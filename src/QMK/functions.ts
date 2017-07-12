@@ -73,7 +73,11 @@ export const isLayerTapResult = (res: QmkFunctionResult): res is ILayerTapResult
     return !!res && typeof res === "object" && res.type === "layertapresult";
 };
 
-export const isRenderableResult = (res: QmkFunctionResult | IRenderable): res is IRenderable => {
+export const isRenderableResult = (
+    res: QmkFunctionResult | IRenderable
+): res is {
+    rendered: KeycapText;
+} => {
     return !!res && typeof res === "object" && !!res.rendered;
 };
 

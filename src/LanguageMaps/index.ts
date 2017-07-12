@@ -47,7 +47,7 @@ export interface ILanguageMapping {
     lang: string;
     name: string;
     referenceKeyboard: ReferenceKeyboardKey;
-    getKeycapTextFromUsbcode(usbcode: number): KeycapText;
+    getKeycapTextFromUsbcode(usbcode: number): KeycapText | null;
     renderExpr(expr: QmkFunctionResult): QmkFunctionResult;
 }
 
@@ -72,6 +72,9 @@ export class LanguageMapping implements ILanguageMapping {
     public getKeycapTextFromUsbcode = (usbcode: number): KeycapText | null => {
         if (this.mapping.has(usbcode)) {
             let m = this.mapping.get(usbcode);
+            if (!m) {
+                return null;
+            }
             if (
                 m.bottomleft ||
                 m.topleft ||
@@ -156,14 +159,14 @@ export class LanguageMapping implements ILanguageMapping {
         return null;
     };
 
-    protected getSymbol = (key: keytypes, usbcode: number): string | undefined => {
+    protected getSymbol = (key: keytypes, usbcode: number): string => {
         let val = this.mapping.get(usbcode);
         if (val) {
             return val[key];
         }
         return "";
     };
-    protected getCenteredText = (usbcode: number): string | undefined => {
+    protected getCenteredText = (usbcode: number): string => {
         let val = this.mapping.get(usbcode);
         if (val) {
             return val["centered"];

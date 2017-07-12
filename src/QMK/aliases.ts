@@ -9,6 +9,7 @@ export const keycodeAliases = {
     KC_BSPC: keys.KC_BSPACE,
     KC_ENT: keys.KC_ENTER,
     KC_DEL: keys.KC_DELETE,
+    KC_DELT: keys.KC_DELETE,
     KC_INS: keys.KC_INSERT,
     KC_CAPS: keys.KC_CAPSLOCK,
     KC_CLCK: keys.KC_CAPSLOCK,
