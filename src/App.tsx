@@ -91,13 +91,9 @@ export class App extends React.Component<{}, {}> {
             }
         );
 
-        reaction(() => this.languageMappingKey, this.updateReferenceKeyboard);
-
         // Ajax keymap content
         if (!VSC_MODE) {
             reaction(() => this.keymapLayoutUrl, this.downloadKeymapUrl);
-
-            reaction(() => this.keymapsTextareaValue, this.resetUrl);
 
             // Routing / URL Handling
             this.updateFromUrl();
@@ -371,15 +367,12 @@ export class App extends React.Component<{}, {}> {
 
     @computed
     private get configureKeycapTexts() {
-        if (
-            !this.lastSuccessfulKeymapParsed ||
-            this.lastSuccessfulKeymapParsed.length <= this.layerIndex
-        ) {
+        if (!this.currentLayoutLayer) {
             return new Map<string, KeycapText>();
         }
         let rendered = new Map<string, KeycapText>();
         let i = 0;
-        for (let parsed of this.lastSuccessfulKeymapParsed[this.layerIndex]) {
+        for (let parsed of this.currentLayoutLayer) {
             let langMapping = languageMappings[this.languageMappingKey];
             if (!parsed) {
                 rendered.set("" + i++, {
@@ -495,11 +488,23 @@ export class App extends React.Component<{}, {}> {
 
     @computed
     private get currentSelectedValue() {
-        if (this.lastSuccessfulKeymapParsed.length > this.layerIndex) {
-            if (this.lastSuccessfulKeymapParsed[this.layerIndex][this.selectedKey]) {
-                return this.lastSuccessfulKeymapParsed[this.layerIndex][this.selectedKey];
+        let currentLayer = this.currentLayoutLayer;
+        if (currentLayer) {
+            if (currentLayer[this.selectedKey]) {
+                return currentLayer[this.selectedKey];
             }
         }
+        return null;
+    }
+
+    @computed
+    private get currentLayoutLayer() {
+        if (this.lastSuccessfulKeymapParsed && this.lastSuccessfulKeymapParsed.length > 0) {
+            return this.lastSuccessfulKeymapParsed[
+                Math.max(0, Math.min(this.layerIndex, this.lastSuccessfulKeymapParsed.length - 1))
+            ];
+        }
+        return null;
     }
 
     @action
@@ -598,21 +603,6 @@ export class App extends React.Component<{}, {}> {
     };
 
     @action
-    private updateReferenceKeyboard = () => {
-        let newLanguageMapping = languageMappings[this.languageMappingKey];
-        if (newLanguageMapping) {
-            this.referenceKeyboardKey = newLanguageMapping.referenceKeyboard;
-        }
-    };
-
-    @action
-    private resetUrl = () => {
-        // if () {
-        //     this.keymapLayoutUrl = "";
-        // }
-    };
-
-    @action
     private parseKeymapsText = () => {
         let layout = this.getLayoutOrError();
         if (!layout) {
@@ -675,7 +665,7 @@ export class App extends React.Component<{}, {}> {
         }
         this.throttleTimeoutInput = setTimeout(() => {
             this.validateKeyChange(this.keyInputValue);
-        }, 300);
+        }, 50);
     };
 
     private validateKeyChange = (keymap: string) => {
