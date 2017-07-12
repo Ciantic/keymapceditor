@@ -3,6 +3,7 @@ var packageJson = require(path.join(__dirname, "package.json"));
 var webpack = require("webpack");
 
 var appDir = path.resolve(__dirname, "src");
+var testDir = path.resolve(__dirname, "test");
 var config = {
     entry: {
         vendors: [
@@ -39,7 +40,7 @@ var config = {
                     skipEmptyLines: true,
                 },
             },
-            { test: /\.tsx?$/, loaders: ["ts-loader"], include: appDir },
+            { test: /\.tsx?$/, loaders: ["ts-loader"], include: [appDir, testDir] },
             {
                 test: /\.css$/,
                 exclude: /\.import\.css$/,
