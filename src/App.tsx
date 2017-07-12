@@ -237,7 +237,7 @@ export class App extends React.Component<{}, {}> {
                         )}
                     >
                         {this.lastSuccessfulKeymapParsed.map((t, i) =>
-                            <Tab2 key={i} title={`Layer ${i}`} id={i} panel={null} />
+                            <Tab2 key={i} title={`Layer ${i}`} id={i} panel={undefined} />
                         )}
                         <a
                             className="pt-button pt-minimal pt-icon-add"
@@ -384,6 +384,10 @@ export class App extends React.Component<{}, {}> {
                 centered: parsed.content,
             };
             let evaled = evalKeyExpression(parsed, qmkExecutor);
+            if (evaled === null) {
+                continue;
+            }
+
             if (evaled && typeof evaled === "object" && evaled.type === "error") {
                 rendered.set("" + i++, fallback);
                 continue;
@@ -393,7 +397,7 @@ export class App extends React.Component<{}, {}> {
                 evaled = langMapping.renderExpr(evaled);
             }
 
-            if (isRenderableResult(evaled)) {
+            if (isRenderableResult(evaled) && evaled.rendered) {
                 rendered.set("" + i++, evaled.rendered);
                 continue;
             }
@@ -423,8 +427,9 @@ export class App extends React.Component<{}, {}> {
                 if (!isKeycode(k)) {
                     continue;
                 }
-                if (langMapping) {
-                    let value = langMapping.getKeycapTextFromUsbcode(keycodeToUsbcode(k));
+                let usbcode = keycodeToUsbcode(k);
+                if (langMapping && usbcode) {
+                    let value = langMapping.getKeycapTextFromUsbcode(usbcode);
                     if (value) {
                         rendered.set(k, value);
                         continue;
@@ -489,7 +494,7 @@ export class App extends React.Component<{}, {}> {
     @computed
     private get currentSelectedValue() {
         let currentLayer = this.currentLayoutLayer;
-        if (currentLayer) {
+        if (currentLayer && this.selectedKey !== null) {
             if (currentLayer[this.selectedKey]) {
                 return currentLayer[this.selectedKey];
             }
@@ -532,8 +537,8 @@ export class App extends React.Component<{}, {}> {
         }
     };
 
-    private throttleDownloadKeymapUrlTimeout = null;
-    private downloadKeymapUrlXhr: XMLHttpRequest = null;
+    private throttleDownloadKeymapUrlTimeout: number | null = null;
+    private downloadKeymapUrlXhr: XMLHttpRequest | null = null;
 
     @action
     private downloadKeymapUrl = () => {
@@ -547,7 +552,7 @@ export class App extends React.Component<{}, {}> {
         }
         this.downloadUrlState = "downloading";
 
-        if (this.throttleDownloadKeymapUrlTimeout) {
+        if (this.throttleDownloadKeymapUrlTimeout !== null) {
             clearTimeout(this.throttleDownloadKeymapUrlTimeout);
         }
         this.throttleDownloadKeymapUrlTimeout = setTimeout(() => {
@@ -655,7 +660,7 @@ export class App extends React.Component<{}, {}> {
         this.keymapLayoutUrl = e.target.value;
     };
 
-    private throttleTimeoutInput = null;
+    private throttleTimeoutInput: number | null = null;
 
     @action
     private onChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -670,6 +675,10 @@ export class App extends React.Component<{}, {}> {
 
     private validateKeyChange = (keymap: string) => {
         let layout = this.getLayoutOrError();
+        if (this.selectedKey === null) {
+            return;
+        }
+
         try {
             this.keyValidationError = "";
             this.keymapsTextareaValue = trySetKeymapsKey(
@@ -703,7 +712,7 @@ export class App extends React.Component<{}, {}> {
         let oldUrl = this.keymapLayoutUrl;
         this.keyboardLayoutKey = e.target.value as KeyboardLayoutKey;
         let newLayout = keyboardLayouts[this.keyboardLayoutKey];
-        if (!newLayout) {
+        if (!newLayout || !newLayout.defaultKeymapUrl) {
             return;
         }
 
@@ -728,13 +737,12 @@ export class App extends React.Component<{}, {}> {
             } else {
                 this.selectedKey = +v;
             }
-
-            if (this.inputRef) {
-                setTimeout(() => {
+            setTimeout(() => {
+                if (this.inputRef) {
                     this.inputRef.focus();
                     this.inputRef.select();
-                }, 100);
-            }
+                }
+            }, 100);
         });
 
     private onMouseOverConfigureKey = (v: string, n: number) =>
@@ -782,4 +790,4 @@ export class App extends React.Component<{}, {}> {
 FocusStyleManager.onlyShowFocusOnTabs();
 
 // Inject some helpers to use with JS console
-initTools((window["QMTOOLS"] = {}));
+initTools(((window as any)["QMTOOLS"] = {}));

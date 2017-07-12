@@ -62,19 +62,19 @@ export type QmkFunctionResult =
     | string;
 
 export const isModResult = (res: QmkFunctionResult): res is IModResult => {
-    return res && typeof res === "object" && res.type === "modresult";
+    return !!res && typeof res === "object" && res.type === "modresult";
 };
 
 export const isModTapResult = (res: QmkFunctionResult): res is IModTapResult => {
-    return res && typeof res === "object" && res.type === "modtapresult";
+    return !!res && typeof res === "object" && res.type === "modtapresult";
 };
 
 export const isLayerTapResult = (res: QmkFunctionResult): res is ILayerTapResult => {
-    return res && typeof res === "object" && res.type === "layertapresult";
+    return !!res && typeof res === "object" && res.type === "layertapresult";
 };
 
 export const isRenderableResult = (res: QmkFunctionResult | IRenderable): res is IRenderable => {
-    return res && typeof res === "object" && !!res.rendered;
+    return !!res && typeof res === "object" && !!res.rendered;
 };
 
 export class QmkFunctionsExecutor {
@@ -97,7 +97,7 @@ export class QmkFunctionsExecutor {
             let modifierText = modifierTextShortened(mods);
             return {
                 type: "modresult",
-                keycode: kcn,
+                keycode: (kcn !== null && kcn) || "KC_NO",
                 mods: mods,
                 modifierText: modifierText,
                 rendered: {

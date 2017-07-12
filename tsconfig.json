@@ -3,14 +3,13 @@
         "module": "es2015",
         "moduleResolution": "node",
         "target": "es5",
-        "noImplicitAny": false,
+        "noImplicitAny": true,
+        "noImplicitThis": true,
+        "strictNullChecks": true,
         "sourceMap": true,
         "jsx": "react",
         "experimentalDecorators": true,
         "outDir": "build",
-        "lib": [
-            "dom",
-            "es2015"
-        ]
+        "lib": ["dom", "es2015"]
     }
 }

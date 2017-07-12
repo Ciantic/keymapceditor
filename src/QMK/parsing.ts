@@ -201,7 +201,7 @@ export const trySetKeymapsKey = (
     layer: number,
     key: number,
     newValue: string,
-    keyCount: number = null
+    keyCount: number | null = null
 ) => {
     let keymapParsed = tryParseKeymapsText(keymapText, keyCount);
     let layerKeys = keymapParsed[layer];
@@ -246,16 +246,21 @@ export interface Executor<T> {
     eval: (t: string) => T;
 }
 
-export const evalKeyExpression = <T>(expr: AstNode, executor: Executor<T>): T => {
+export const evalKeyExpression = <T>(expr: AstNode, executor: Executor<T>): T | null => {
     if (expr !== null) {
         if (typeof expr === "string") {
             throw new Error("Got here for some reason");
         } else if (expr.type === "word") {
             return executor.eval(expr.content);
         } else if (expr.type === "func") {
-            let evaledParams = [];
+            let evaledParams: T[] = [];
             expr.params.forEach(t => {
-                evaledParams.push(evalKeyExpression(t, executor));
+                // Not exactly a tail call recursion
+                let evaledValue = evalKeyExpression(t, executor);
+                if (evaledValue === null) {
+                    return null;
+                }
+                evaledParams.push(evaledValue);
             });
             if (expr.func in executor) {
                 return executor[expr.func].apply(null, evaledParams) || null;

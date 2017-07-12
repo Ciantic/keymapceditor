@@ -16,7 +16,7 @@ export const usbcodeToKeycode = (usbcode: number): keycode | null => {
 
 export const keycodeToUsbcode = (kc: keycode): number | null => {
     if (kc in keycodeAliases) {
-        return keycodeAliases[kc];
+        return (keycodeAliases as any)[kc];
     }
     if (kc in keys) {
         return keys[kc];
@@ -34,7 +34,7 @@ export const isModifierKeytype = (k: any): k is modifierkeytype => {
 
 export const normalizeKeycode = (k: any): keycode | null => {
     if (k in keycodeAliases) {
-        return usbcodeToKeycode(keycodeAliases[k]);
+        return usbcodeToKeycode((keycodeAliases as any)[k]);
     }
     if (k in keys) {
         return k;
