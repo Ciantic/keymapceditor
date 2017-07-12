@@ -664,7 +664,7 @@ export class App extends React.Component<{}, {}> {
             clearTimeout(this.throttleTimeoutInput);
         }
         this.throttleTimeoutInput = setTimeout(() => {
-            this.validateKeyChange(this.keyInputValue);
+            this.validateKeyChange(this.keyInputValue.trim());
         }, 50);
     };
 
