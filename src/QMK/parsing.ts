@@ -14,7 +14,7 @@ interface AstFunction {
     content: string;
 }
 
-type AstNode = AstWord | AstFunction;
+export type AstNode = AstWord | AstFunction;
 
 export type KeymapParseResult = AstNode[][];
 
@@ -242,16 +242,18 @@ export const addLayerKeymaps = (keymapText: string) => {
 };
 
 export interface Executor<T> {
-    [k: string]: (...args: any[]) => T | string | null;
-    eval: (t: string) => T;
+    functions: { [k: string]: (...args: any[]) => T };
+    word: (t: string) => T;
+    expand: (expr: AstNode) => AstNode;
 }
 
 export const evalKeyExpression = <T>(expr: AstNode, executor: Executor<T>): T | null => {
     if (expr !== null) {
+        expr = executor.expand(expr);
         if (typeof expr === "string") {
             throw new Error("Got here for some reason");
         } else if (expr.type === "word") {
-            return executor.eval(expr.content);
+            return executor.word(expr.content);
         } else if (expr.type === "func") {
             let evaledParams: T[] = [];
             expr.params.forEach(t => {
@@ -262,8 +264,8 @@ export const evalKeyExpression = <T>(expr: AstNode, executor: Executor<T>): T | 
                 }
                 evaledParams.push(evaledValue);
             });
-            if (expr.func in executor) {
-                return executor[expr.func].apply(null, evaledParams) || null;
+            if (expr.func in executor.functions) {
+                return executor.functions[expr.func].apply(null, evaledParams) || null;
             } else {
                 return null;
             }

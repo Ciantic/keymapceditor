@@ -13,7 +13,7 @@ config.truncateThreshold = 0;
 describe("qmk functions", () => {
     let qmkExecutor = new QmkFunctionsExecutor();
     it("modifier combinations LALT", () => {
-        expect(omit(qmkExecutor.LALT("KC_NO"), ["getKeycapText"])).to.be.deep.equal({
+        expect(omit(qmkExecutor.functions.LALT("KC_NO"), ["getKeycapText"])).to.be.deep.equal({
             type: "modresult",
             keycode: "KC_NO",
             mods: ["KC_LALT"],
@@ -23,8 +23,8 @@ describe("qmk functions", () => {
     });
     it("modifier combinations nested", () => {
         let inner;
-        inner = qmkExecutor.LSFT("KC_NO");
-        expect(omit(qmkExecutor.LALT(inner), ["getKeycapText"])).to.be.deep.equal({
+        inner = qmkExecutor.functions.LSFT("KC_NO");
+        expect(omit(qmkExecutor.functions.LALT(inner), ["getKeycapText"])).to.be.deep.equal({
             type: "modresult",
             keycode: "KC_NO",
             mods: ["KC_LSHIFT", "KC_LALT"],
@@ -33,7 +33,7 @@ describe("qmk functions", () => {
         });
     });
     it("modifier combinations LALT", () => {
-        expect(omit(qmkExecutor.LALT("KC_LSHIFT"), ["getKeycapText"])).to.be.deep.equal({
+        expect(omit(qmkExecutor.functions.LALT("KC_LSHIFT"), ["getKeycapText"])).to.be.deep.equal({
             type: "modresult",
             keycode: "KC_NO",
             mods: ["KC_LSHIFT", "KC_LALT"],

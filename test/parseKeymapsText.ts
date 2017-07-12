@@ -269,20 +269,15 @@ describe("evalKeyExpression", () => {
                 end: 4,
             },
             {
-                eval: t => "evaled:" + t,
+                word: t => "evaled:" + t,
+                functions: {},
+                expand: n => n,
             }
         );
         expect(v).to.be.equal("evaled:test");
     });
 
     it("Should work with func", () => {
-        let executor;
-        executor = {
-            eval: (t: string) => t,
-            TEST: (a: string, b: string) => {
-                return "TEST(" + a + "," + b + ")";
-            },
-        };
         let v = evalKeyExpression(
             {
                 type: "func",
@@ -305,22 +300,20 @@ describe("evalKeyExpression", () => {
                 offset: 0,
                 end: 0,
             },
-            executor
+            {
+                word: t => t,
+                expand: n => n,
+                functions: {
+                    TEST: (a: string, b: string) => {
+                        return "TEST(" + a + "," + b + ")";
+                    },
+                },
+            }
         );
         expect(v).to.be.equal("TEST(PARAM1,PARAM2)");
     });
 
     it("Should work with nested func", () => {
-        let executor;
-        executor = {
-            eval: (t: string) => t,
-            TEST: (a: string, b: string) => {
-                return "TEST(" + a + "," + b + ")";
-            },
-            TEST2: (a: string, b: string) => {
-                return "TEST2(" + a + "," + b + ")";
-            },
-        };
         let v = evalKeyExpression(
             {
                 type: "func",
@@ -358,7 +351,18 @@ describe("evalKeyExpression", () => {
                 end: 0,
                 content: "",
             },
-            executor
+            {
+                word: t => t,
+                expand: n => n,
+                functions: {
+                    TEST: (a: string, b: string) => {
+                        return "TEST(" + a + "," + b + ")";
+                    },
+                    TEST2: (a: string, b: string) => {
+                        return "TEST2(" + a + "," + b + ")";
+                    },
+                },
+            }
         );
         expect(v).to.be.equal("TEST(a,TEST2(c,d))");
     });

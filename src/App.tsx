@@ -396,6 +396,7 @@ export class App extends React.Component<{}, {}> {
             };
             let evaled = evalKeyExpression(parsed, qmkExecutor);
             if (evaled === null) {
+                rendered.set("" + i++, fallback);
                 continue;
             }
 
@@ -413,7 +414,7 @@ export class App extends React.Component<{}, {}> {
                 continue;
             }
 
-            let kc = normalizeKeycode(parsed.content);
+            let kc = evaled;
             if (kc === "KC_NO" || kc === "KC_ROLL_OVER") {
                 rendered.set("" + i++, {});
                 continue;
