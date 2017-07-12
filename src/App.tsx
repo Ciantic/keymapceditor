@@ -371,8 +371,11 @@ export class App extends React.Component<{}, {}> {
 
     @computed
     private get configureKeycapTexts() {
-        if (!this.lastSuccessfulKeymapParsed || !this.lastSuccessfulKeymapParsed[this.layerIndex]) {
-            return null;
+        if (
+            !this.lastSuccessfulKeymapParsed ||
+            this.lastSuccessfulKeymapParsed.length <= this.layerIndex
+        ) {
+            return new Map<string, KeycapText>();
         }
         let rendered = new Map<string, KeycapText>();
         let i = 0;
@@ -388,7 +391,7 @@ export class App extends React.Component<{}, {}> {
                 centered: parsed.content,
             };
             let evaled = evalKeyExpression(parsed, qmkExecutor);
-            if (typeof evaled === "object" && evaled.type === "error") {
+            if (evaled && typeof evaled === "object" && evaled.type === "error") {
                 rendered.set("" + i++, fallback);
                 continue;
             }
@@ -707,16 +710,19 @@ export class App extends React.Component<{}, {}> {
     @action
     private onChangeKeyboardLayoutKey = (e: React.ChangeEvent<HTMLSelectElement>) => {
         let oldLayout = keyboardLayouts[this.keyboardLayoutKey];
+        let oldUrl = this.keymapLayoutUrl;
         this.keyboardLayoutKey = e.target.value as KeyboardLayoutKey;
         let newLayout = keyboardLayouts[this.keyboardLayoutKey];
+        if (!newLayout) {
+            return;
+        }
+
         if (
             // If nothing is set, allow changing url
             (!this.keymapLayoutUrl && !this.keymapsTextareaValue) ||
             // If the URL is default URL of the old layout, allow changing the
             // url to new default url
-            (oldLayout &&
-                oldLayout.defaultKeymapUrl === this.keymapLayoutUrl &&
-                !this.isModified) ||
+            (oldLayout && oldLayout.defaultKeymapUrl === oldUrl && !this.isModified) ||
             // If the keymap text is not modified allow changing the download url
             (!oldLayout && !this.isModified)
         ) {
