@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Key, KeyStyle, KeyProps, KeycapText } from "./Key";
+import { Key, KeyStyle, KeyProps, KeycapText, KeycapBackground } from "./Key";
 import { observable, action, runInAction } from "mobx";
 import { observer } from "mobx-react";
 import {
@@ -20,6 +20,7 @@ interface KeyboardLayoutProps {
     className?: string;
     layout: KeyboardLayoutArray;
     disabled?: boolean;
+    styleBackgroundKeys?: Map<string, KeycapBackground>;
     stylePressedKeys?: Map<string, boolean>;
     styleHoveredKeys?: Map<string, boolean>;
     keycapTexts?: Map<string, KeycapText>;
@@ -135,6 +136,8 @@ export class KeyboardLayout extends React.Component<KeyboardLayoutProps, {}> {
                             pressed:
                                 !props.disabled &&
                                 !!(props.stylePressedKeys && props.stylePressedKeys.get(k)),
+                            background:
+                                props.styleBackgroundKeys && props.styleBackgroundKeys.get(k),
                         },
 
                         // Events

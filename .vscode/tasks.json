@@ -1,28 +1,11 @@
 {
-    "version": "0.1.0",
+    "version": "2.0.0",
     "tasks": [
         {
-            "command": "yarn",
+            "command": "node",
             "taskName": "start",
-            "args": ["run", "start"],
-            "isBuildCommand": true,
-            "isBackground": true,
-            "showOutput": "always",
-            "isShellCommand": true
-        },
-        {
-            "command": "yarn",
-            "taskName": "build",
-            "args": ["run", "build"],
-            "isShellCommand": true
-        },
-        {
-            "command": "yarn",
-            "taskName": "testwatch",
-            "args": ["run", "testwatch"],
-            "isBackground": true,
-            "showOutput": "always",
-            "isShellCommand": true
+            "args": ["webpack.dev.server.js"],
+            "problemMatcher": ["$tsc-watch"]
         }
     ]
 }

@@ -127,6 +127,17 @@ $key-pressed-top-color: mix(darken($key-top-color, 10%), red, 85%);
     z-index: 3;
 }
 
+.mod {
+    .top {
+        background: mix(yellow, $key-top-color, 12%);
+    }
+}
+
+.layer {
+    .top {
+        background: mix(cyan, $key-top-color, 12%);
+    }
+}
 .hovered {
     z-index: 3;
     .borders {

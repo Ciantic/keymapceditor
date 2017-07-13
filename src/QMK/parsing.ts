@@ -243,13 +243,12 @@ export const addLayerKeymaps = (keymapText: string) => {
 
 export interface Executor<T> {
     functions: { [k: string]: (...args: any[]) => T };
+    function?: (name: string, args: T[]) => T | null;
     word: (t: string) => T;
-    expand: (expr: AstNode) => AstNode;
 }
 
 export const evalKeyExpression = <T>(expr: AstNode, executor: Executor<T>): T | null => {
     if (expr !== null) {
-        expr = executor.expand(expr);
         if (typeof expr === "string") {
             throw new Error("Got here for some reason");
         } else if (expr.type === "word") {
@@ -267,7 +266,7 @@ export const evalKeyExpression = <T>(expr: AstNode, executor: Executor<T>): T | 
             if (expr.func in executor.functions) {
                 return executor.functions[expr.func].apply(null, evaledParams) || null;
             } else {
-                return null;
+                return (executor.function && executor.function(expr.func, evaledParams)) || null;
             }
         } else {
             return null;

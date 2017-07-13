@@ -271,7 +271,6 @@ describe("evalKeyExpression", () => {
             {
                 word: t => "evaled:" + t,
                 functions: {},
-                expand: n => n,
             }
         );
         expect(v).to.be.equal("evaled:test");
@@ -302,7 +301,6 @@ describe("evalKeyExpression", () => {
             },
             {
                 word: t => t,
-                expand: n => n,
                 functions: {
                     TEST: (a: string, b: string) => {
                         return "TEST(" + a + "," + b + ")";
@@ -353,7 +351,6 @@ describe("evalKeyExpression", () => {
             },
             {
                 word: t => t,
-                expand: n => n,
                 functions: {
                     TEST: (a: string, b: string) => {
                         return "TEST(" + a + "," + b + ")";

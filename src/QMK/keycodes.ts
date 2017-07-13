@@ -264,6 +264,42 @@ export enum specialkeys {
     KC_MS_ACCEL2 /* 0xFF */,
 }
 
+export enum qmkcodes {
+    RESET,
+    DEBUG,
+    GRAVE_ESC,
+    KC_LSPO,
+    KC_RSPC,
+    KC_LEAD,
+
+    BL_0,
+    BL_1,
+    BL_2,
+    BL_3,
+    BL_4,
+    BL_5,
+    BL_6,
+    BL_7,
+    BL_8,
+    BL_9,
+    BL_ON,
+    BL_OFF,
+    BL_DEC,
+    BL_INC,
+    BL_TOGG,
+    BL_STEP,
+
+    RGB_TOG,
+    RGB_MOD,
+    RGB_HUI,
+    RGB_HUD,
+    RGB_SAI,
+    RGB_SAD,
+    RGB_VAI,
+    RGB_VAD,
+}
+
 export const keys = Object.assign({}, normalkeys, modifierkeys, specialkeys);
 export type keycode = keyof typeof keys;
 export type modifierkeytype = keyof typeof modifierkeys;
+export type qmkkeycode = keyof typeof qmkcodes;

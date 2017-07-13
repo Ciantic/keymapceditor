@@ -9,7 +9,10 @@ export interface KeyStyle {
     disabled: boolean;
     hovered: boolean;
     pressed: boolean;
+    background?: KeycapBackground;
 }
+
+export type KeycapBackground = "" | "mod" | "layer";
 
 export interface KeycapText {
     topleft?: React.ReactNode;
@@ -97,7 +100,8 @@ export class Key extends React.Component<KeyProps, {}> {
                     styles.key,
                     style.disabled && styles.disabled,
                     style.pressed && styles.pressed,
-                    style.hovered && styles.hovered
+                    style.hovered && styles.hovered,
+                    styles[style.background || ""]
                 )}
                 style={{
                     position: "absolute",

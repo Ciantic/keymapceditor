@@ -12,10 +12,18 @@ interface IRenderable {
     rendered?: KeycapText;
 }
 
-interface IKeycodeResult extends IRenderable {
-    type: "keycode";
+interface ILangSymbolResult extends IRenderable {
+    type: "langsymbol";
+    keycode: keycode;
+    mods: modifierkeytype[];
+    symbol: string;
+}
+
+interface ILangKeycodeResult extends IRenderable {
+    type: "langkeycode";
     keycode: keycode;
 }
+
 interface IParseError extends IRenderable {
     type: "error";
     error: "parse";
@@ -59,235 +67,9 @@ export type QmkFunctionResult =
     | ILayerTapResult
     | IMomentaryLayerResult
     | IToggleLayerResult
-    | IKeycodeResult
+    | ILangSymbolResult
+    | ILangKeycodeResult
     | string; // Passes keycodes and words
-
-export const isModResult = (res: QmkFunctionResult): res is IModResult => {
-    return !!res && typeof res === "object" && res.type === "modresult";
-};
-
-export const isModTapResult = (res: QmkFunctionResult): res is IModTapResult => {
-    return !!res && typeof res === "object" && res.type === "modtapresult";
-};
-
-export const isLayerTapResult = (res: QmkFunctionResult): res is ILayerTapResult => {
-    return !!res && typeof res === "object" && res.type === "layertapresult";
-};
-
-export const isRenderableResult = (
-    res: QmkFunctionResult | IRenderable
-): res is {
-    rendered: KeycapText;
-} => {
-    return !!res && typeof res === "object" && !!res.rendered;
-};
-
-const _MOD = (
-    kc: keycode | IModResult | IParseError,
-    key: modifierkeytype
-): IModResult | IParseError => {
-    if (isKeycode(kc)) {
-        let kcn = normalizeKeycode(kc);
-        let mods = [key];
-        // Called using syntax: LALT(KC_LSHIFT), this is translated to
-        // LALT(LSFT(KC_NO)) equivalent
-        if (isModifierKeytype(kcn)) {
-            mods = [kcn, key];
-            kcn = "KC_NO";
-        }
-        let modifierText = modifierTextShortened(mods);
-        return {
-            type: "modresult",
-            keycode: (kcn !== null && kcn) || "KC_NO",
-            mods: mods,
-            modifierText: modifierText,
-            rendered: {
-                centered: (kcn === "KC_NO" && modifierText) || kcn,
-                bottomcenter: kcn !== "KC_NO" && modifierText,
-            },
-        };
-    } else if (isModResult(kc)) {
-        let modifierText = modifierTextShortened(kc.mods.concat(key));
-        return {
-            type: "modresult",
-            keycode: kc.keycode,
-            mods: kc.mods.concat(key),
-            modifierText: modifierText,
-            rendered: {
-                centered: (kc.keycode === "KC_NO" && modifierText) || kc.keycode,
-                bottomcenter: kc.keycode !== "KC_NO" && modifierText,
-            },
-        };
-    } else {
-        // MT called with incorrect data
-        return {
-            type: "error",
-            error: "parse",
-            data: `Unable to add modifier to keycode: "${kc}"`,
-        };
-    }
-};
-
-const _MT = (mod: IModResult | IParseError): IModTapResult | IParseError => {
-    if (isModResult(mod)) {
-        mod.modifierText = "• " + mod.modifierText;
-        return {
-            type: "modtapresult",
-            keycode: mod.keycode,
-            mods: mod.mods,
-            modifierText: mod.modifierText,
-            rendered: {
-                centered: (mod.keycode === "KC_NO" && mod.modifierText) || mod.keycode,
-                bottomcenter: mod.keycode !== "KC_NO" && mod.modifierText,
-            },
-        };
-    }
-
-    return mod;
-};
-const LT = (n: string, kc: keycode): ILayerTapResult => {
-    return {
-        type: "layertapresult",
-        keycode: kc,
-        layer: n,
-        rendered: {
-            centered: kc,
-            bottomcenter: "LT → " + n,
-        },
-    };
-};
-const MO = (n: string): IMomentaryLayerResult => {
-    return {
-        type: "momentarylayer",
-        layer: n,
-        rendered: {
-            centered: "MO → " + n,
-        },
-    };
-};
-const TG = (n: string): IToggleLayerResult => {
-    return {
-        type: "togglelayer",
-        layer: n,
-        rendered: {
-            centered: "TG → " + n,
-        },
-    };
-};
-// TT = (layer: number) => {};
-
-const CTL_T = (kc: keycode) => _MT(LCTL(kc));
-const SFT_T = (kc: keycode) => _MT(LSFT(kc));
-const ALT_T = (kc: keycode) => _MT(LALT(kc));
-const ALGR_T = (kc: keycode) => _MT(RALT(kc));
-const GUI_T = (kc: keycode) => _MT(LGUI(kc));
-const ALL_T = (kc: keycode) => _MT(HYPR(kc));
-const LCAG_T = (kc: keycode) => _MT(LCAG(kc));
-const MEH_T = (kc: keycode) => _MT(MEH(kc));
-
-const LCTL = (kc: keycode | IModResult | IParseError) => _MOD(kc, "KC_LCTRL");
-const LSFT = (kc: keycode | IModResult | IParseError) => _MOD(kc, "KC_LSHIFT");
-const LALT = (kc: keycode | IModResult | IParseError) => _MOD(kc, "KC_LALT");
-const LGUI = (kc: keycode | IModResult | IParseError) => _MOD(kc, "KC_LGUI");
-const RCTL = (kc: keycode | IModResult | IParseError) => _MOD(kc, "KC_RCTRL");
-const RSFT = (kc: keycode | IModResult | IParseError) => _MOD(kc, "KC_RSHIFT");
-const RALT = (kc: keycode | IModResult | IParseError) => _MOD(kc, "KC_RALT");
-const RGUI = (kc: keycode | IModResult | IParseError) => _MOD(kc, "KC_RGUI");
-const LCAG = (kc: keycode | IModResult | IParseError) => LCTL(LALT(LGUI(kc)));
-const HYPR = (kc: keycode): IModResult | IParseError => {
-    if (isKeycode(kc)) {
-        return {
-            type: "modresult",
-            keycode: kc,
-            mods: ["KC_LALT", "KC_LCTRL", "KC_LGUI", "KC_LSHIFT"],
-            modifierText: LANGS.Hyper,
-        };
-    } else {
-        return {
-            type: "error",
-            error: "parse",
-            data: `Incorrect data on hyper: "${kc}"`,
-        };
-    }
-};
-export const MEH = (kc: keycode): IModResult | IParseError => {
-    if (isKeycode(kc)) {
-        return {
-            type: "modresult",
-            keycode: kc,
-            mods: ["KC_LALT", "KC_LCTRL", "KC_LSHIFT"],
-            modifierText: LANGS.Meh,
-        };
-    } else {
-        return {
-            type: "error",
-            error: "parse",
-            data: `Incorrect data on hyper: "${kc}"`,
-        };
-    }
-};
-
-export class QmkFunctionsExecutor implements Executor<QmkFunctionResult> {
-    word = (t: string): string => {
-        return t;
-    };
-
-    expand = (node: AstNode) => {
-        if (node.type === "word") {
-            if (node.content in keycodeAliases) {
-                return Object.assign({}, node, {
-                    content: (keycodeAliases as any)[node.content],
-                });
-            }
-
-            if (node.content === "KC_DLR") {
-                return {
-                    type: "func",
-                    func: "LSFT",
-                    params: [
-                        {
-                            type: "word",
-                            content: "KC_4",
-                            offset: 0,
-                            end: 0,
-                        },
-                    ],
-                    offset: 0,
-                    end: 0,
-                    content: "",
-                } as AstNode;
-            }
-        }
-        return node;
-    };
-
-    functions = {
-        LT,
-        MO,
-        TG,
-        CTL_T,
-        SFT_T,
-        ALT_T,
-        ALGR_T,
-        GUI_T,
-        ALL_T,
-        LCAG_T,
-        MEH_T,
-        LCTL,
-        LSFT,
-        LALT,
-        LGUI,
-        RCTL,
-        RSFT,
-        RALT,
-        RGUI,
-        LCAG,
-        HYPR,
-        MEH,
-    };
-}
-
-export const qmkExecutor: Executor<QmkFunctionResult> = new QmkFunctionsExecutor();
 
 const modifierTextShortened = (mods: modifierkeytype[]) => {
     return singleLetterModifierOrdering(mods)
@@ -349,3 +131,265 @@ const singleLetterModifier = (modifier: modifierkeytype) => {
     }
     return modifier;
 };
+
+const _MOD = (
+    kc: keycode | IModResult | IParseError,
+    key: modifierkeytype
+): IModResult | IParseError => {
+    if (isKeycode(kc)) {
+        let kcn = normalizeKeycode(kc);
+        let mods = [key];
+        // Called using syntax: LALT(KC_LSHIFT), this is translated to
+        // LALT(LSFT(KC_NO)) equivalent
+        if (isModifierKeytype(kcn)) {
+            mods = [kcn, key];
+            kcn = "KC_NO";
+        }
+        let modifierText = modifierTextShortened(mods);
+        return {
+            type: "modresult",
+            keycode: (kcn !== null && kcn) || "KC_NO",
+            mods: mods,
+            modifierText: modifierText,
+            rendered: {
+                centered: (kcn === "KC_NO" && modifierText) || kcn,
+                bottomcenter: kcn !== "KC_NO" && modifierText,
+            },
+        };
+    } else if (kc.type === "modresult") {
+        let modifierText = modifierTextShortened(kc.mods.concat(key));
+        return {
+            type: "modresult",
+            keycode: kc.keycode,
+            mods: kc.mods.concat(key),
+            modifierText: modifierText,
+            rendered: {
+                centered: (kc.keycode === "KC_NO" && modifierText) || kc.keycode,
+                bottomcenter: kc.keycode !== "KC_NO" && modifierText,
+            },
+        };
+    } else {
+        // MT called with incorrect data
+        return {
+            type: "error",
+            error: "parse",
+            data: `Unable to add modifier to keycode: "${kc}"`,
+        };
+    }
+};
+
+const _MT = (mod: IModResult | IParseError): IModTapResult | IParseError => {
+    if (mod.type === "modresult") {
+        mod.modifierText = "• " + mod.modifierText;
+        return {
+            type: "modtapresult",
+            keycode: mod.keycode,
+            mods: mod.mods,
+            modifierText: mod.modifierText,
+            rendered: {
+                centered: (mod.keycode === "KC_NO" && mod.modifierText) || mod.keycode,
+                bottomcenter: mod.keycode !== "KC_NO" && mod.modifierText,
+            },
+        };
+    }
+    return mod;
+};
+const LT = (n: string, kc: keycode): ILayerTapResult => {
+    return {
+        type: "layertapresult",
+        keycode: kc,
+        layer: n,
+        rendered: {
+            centered: kc,
+            bottomcenter: "LT → " + n,
+        },
+    };
+};
+const MO = (n: string): IMomentaryLayerResult => {
+    return {
+        type: "momentarylayer",
+        layer: n,
+        rendered: {
+            centered: "MO → " + n,
+        },
+    };
+};
+const TG = (n: string): IToggleLayerResult => {
+    return {
+        type: "togglelayer",
+        layer: n,
+        rendered: {
+            centered: "TG → " + n,
+        },
+    };
+};
+// TT = (layer: number) => {};
+
+const CTL_T = (kc: keycode) => _MT(LCTL(kc));
+const SFT_T = (kc: keycode) => _MT(LSFT(kc));
+const ALT_T = (kc: keycode) => _MT(LALT(kc));
+const ALGR_T = (kc: keycode) => _MT(RALT(kc));
+const GUI_T = (kc: keycode) => _MT(LGUI(kc));
+const ALL_T = (kc: keycode) => _MT(HYPR(kc));
+const LCAG_T = (kc: keycode) => _MT(LCAG(kc));
+const MEH_T = (kc: keycode) => _MT(MEH(kc));
+const SCMD_T = (kc: keycode) => _MT(LSFT(LGUI(kc)));
+const SWIN_T = (kc: keycode) => _MT(LSFT(LGUI(kc)));
+
+const LCTL = (kc: keycode | IModResult | IParseError) => _MOD(kc, "KC_LCTRL");
+const LSFT = (kc: keycode | IModResult | IParseError) => _MOD(kc, "KC_LSHIFT");
+const LALT = (kc: keycode | IModResult | IParseError) => _MOD(kc, "KC_LALT");
+const LGUI = (kc: keycode | IModResult | IParseError) => _MOD(kc, "KC_LGUI");
+const RCTL = (kc: keycode | IModResult | IParseError) => _MOD(kc, "KC_RCTRL");
+const RSFT = (kc: keycode | IModResult | IParseError) => _MOD(kc, "KC_RSHIFT");
+const RALT = (kc: keycode | IModResult | IParseError) => _MOD(kc, "KC_RALT");
+const RGUI = (kc: keycode | IModResult | IParseError) => _MOD(kc, "KC_RGUI");
+const LCAG = (kc: keycode | IModResult | IParseError) => LCTL(LALT(LGUI(kc)));
+const HYPR = (kc: keycode): IModResult | IParseError => {
+    if (isKeycode(kc)) {
+        return {
+            type: "modresult",
+            keycode: kc,
+            mods: ["KC_LALT", "KC_LCTRL", "KC_LGUI", "KC_LSHIFT"],
+            modifierText: LANGS.Hyper,
+            rendered: {
+                centered: kc,
+                bottomcenter: LANGS.Hyper,
+            },
+        };
+    } else {
+        return {
+            type: "error",
+            error: "parse",
+            data: `Incorrect data on hyper: "${kc}"`,
+        };
+    }
+};
+export const MEH = (kc: keycode): IModResult | IParseError => {
+    if (isKeycode(kc)) {
+        return {
+            type: "modresult",
+            keycode: kc,
+            mods: ["KC_LALT", "KC_LCTRL", "KC_LSHIFT"],
+            modifierText: LANGS.Meh,
+            rendered: {
+                centered: kc,
+                bottomcenter: LANGS.Meh,
+            },
+        };
+    } else {
+        return {
+            type: "error",
+            error: "parse",
+            data: `Incorrect data on meh: "${kc}"`,
+        };
+    }
+};
+
+const functionExpansions = {
+    KC_TILD: LSFT("KC_GRAVE"),
+    KC_EXLM: LSFT("KC_1"),
+    KC_AT: LSFT("KC_2"),
+    KC_HASH: LSFT("KC_3"),
+    KC_DLR: LSFT("KC_4"),
+    KC_PERC: LSFT("KC_5"),
+    KC_CIRC: LSFT("KC_6"),
+    KC_AMPR: LSFT("KC_7"),
+    KC_ASTR: LSFT("KC_8"),
+    KC_LPRN: LSFT("KC_9"),
+    KC_RPRN: LSFT("KC_0"),
+    KC_UNDS: LSFT("KC_MINUS"),
+    KC_PLUS: LSFT("KC_EQUAL"),
+    KC_LCBR: LSFT("KC_LBRACKET"),
+    KC_RCBR: LSFT("KC_RBRACKET"),
+    KC_LABK: LSFT("KC_COMMA"),
+    KC_RABK: LSFT("KC_DOT"),
+    KC_COLN: LSFT("KC_SCOLON"),
+    KC_PIPE: LSFT("KC_BSLASH"),
+    KC_LT: LSFT("KC_COMMA"),
+    KC_GT: LSFT("KC_DOT"),
+    KC_QUES: LSFT("KC_SLASH"),
+    KC_DQT: LSFT("KC_QUOTE"),
+
+    KC_HYPR: HYPR("KC_NO"),
+    KC_MEH: MEH("KC_NO"),
+};
+
+const functionExpansionAliases: { [k: string]: keyof typeof functionExpansions } = {
+    KC_TILDE: "KC_TILD",
+    KC_EXCLAIM: "KC_EXLM",
+    KC_DOLLAR: "KC_DLR",
+    KC_PERCENT: "KC_PERC",
+    KC_CIRCUMFLEX: "KC_CIRC",
+    KC_AMPERSAND: "KC_AMPR",
+    KC_ASTERISK: "KC_ASTR",
+    KC_LEFT_PAREN: "KC_LPRN",
+    KC_RIGHT_PAREN: "KC_RPRN",
+    KC_UNDERSCORE: "KC_UNDS",
+    KC_LEFT_CURLY_BRACE: "KC_LCBR",
+    KC_RIGHT_CURLY_BRACE: "KC_RCBR",
+    KC_LEFT_ANGLE_BRACKET: "KC_LABK",
+    KC_RIGHT_ANGLE_BRACKET: "KC_RABK",
+    KC_COLON: "KC_COLN",
+    KC_QUESTION: "KC_QUES",
+    KC_DOUBLE_QUOTE: "KC_DQT",
+    KC_DQUO: "KC_DQT",
+};
+
+const functionNameAliases = {
+    S: LSFT,
+};
+
+const functions = {
+    LT,
+    MO,
+    TG,
+    CTL_T,
+    SFT_T,
+    ALT_T,
+    ALGR_T,
+    GUI_T,
+    ALL_T,
+    LCAG_T,
+    MEH_T,
+    SCMD_T,
+    SWIN_T,
+
+    LCTL,
+    LSFT,
+    LALT,
+    LGUI,
+    RCTL,
+    RSFT,
+    RALT,
+    RGUI,
+    LCAG,
+    HYPR,
+    MEH,
+};
+
+export class QmkFunctionsExecutor implements Executor<QmkFunctionResult> {
+    word = (t: string): QmkFunctionResult => {
+        if (t in keycodeAliases) {
+            return this.word(keycodeAliases[t]);
+        }
+        if (t in functionExpansionAliases) {
+            return this.word(functionExpansionAliases[t]);
+        }
+        if (t in functionExpansions) {
+            return (functionExpansions as { [k: string]: QmkFunctionResult })[t];
+        }
+        return t;
+    };
+
+    function = (func: string, args: QmkFunctionResult[]) => {
+        if (func === "S") {
+            return LSFT.apply(this, args);
+        }
+        return null;
+    };
+
+    functions = functions;
+}
+
+export const qmkExecutor: Executor<QmkFunctionResult> = new QmkFunctionsExecutor();

@@ -1,4 +1,13 @@
-import { keys, keycode, modifierkeys, normalkeys, specialkeys, modifierkeytype } from "./keycodes";
+import {
+    keys,
+    keycode,
+    modifierkeys,
+    normalkeys,
+    specialkeys,
+    modifierkeytype,
+    qmkkeycode,
+    qmkcodes,
+} from "./keycodes";
 import { keycodeAliases } from "./aliases";
 
 const _usbcodeToKeycode: { [k: string]: keycode } = {};
@@ -22,7 +31,12 @@ export const keycodeToUsbcode = (kc: keycode): number | null => {
 };
 
 export const isKeycode = (k: any): k is keycode => {
-    return typeof k === "string" && (k in keys || k in keycodeAliases);
+    // Removed this  || k in keycodeAliases without much testing
+    return typeof k === "string" && k in keys;
+};
+
+export const isQmkKeycode = (k: any): k is qmkkeycode => {
+    return typeof k === "string" && k in qmkcodes;
 };
 
 export const isModifierKeytype = (k: any): k is modifierkeytype => {

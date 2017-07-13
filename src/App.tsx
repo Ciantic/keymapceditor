@@ -23,7 +23,7 @@ import { IReferenceKeyboard, referenceKeyboards, ReferenceKeyboardKey } from "./
 import { initTools } from "./Tools";
 import { cns } from "./Utils/classnames";
 import { Tabs2, Tab2, FocusStyleManager } from "@blueprintjs/core";
-import { KeycapText } from "./Components/Key";
+import { KeycapText, KeycapBackground } from "./Components/Key";
 import {
     evalKeyExpression,
     tryParseKeymapsText,
@@ -31,13 +31,14 @@ import {
     addLayerKeymaps,
     trySetKeymapsKey,
 } from "./QMK/parsing";
-import { qmkExecutor, isRenderableResult } from "./QMK/functions";
+import { qmkExecutor } from "./QMK/functions";
 import {
     sendKeymapToExtension,
     listenMessageFromExtension,
     initExtension,
     sendLogToExtension,
 } from "./Extension";
+import { renderKeycapBackground, renderKeycapText } from "./QMK/keyrendering";
 const styles = require("./App.module.scss");
 
 @observer
@@ -165,6 +166,7 @@ export class App extends React.Component<{}, {}> {
         if (this.isModified) {
             keymapLayoutUrl = "";
         }
+
         return (
             <div>
                 <nav className="pt-navbar pt-dark pt-fixed-top">
@@ -237,6 +239,9 @@ export class App extends React.Component<{}, {}> {
                             />
                         </div>}
                 </nav>
+
+                {/* Tabs */}
+
                 {keyboardLayout &&
                     <Tabs2
                         className="pt-large"
@@ -257,15 +262,19 @@ export class App extends React.Component<{}, {}> {
                             {LANGS.Add}
                         </a>
                     </Tabs2>}
+
+                {/* Configure keyboard layout */}
+
                 {keyboardLayout &&
                     <KeyboardLayout
                         disabled={!!this.keymapsParseError}
                         styleHoveredKeys={this.hoveredKeys}
                         stylePressedKeys={new Map().set("" + this.selectedKey, true)}
+                        styleBackgroundKeys={this.configureLayoutKeycaps.backgrounds}
                         layout={keyboardLayout.layout}
                         onMouseLeaveKey={this.onMouseOutConfigureKey}
                         onMouseEnterKey={this.onMouseOverConfigureKey}
-                        keycapTexts={this.configureKeycapTexts}
+                        keycapTexts={this.configureLayoutKeycaps.texts}
                         onClickKey={this.onClickConfigureKey}
                     />}
                 {keyboardLayout &&
@@ -288,6 +297,8 @@ export class App extends React.Component<{}, {}> {
                                 {LANGS.NoErrors}
                             </div>}
                     </div>}
+
+                {/* Reference keyboard layout */}
 
                 {refKeyboard &&
                     <KeyboardLayout
@@ -377,53 +388,44 @@ export class App extends React.Component<{}, {}> {
     }
 
     @computed
-    private get configureKeycapTexts() {
+    private get configureLayoutKeycaps(): {
+        backgrounds: Map<string, KeycapBackground>;
+        texts: Map<string, KeycapText>;
+    } {
         if (!this.currentLayoutLayer) {
-            return new Map<string, KeycapText>();
+            return {
+                backgrounds: new Map(),
+                texts: new Map(),
+            };
         }
-        let rendered = new Map<string, KeycapText>();
+        let langMapping = languageMappings[this.languageMappingKey];
+        let keycapTexts = new Map<string, KeycapText>();
+        let backgrounds = new Map<string, KeycapBackground>();
         let i = 0;
         for (let parsed of this.currentLayoutLayer) {
-            let langMapping = languageMappings[this.languageMappingKey];
-            if (!parsed) {
-                rendered.set("" + i++, {
-                    centered: "",
-                });
-                continue;
-            }
+            let index = "" + i++;
             let fallback = {
                 centered: parsed.content,
             };
-            let evaled = evalKeyExpression(parsed, qmkExecutor);
-            if (evaled === null) {
-                rendered.set("" + i++, fallback);
-                continue;
-            }
+            let result = evalKeyExpression(parsed, qmkExecutor);
 
-            if (evaled && typeof evaled === "object" && evaled.type === "error") {
-                rendered.set("" + i++, fallback);
+            // Null or IParseError
+            if (result === null || (typeof result === "object" && result.type === "error")) {
+                keycapTexts.set(index, fallback);
                 continue;
             }
 
             if (langMapping) {
-                evaled = langMapping.renderExpr(evaled);
+                result = langMapping.renderExpr(result);
             }
-
-            if (isRenderableResult(evaled) && evaled.rendered) {
-                rendered.set("" + i++, evaled.rendered);
-                continue;
-            }
-
-            let kc = evaled;
-            if (kc === "KC_NO" || kc === "KC_ROLL_OVER") {
-                rendered.set("" + i++, {});
-                continue;
-            }
-
-            rendered.set("" + i++, fallback);
+            backgrounds.set(index, renderKeycapBackground(result));
+            keycapTexts.set(index, renderKeycapText(result, fallback));
             continue;
         }
-        return rendered;
+        return {
+            backgrounds: backgrounds,
+            texts: keycapTexts,
+        };
     }
 
     @computed
@@ -443,7 +445,7 @@ export class App extends React.Component<{}, {}> {
                 if (langMapping && usbcode) {
                     let value = langMapping.getKeycapTextFromUsbcode(usbcode);
                     if (value) {
-                        rendered.set(k, value);
+                        rendered.set(k, renderKeycapText(k, value || {}));
                         continue;
                     }
                 }

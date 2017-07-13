@@ -2,12 +2,7 @@ import { keycode, modifierkeytype } from "../QMK/keycodes";
 import { keycodeToUsbcode, isKeycode } from "../QMK";
 import { KeycapText } from "../Components/Key";
 import { LANGS } from "../Langs";
-import {
-    QmkFunctionResult,
-    isModResult,
-    isModTapResult,
-    isRenderableResult,
-} from "../QMK/functions";
+import { QmkFunctionResult } from "../QMK/functions";
 import { ReferenceKeyboardKey } from "../ReferenceKeyboards/index";
 
 export type keytypes = "normal" | "shifted" | "altgr" | "altgrshifted";
@@ -109,47 +104,89 @@ export class LanguageMapping implements ILanguageMapping {
             let usbcode = keycodeToUsbcode(expr);
             if (usbcode !== null) {
                 let rendered = this.getKeycapTextFromUsbcode(usbcode);
+                let sym = this.getSymbol("normal", usbcode);
+
+                // Symbol producing key
+                if (sym !== "") {
+                    return {
+                        type: "langsymbol",
+                        keycode: expr,
+                        rendered: rendered || { centered: sym },
+                        mods: [],
+                        symbol: sym,
+                    };
+                }
+
+                // Some other known key in the language
                 if (rendered !== null) {
                     return {
-                        type: "keycode",
+                        type: "langkeycode",
                         keycode: expr,
                         rendered: rendered,
                     };
                 }
             }
-        } else if (isModResult(expr)) {
+        } else if (typeof expr === "string") {
+            return expr;
+        } else if (expr.type === "modresult") {
             let usbcode = keycodeToUsbcode(expr.keycode);
-            if (usbcode) {
-                let sym =
-                    this.getSymbolWithModifiers(expr.mods, usbcode) ||
-                    this.getSymbol("normal", usbcode);
-                if (sym) {
-                    return Object.assign({}, expr, {
-                        rendered: Object.assign({}, expr.rendered, {
-                            centered: sym.toUpperCase(),
-                        }),
-                    });
-                }
+            if (usbcode === null) {
+                return expr;
             }
-        } else if (isRenderableResult(expr)) {
-            let kc = expr.rendered.centered;
-            if (isKeycode(kc)) {
-                let usbcode = keycodeToUsbcode(kc);
-                if (usbcode === null) {
-                    return expr;
-                }
-                let text =
-                    this.getSymbol("normal", usbcode).toUpperCase() ||
-                    this.getCenteredText(usbcode);
 
+            // Modified symbol, e.g. shift+7 === "/" (finnish keyboards)
+            let symMods = this.getSymbolWithModifiers(expr.mods, usbcode);
+            if (symMods) {
+                return {
+                    type: "langsymbol",
+                    keycode: expr.keycode,
+                    symbol: symMods,
+                    rendered: {
+                        centered: symMods.toUpperCase(),
+                    },
+                    mods: expr.mods,
+                };
+            }
+
+            // Convert the centered keycode to symbol
+            let sym = this.getSymbol("normal", usbcode);
+            if (sym) {
                 return Object.assign({}, expr, {
                     rendered: Object.assign({}, expr.rendered, {
-                        centered: text,
+                        centered: sym.toUpperCase(),
                     }),
                 });
             }
+        } else if (expr.rendered) {
+            let kc = expr.rendered.centered;
+            if (!isKeycode(kc)) {
+                return expr;
+            }
+            let usbcode = keycodeToUsbcode(kc);
+            if (usbcode === null) {
+                return expr;
+            }
+            let text =
+                this.getSymbol("normal", usbcode).toUpperCase() || this.getCenteredText(usbcode);
+
+            return Object.assign({}, expr, {
+                rendered: Object.assign({}, expr.rendered, {
+                    centered: text,
+                }),
+            });
         }
         return expr;
+    };
+
+    protected producesSymbol = (usbcode: number): boolean => {
+        if (this.mapping.has(usbcode)) {
+            let m = this.mapping.get(usbcode);
+            return (
+                !!m &&
+                (m.normal !== "" || m.shifted !== "" || m.altgr !== "" || m.altgrshifted !== "")
+            );
+        }
+        return false;
     };
 
     protected getSymbolWithModifiers = (
