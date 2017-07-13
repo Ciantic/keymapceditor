@@ -120,12 +120,14 @@ export class LanguageMapping implements ILanguageMapping {
         } else if (isModResult(expr)) {
             let usbcode = keycodeToUsbcode(expr.keycode);
             if (usbcode) {
-                let sym = this.getSymbolWithModifiers(expr.mods, usbcode);
+                let sym =
+                    this.getSymbolWithModifiers(expr.mods, usbcode) ||
+                    this.getSymbol("normal", usbcode);
                 if (sym) {
                     return Object.assign({}, expr, {
-                        rendered: {
+                        rendered: Object.assign({}, expr.rendered, {
                             centered: sym.toUpperCase(),
-                        },
+                        }),
                     });
                 }
             }
