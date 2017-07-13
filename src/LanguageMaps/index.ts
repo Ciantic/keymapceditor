@@ -117,6 +117,18 @@ export class LanguageMapping implements ILanguageMapping {
                     };
                 }
             }
+        } else if (isModResult(expr)) {
+            let usbcode = keycodeToUsbcode(expr.keycode);
+            if (usbcode) {
+                let sym = this.getSymbolWithModifiers(expr.mods, usbcode);
+                if (sym) {
+                    return Object.assign({}, expr, {
+                        rendered: {
+                            centered: sym.toUpperCase(),
+                        },
+                    });
+                }
+            }
         } else if (isRenderableResult(expr)) {
             let kc = expr.rendered.centered;
             if (isKeycode(kc)) {
@@ -124,10 +136,15 @@ export class LanguageMapping implements ILanguageMapping {
                 if (usbcode === null) {
                     return expr;
                 }
-                expr.rendered.centered =
+                let text =
                     this.getSymbol("normal", usbcode).toUpperCase() ||
                     this.getCenteredText(usbcode);
-                return expr;
+
+                return Object.assign({}, expr, {
+                    rendered: Object.assign({}, expr.rendered, {
+                        centered: text,
+                    }),
+                });
             }
         }
         return expr;
