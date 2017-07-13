@@ -383,8 +383,8 @@ export class QmkFunctionsExecutor implements Executor<QmkFunctionResult> {
     };
 
     function = (func: string, args: QmkFunctionResult[]) => {
-        if (func === "S") {
-            return LSFT.apply(this, args);
+        if (func in functionNameAliases) {
+            return (functionNameAliases as any)[func].apply(this, args);
         }
         return null;
     };
