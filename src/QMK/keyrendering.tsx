@@ -54,7 +54,7 @@ export const renderKeycapText = (expr: QmkFunctionResult, defaultValue: KeycapTe
     let kc = getKeycodeOrStringExpr(expr);
     if (kc !== null) {
         if ((isKeycode(kc) || isQmkKeycode(kc)) && kc in knownRenderings) {
-            return knownRenderings[kc];
+            return (knownRenderings as any)[kc];
         }
     }
 
@@ -68,6 +68,12 @@ export const renderKeycapText = (expr: QmkFunctionResult, defaultValue: KeycapTe
 const knownRenderings = {
     KC_NO: {},
     KC_ROLL_OVER: {},
+    KC_BSPACE: {
+        centered: <span style={{ fontSize: "130%" }}>⌫</span>,
+    },
+    KC_ENTER: {
+        centered: <span style={{ fontSize: "170%" }}>⏎</span>,
+    },
     KC_UP: renderBlueprintIconCentered("ARROW_UP"),
     KC_DOWN: renderBlueprintIconCentered("ARROW_DOWN"),
     KC_LEFT: renderBlueprintIconCentered("ARROW_LEFT"),
@@ -123,7 +129,7 @@ const knownRenderings = {
     KC_WWW_BACK: {
         centered: [renderBlueprintIcon("GLOBE"), renderBlueprintIcon("ARROW_LEFT")],
     },
-} as { [k in (qmkkeycode | keycode)]: KeycapText };
+} as Partial<{ [k in (qmkkeycode | keycode)]: KeycapText }>;
 
 const getKeycodeOrStringExpr = (expr: QmkFunctionResult): string | null => {
     if (typeof expr === "string") {

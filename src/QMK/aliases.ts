@@ -111,4 +111,5 @@ export const keycodeAliases: { [k: string]: keycode } = {
     /* Transparent */
     KC_TRANSPARENT: "KC_ROLL_OVER",
     KC_TRNS: "KC_ROLL_OVER",
+    _______: "KC_ROLL_OVER",
 };

@@ -266,36 +266,37 @@ export class App extends React.Component<{}, {}> {
                 {/* Configure keyboard layout */}
 
                 {keyboardLayout &&
-                    <KeyboardLayout
-                        disabled={!!this.keymapsParseError}
-                        styleHoveredKeys={this.hoveredKeys}
-                        stylePressedKeys={new Map().set("" + this.selectedKey, true)}
-                        styleBackgroundKeys={this.configureLayoutKeycaps.backgrounds}
-                        layout={keyboardLayout.layout}
-                        onMouseLeaveKey={this.onMouseOutConfigureKey}
-                        onMouseEnterKey={this.onMouseOverConfigureKey}
-                        keycapTexts={this.configureLayoutKeycaps.texts}
-                        onClickKey={this.onClickConfigureKey}
-                    />}
-                {keyboardLayout &&
-                    <div className={styles.layoutInput}>
-                        <input
-                            spellCheck={false}
-                            disabled={!!this.keymapsParseError || this.selectedKey === null}
-                            value={this.keyInputValue}
-                            ref={this.setInputRef}
-                            onChange={this.onChangeInput}
-                            type="text"
-                            className={cns("pt-input pt-fill pt-large")}
-                            placeholder={LANGS.LayoutInput}
+                    <div className={styles.configureKeyboard}>
+                        <KeyboardLayout
+                            disabled={!!this.keymapsParseError}
+                            styleHoveredKeys={this.hoveredKeys}
+                            stylePressedKeys={new Map().set("" + this.selectedKey, true)}
+                            styleBackgroundKeys={this.configureLayoutKeycaps.backgrounds}
+                            layout={keyboardLayout.layout}
+                            onMouseLeaveKey={this.onMouseOutConfigureKey}
+                            onMouseEnterKey={this.onMouseOverConfigureKey}
+                            keycapTexts={this.configureLayoutKeycaps.texts}
+                            onClickKey={this.onClickConfigureKey}
                         />
-                        {(this.keyValidationError &&
-                            <div className="pt-callout pt-intent-danger">
-                                {this.keyValidationError}
-                            </div>) ||
-                            <div className="pt-callout" style={{ opacity: 0 }}>
-                                {LANGS.NoErrors}
-                            </div>}
+                        <div className={styles.layoutInput}>
+                            <input
+                                spellCheck={false}
+                                disabled={!!this.keymapsParseError || this.selectedKey === null}
+                                value={this.keyInputValue}
+                                ref={this.setInputRef}
+                                onChange={this.onChangeInput}
+                                type="text"
+                                className={cns("pt-input pt-fill pt-large")}
+                                placeholder={LANGS.LayoutInput}
+                            />
+                            {(this.keyValidationError &&
+                                <div className="pt-callout pt-intent-danger">
+                                    {this.keyValidationError}
+                                </div>) ||
+                                <div className="pt-callout" style={{ opacity: 0 }}>
+                                    {LANGS.NoErrors}
+                                </div>}
+                        </div>
                     </div>}
 
                 {/* Reference keyboard layout */}

@@ -178,17 +178,22 @@ const _MOD = (
     }
 };
 
-const _MT = (mod: IModResult | IParseError): IModTapResult | IParseError => {
+const _MT = (mod: IModResult | IParseError): IModResult | IModTapResult | IParseError => {
     if (mod.type === "modresult") {
-        mod.modifierText = "• " + mod.modifierText;
+        // E.g. HYPR_T(KC_NO) is rendered instead as HYPR(KC_NO)
+        if (mod.keycode === "KC_NO") {
+            return mod;
+        }
+
+        let modifierText = "• " + mod.modifierText;
         return {
             type: "modtapresult",
             keycode: mod.keycode,
             mods: mod.mods,
-            modifierText: mod.modifierText,
+            modifierText: modifierText,
             rendered: {
-                centered: (mod.keycode === "KC_NO" && mod.modifierText) || mod.keycode,
-                bottomcenter: mod.keycode !== "KC_NO" && mod.modifierText,
+                centered: mod.keycode,
+                bottomcenter: modifierText,
             },
         };
     }
@@ -253,8 +258,8 @@ const HYPR = (kc: keycode): IModResult | IParseError => {
             mods: ["KC_LALT", "KC_LCTRL", "KC_LGUI", "KC_LSHIFT"],
             modifierText: LANGS.Hyper,
             rendered: {
-                centered: kc,
-                bottomcenter: LANGS.Hyper,
+                centered: (kc === "KC_NO" && LANGS.Hyper) || kc,
+                bottomcenter: kc !== "KC_NO" && LANGS.Hyper,
             },
         };
     } else {
@@ -273,8 +278,8 @@ export const MEH = (kc: keycode): IModResult | IParseError => {
             mods: ["KC_LALT", "KC_LCTRL", "KC_LSHIFT"],
             modifierText: LANGS.Meh,
             rendered: {
-                centered: kc,
-                bottomcenter: LANGS.Meh,
+                centered: (kc === "KC_NO" && LANGS.Meh) || kc,
+                bottomcenter: kc !== "KC_NO" && LANGS.Meh,
             },
         };
     } else {
