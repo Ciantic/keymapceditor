@@ -26,7 +26,7 @@ interface ILangKeycodeResult extends IRenderable {
 
 interface IParseError extends IRenderable {
     type: "error";
-    error: "parse";
+    error: "parse" | "eval";
     data: string;
 }
 

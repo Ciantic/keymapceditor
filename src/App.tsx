@@ -31,7 +31,7 @@ import {
     addLayerKeymaps,
     trySetKeymapsKey,
 } from "./QMK/parsing";
-import { qmkExecutor } from "./QMK/functions";
+import { qmkExecutor, QmkFunctionResult } from "./QMK/functions";
 import {
     sendKeymapToExtension,
     listenMessageFromExtension,
@@ -305,11 +305,12 @@ export class App extends React.Component<{}, {}> {
                     <KeyboardLayout
                         disabled={!!this.keymapsParseError || !!this.layoutNotSelectedError}
                         styleHoveredKeys={this.hoveredRefKeys}
-                        stylePressedKeys={this.selectedRefKeysFromInput}
+                        stylePressedKeys={this.selectedRefKeys}
                         layout={refKeyboard.keyboard}
                         onMouseLeaveKey={this.onMouseOutReferenceKey}
                         onMouseEnterKey={this.onMouseOverReferenceKey}
-                        keycapTexts={this.referenceKeycapTexts}
+                        styleBackgroundKeys={this.referenceKeycaps.backgrounds}
+                        keycapTexts={this.referenceKeycaps.texts}
                         onClickKey={this.onClickReferenceKey}
                     />}
                 {!VSC_MODE
@@ -389,11 +390,72 @@ export class App extends React.Component<{}, {}> {
     }
 
     @computed
+    private get configureLayoutEvaled() {
+        let evalTree: (QmkFunctionResult)[][] = [];
+        this.lastSuccessfulKeymapParsed.forEach(t => {
+            let layerEval: (QmkFunctionResult)[] = [];
+            t.forEach(ast => {
+                let evaled = evalKeyExpression(ast, qmkExecutor);
+                if (evaled === null || (typeof evaled === "object" && evaled.type === "error")) {
+                    layerEval.push({
+                        type: "error",
+                        error: "eval",
+                        data: ast.content,
+                    });
+                } else {
+                    layerEval.push(evaled);
+                }
+            });
+            evalTree.push(layerEval);
+        });
+        return evalTree;
+    }
+
+    @computed
+    private get currentConfigureLayoutEvaled() {
+        if (this.configureLayoutEvaled && this.configureLayoutEvaled.length > 0) {
+            return this.configureLayoutEvaled[
+                Math.max(0, Math.min(this.layerIndex, this.configureLayoutEvaled.length - 1))
+            ];
+        }
+        return null;
+    }
+
+    @computed
+    get currentSelectedKey() {
+        if (this.currentConfigureLayoutEvaled && this.selectedKey !== null) {
+            return this.currentConfigureLayoutEvaled[this.selectedKey];
+        }
+        return null;
+    }
+
+    @computed
+    private get currentSelectedValue() {
+        let currentLayer = this.currentLayoutLayer;
+        if (currentLayer && this.selectedKey !== null) {
+            if (currentLayer[this.selectedKey]) {
+                return currentLayer[this.selectedKey];
+            }
+        }
+        return null;
+    }
+
+    @computed
+    private get currentLayoutLayer() {
+        if (this.lastSuccessfulKeymapParsed && this.lastSuccessfulKeymapParsed.length > 0) {
+            return this.lastSuccessfulKeymapParsed[
+                Math.max(0, Math.min(this.layerIndex, this.lastSuccessfulKeymapParsed.length - 1))
+            ];
+        }
+        return null;
+    }
+
+    @computed
     private get configureLayoutKeycaps(): {
         backgrounds: Map<string, KeycapBackground>;
         texts: Map<string, KeycapText>;
     } {
-        if (!this.currentLayoutLayer) {
+        if (!this.currentConfigureLayoutEvaled) {
             return {
                 backgrounds: new Map(),
                 texts: new Map(),
@@ -403,16 +465,23 @@ export class App extends React.Component<{}, {}> {
         let keycapTexts = new Map<string, KeycapText>();
         let backgrounds = new Map<string, KeycapBackground>();
         let i = 0;
-        for (let parsed of this.currentLayoutLayer) {
+        for (let result of this.currentConfigureLayoutEvaled) {
             let index = "" + i++;
-            let fallback = {
-                centered: parsed.content,
+            let fallback: KeycapText = {
+                centered: "???",
             };
-            let result = evalKeyExpression(parsed, qmkExecutor);
 
-            // Null or IParseError
-            if (result === null || (typeof result === "object" && result.type === "error")) {
-                keycapTexts.set(index, fallback);
+            if (typeof result === "string") {
+                fallback = {
+                    centered: result,
+                };
+            }
+
+            // IParseError
+            if (typeof result === "object" && result.type === "error") {
+                keycapTexts.set(index, {
+                    centered: result.data,
+                });
                 continue;
             }
 
@@ -421,7 +490,6 @@ export class App extends React.Component<{}, {}> {
             }
             backgrounds.set(index, renderKeycapBackground(result));
             keycapTexts.set(index, renderKeycapText(result, fallback));
-            continue;
         }
         return {
             backgrounds: backgrounds,
@@ -430,32 +498,44 @@ export class App extends React.Component<{}, {}> {
     }
 
     @computed
-    private get referenceKeycapTexts() {
+    private get referenceKeycaps(): {
+        backgrounds: Map<string, KeycapBackground>;
+        texts: Map<string, KeycapText>;
+    } {
         let refkeyboard = referenceKeyboards[this.referenceKeyboardKey];
         if (!refkeyboard) {
-            return new Map<string, KeycapText>();
+            return {
+                backgrounds: new Map(),
+                texts: new Map(),
+            };
         }
         let langMapping = languageMappings[this.languageMappingKey];
-        let rendered = new Map<string, KeycapText>();
+        let texts = new Map<string, KeycapText>();
+        let backgrounds = new Map<string, KeycapBackground>();
+
         for (let row of refkeyboard.keyboard) {
             for (let k of row) {
                 if (!isKeycode(k)) {
                     continue;
                 }
+                backgrounds.set(k, renderKeycapBackground(k));
                 let usbcode = keycodeToUsbcode(k);
                 if (langMapping && usbcode) {
                     let value = langMapping.getKeycapTextFromUsbcode(usbcode);
                     if (value) {
-                        rendered.set(k, renderKeycapText(k, value || {}));
+                        texts.set(k, renderKeycapText(k, value || {}));
                         continue;
                     }
                 }
-                rendered.set(k, {
+                texts.set(k, {
                     centered: k,
                 });
             }
         }
-        return rendered;
+        return {
+            backgrounds: backgrounds,
+            texts: texts,
+        };
     }
 
     private updateUrl = () => {
@@ -504,27 +584,6 @@ export class App extends React.Component<{}, {}> {
             return this.downloadedKeymap !== this.keymapsTextareaValue;
         }
         return !!this.keymapsTextareaValue;
-    }
-
-    @computed
-    private get currentSelectedValue() {
-        let currentLayer = this.currentLayoutLayer;
-        if (currentLayer && this.selectedKey !== null) {
-            if (currentLayer[this.selectedKey]) {
-                return currentLayer[this.selectedKey];
-            }
-        }
-        return null;
-    }
-
-    @computed
-    private get currentLayoutLayer() {
-        if (this.lastSuccessfulKeymapParsed && this.lastSuccessfulKeymapParsed.length > 0) {
-            return this.lastSuccessfulKeymapParsed[
-                Math.max(0, Math.min(this.layerIndex, this.lastSuccessfulKeymapParsed.length - 1))
-            ];
-        }
-        return null;
     }
 
     @action
@@ -662,10 +721,11 @@ export class App extends React.Component<{}, {}> {
     };
 
     @computed
-    private get selectedRefKeysFromInput() {
-        let value = this.currentSelectedValue;
-        if (value) {
-            return new Map().set(value.content || "", true);
+    private get selectedRefKeys() {
+        let value = this.currentSelectedKey;
+        console.log("val", value);
+        if (typeof value === "string") {
+            return new Map().set(value || "", true);
         }
         return new Map();
     }
