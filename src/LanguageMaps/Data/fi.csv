@@ -25,7 +25,7 @@ usbcode,normal,shifted,altgr,altgrshifted,deadkeys,bottomleft,topleft,bottomrigh
 27,x,X,,,,,X,,,
 28,y,Y,,,,,Y,,,
 29,z,Z,,,,,Z,,,
-30,1,!,},,,,,,,
+30,1,!,,,,,,,,
 31,2,"""",@,,,,,,,
 32,3,#,,,,,,,,
 33,4,¤,$,,,,,,,
