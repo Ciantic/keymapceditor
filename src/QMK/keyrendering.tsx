@@ -30,11 +30,17 @@ export const renderKeycapBackground = (expr: QmkFunctionResult): KeycapBackgroun
         if (expr.type === "langkeycode" && isModifierKeytype(expr.keycode)) {
             return "mod";
         }
+        if (expr.type === "oneshotmodifier") {
+            return "mod";
+        }
         if (expr.type === "modresult") {
             return "mod";
         }
         if (expr.type === "modtapresult") {
             return "mod";
+        }
+        if (expr.type === "oneshotlayer") {
+            return "layer";
         }
         if (expr.type === "layertapresult") {
             return "layer";
