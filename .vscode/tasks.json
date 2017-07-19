@@ -6,6 +6,11 @@
             "taskName": "start",
             "args": ["webpack.dev.server.js"],
             "problemMatcher": ["$tsc-watch"]
+        },
+        {
+            "type": "npm",
+            "script": "build",
+            "problemMatcher": ["$tsc-watch"]
         }
     ]
 }

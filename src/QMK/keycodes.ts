@@ -299,6 +299,19 @@ export enum qmkcodes {
     RGB_VAD,
 }
 
+const modtapmodifiers = {
+    MOD_LCTL: modifierkeys.KC_LALT,
+    MOD_LSFT: modifierkeys.KC_LSHIFT,
+    MOD_LALT: modifierkeys.KC_LALT,
+    MOD_LGUI: modifierkeys.KC_LGUI,
+    MOD_RCTL: modifierkeys.KC_RCTRL,
+    MOD_RSFT: modifierkeys.KC_RSHIFT,
+    MOD_RALT: modifierkeys.KC_RALT,
+    MOD_RGUI: modifierkeys.KC_RGUI,
+};
+
+export type modtapmodifierstype = keyof typeof modtapmodifiers | "MOD_HYPR" | "MOD_MEH";
+
 export const keys = Object.assign({}, normalkeys, modifierkeys, specialkeys);
 export type keycode = keyof typeof keys;
 export type modifierkeytype = keyof typeof modifierkeys;

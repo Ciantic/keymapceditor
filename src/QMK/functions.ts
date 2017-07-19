@@ -1,4 +1,4 @@
-import { keycode, modifierkeys, modifierkeytype } from "./keycodes";
+import { keycode, modifierkeys, modifierkeytype, modtapmodifierstype } from "./keycodes";
 import { KeycapText } from "../Components/Key";
 import { isKeycode, normalizeKeycode, isModifierKeytype } from "./index";
 import { Executor, AstNode } from "./parsing";
@@ -60,6 +60,16 @@ interface IToggleLayerResult extends IRenderable {
     layer: string;
 }
 
+interface IOneShotLayerResult extends IRenderable {
+    type: "oneshotlayer";
+    layer: string;
+}
+
+interface IOneShotModifierResult extends IRenderable {
+    type: "oneshotmodifier";
+    mod: modtapmodifierstype;
+}
+
 export type QmkFunctionResult =
     | IParseError
     | IModResult
@@ -69,6 +79,8 @@ export type QmkFunctionResult =
     | IToggleLayerResult
     | ILangSymbolResult
     | ILangKeycodeResult
+    | IOneShotLayerResult
+    | IOneShotModifierResult
     | string; // Passes keycodes and words
 
 const modifierTextShortened = (mods: modifierkeytype[]) => {
@@ -95,17 +107,55 @@ const singleLetterModifierOrdering = (modifiers: modifierkeytype[]) => {
     return copy;
 };
 
-const threeLetterModifier = (modifier: modifierkeytype) => {
+const longNameModifier = (modifier: modifierkeytype | modtapmodifierstype) => {
     switch (modifier) {
+        case "MOD_RALT":
+        case "MOD_LALT":
+        case "KC_RALT":
+        case "KC_LALT":
+            return LANGS.Alt;
+        case "MOD_RCTL":
+        case "MOD_LCTL":
+        case "KC_RCTRL":
+        case "KC_LCTRL":
+            return LANGS.Ctrl;
+        case "MOD_LGUI":
+        case "MOD_RGUI":
+        case "KC_RGUI":
+        case "KC_LGUI":
+            return LANGS.Win;
+        case "MOD_RSFT":
+        case "MOD_LSFT":
+        case "KC_RSHIFT":
+        case "KC_LSHIFT":
+            return LANGS.Shift;
+        case "MOD_HYPR":
+            return LANGS.Hyper;
+        case "MOD_MEH":
+            return LANGS.Meh;
+    }
+    return modifier;
+};
+
+const threeLetterModifier = (modifier: modifierkeytype | modtapmodifierstype) => {
+    switch (modifier) {
+        case "MOD_RALT":
+        case "MOD_LALT":
         case "KC_RALT":
         case "KC_LALT":
             return LANGS.AltThreeLetter;
+        case "MOD_RCTL":
+        case "MOD_LCTL":
         case "KC_RCTRL":
         case "KC_LCTRL":
             return LANGS.CtrlThreeLetter;
+        case "MOD_LGUI":
+        case "MOD_RGUI":
         case "KC_RGUI":
         case "KC_LGUI":
             return LANGS.WinThreeLetter;
+        case "MOD_RSFT":
+        case "MOD_LSFT":
         case "KC_RSHIFT":
         case "KC_LSHIFT":
             return LANGS.ShiftThreeLetter;
@@ -290,6 +340,27 @@ export const MEH = (kc: keycode): IModResult | IParseError => {
         };
     }
 };
+export const OSL = (layer: string): IOneShotLayerResult => {
+    return {
+        type: "oneshotlayer",
+        layer: layer,
+        rendered: {
+            centered: "OSL → " + layer,
+        },
+    };
+};
+
+export const OSM = (mod: modtapmodifierstype): IOneShotModifierResult => {
+    let centered = longNameModifier(mod);
+    return {
+        type: "oneshotmodifier",
+        mod: mod,
+        rendered: {
+            centered: centered,
+            bottomcenter: "• ",
+        },
+    };
+};
 
 const functionExpansions = {
     KC_TILD: LSFT("KC_GRAVE"),
@@ -371,6 +442,9 @@ const functions = {
     LCAG,
     HYPR,
     MEH,
+
+    OSL,
+    OSM,
 };
 
 export class QmkFunctionsExecutor implements Executor<QmkFunctionResult> {
