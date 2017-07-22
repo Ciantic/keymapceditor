@@ -26,20 +26,20 @@ const sendToExtension = (command: string, ...args: any[]) => {
 };
 
 export const sendConnectRequestToExtension = () => {
-    sendToExtension("_qmkmapper.connectedPreview", {
+    sendToExtension("_keymapceditor.connectedPreview", {
         uri: VSC_URI,
     });
 };
 
 export const sendLogToExtension = (a: any) => {
-    sendToExtension("_qmkmapper.logging", a);
+    sendToExtension("_keymapceditor.logging", a);
 };
 
 let throttleTimeout: number | null = null;
 
 let sendSaveToExtension = () => {
     setTimeout(() => {
-        sendToExtension("_qmkmapper.save", {
+        sendToExtension("_keymapceditor.save", {
             uri: VSC_URI,
         });
     }, 400); // 400 is greater than 300 below
@@ -61,7 +61,7 @@ export let sendKeymapToExtension = (keymap: string) => {
         clearTimeout(throttleTimeout);
     }
     throttleTimeout = setTimeout(() => {
-        sendToExtension("_qmkmapper.keymapFromPreview", {
+        sendToExtension("_keymapceditor.keymapFromPreview", {
             uri: VSC_URI,
             keymap,
         });

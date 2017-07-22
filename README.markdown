@@ -1,5 +1,5 @@
-# QMKMapper
+# KeymapCEditor
 
 WIP
 
-Built version at the http://ciantic.github.io/qmkmapper/
+Built version at the http://ciantic.github.io/keymapceditor/

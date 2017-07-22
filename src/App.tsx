@@ -172,7 +172,7 @@ export class App extends React.Component<{}, {}> {
                 <nav className="pt-navbar pt-dark pt-fixed-top">
                     {!VSC_MODE
                         ? <div className="pt-navbar-group pt-align-left">
-                              <div className="pt-navbar-heading">QMKMapper</div>
+                              <div className="pt-navbar-heading">KeymapCEditor</div>
                           </div>
                         : null}
                     <div className="pt-navbar-group pt-control-group pt-align-left pt-fill">

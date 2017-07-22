@@ -1,5 +1,5 @@
 {
-    "name": "",
+    "name": "KeymapCEditor",
     "version": "1.0.0",
     "license": "",
     "dependencies": {
@@ -48,7 +48,7 @@
     "scripts": {
         "start": "node webpack.dev.server.js",
         "build": "webpack",
-        "publish": "webpack && dir ..\\ciantic.github.com\\qmkmapper && ncp build ..\\ciantic.github.com\\qmkmapper && git -C ..\\ciantic.github.com commit -a -m \"qmkmapper...\" && git -C ..\\ciantic.github.com push",
+        "publish": "webpack && dir ..\\ciantic.github.com\\keymapceditor && ncp build ..\\ciantic.github.com\\keymapceditor && git -C ..\\ciantic.github.com commit -a -m \"keymapceditor...\" && git -C ..\\ciantic.github.com push",
         "testwatch": "karma start karma.config.js"
     }
 }
