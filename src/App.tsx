@@ -383,7 +383,13 @@ export class App extends React.Component<{}, {}> {
 
                 {!VSC_MODE &&
                     <p className="pt-callout pt-icon-lightbulb">
-                        {LANGS.VscCallout}
+                        <a
+                            className={styles.vscCallout}
+                            href="https://marketplace.visualstudio.com/items?itemName=Ciantic.keymapceditor-vsc"
+                            target="_blank"
+                        >
+                            {LANGS.VscCallout}
+                        </a>
                     </p>}
             </div>
         );
@@ -723,7 +729,6 @@ export class App extends React.Component<{}, {}> {
     @computed
     private get selectedRefKeys() {
         let value = this.currentSelectedKey;
-        console.log("val", value);
         if (typeof value === "string") {
             return new Map().set(value || "", true);
         }

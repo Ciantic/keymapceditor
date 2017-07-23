@@ -42,5 +42,5 @@ export const LANGS = {
     Hyper: "Hyper",
     Meh: "Meh",
 
-    VscCallout: "Tired of Copy & Pasting? Try the VSCode extension.",
+    VscCallout: "Tired of Copy & Pasting? Try the VSCode extension →",
 };

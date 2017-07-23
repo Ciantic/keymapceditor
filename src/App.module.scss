@@ -21,3 +21,12 @@
 .keymapUri {
     margin-top: 2em;
 }
+
+:global .pt-dark {
+    :local .vscCallout {
+        color: inherit;
+        &:hover {
+            color: inherit;
+        }
+    }
+}
