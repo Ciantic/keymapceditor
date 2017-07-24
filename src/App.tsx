@@ -232,7 +232,7 @@ export class App extends React.Component<{}, {}> {
                         </div>
                     </div>
                     {!VSC_MODE &&
-                        <div className="pt-navbar-group pt-control-group pt-align-right">
+                        <div className="pt-navbar-group pt-align-right">
                             <button
                                 className="pt-button pt-icon-delete"
                                 onClick={this.onClickDelete}
