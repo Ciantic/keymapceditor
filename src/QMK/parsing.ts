@@ -18,6 +18,11 @@ export type AstNode = AstWord | AstFunction;
 
 export type KeymapParseResult = AstNode[][];
 
+const regexIndexOf = (str: string, regex: RegExp, startpos: number) => {
+    var indexOf = str.substring(startpos || 0).search(regex);
+    return indexOf >= 0 ? indexOf + (startpos || 0) : indexOf;
+};
+
 export const tryParseKeymapsText = (
     expr: string,
     keyCount: number | null = null,
@@ -25,6 +30,7 @@ export const tryParseKeymapsText = (
 ): KeymapParseResult => {
     let pos = 0;
     let keymaps: AstNode[][] = [];
+    let START = /((KEYMAP)|(LAYOUT(_\s+)?))\(/; //
 
     const tokenWithoutSpaces = (s: string): [number, string] => {
         let start = 0;
@@ -38,8 +44,8 @@ export const tryParseKeymapsText = (
         return [start, s.slice(start, end)];
     };
 
-    while (expr.indexOf("KEYMAP(", pos) !== -1) {
-        pos = expr.indexOf("KEYMAP(", pos);
+    while (regexIndexOf(expr, START, pos) !== -1) {
+        pos = regexIndexOf(expr, START, pos);
         pos += 7; // "KEYMAP("
         let pcount = 1; // First parenthesis of KEYMAP(
         const main = (start: number) => {

@@ -232,6 +232,12 @@ export class LanguageMapping implements ILanguageMapping {
 }
 
 const languageMappingIndex = {
+    us: new LanguageMapping({
+        lang: "US",
+        mapping: require("./Data/us.csv"),
+        name: LANGS.UsStandardKeyboard,
+        referenceKeyboard: "ansi104",
+    }),
     uk: new LanguageMapping({
         lang: "EN-GB",
         mapping: require("./Data/uk.csv"),
