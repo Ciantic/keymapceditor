@@ -21,11 +21,11 @@ export type KeymapParseResult = AstNode[][];
 const regexIndexOf = (str: string, regex: RegExp, startpos: number) => {
     let match = str.substring(startpos || 0).match(regex);
     if (match) {
+        // Returns the end position of the REGEX match (startpos + index + length)
         return (startpos || 0) + (match.index || 0) + match[0].length;
     } else {
         return -1;
     }
-    // return indexOf >= 0 ? indexOf + (startpos || 0) : indexOf;
 };
 
 export const tryParseKeymapsText = (
