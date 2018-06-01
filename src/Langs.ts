@@ -3,7 +3,7 @@ export const LANGS = {
     ChooseReferenceMapping: "Language...",
     ChooseReferenceKeyboard: "Choose a reference keyboard...",
     ChooseKeyboard: "Choose keyboard...",
-    UsStandardKeyboard: "United States keyboard",
+    UsStandardKeyboard: "US keyboard",
     FinnishStandardKeyboard: "Finnish keyboard",
     UkKeyboard: "UK keyboard",
     Ansi104: "ANSI-104",

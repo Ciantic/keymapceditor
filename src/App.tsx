@@ -163,6 +163,10 @@ export class App extends React.Component<{}, {}> {
         let refKeyboard: IReferenceKeyboard | null = referenceKeyboards[this.referenceKeyboardKey];
         let keyboardLayout: IKeyboardLayout | null = keyboardLayouts[this.keyboardLayoutKey];
         let keymapLayoutUrl = this.keymapLayoutUrl;
+        let currentLayoutIndex = Math.min(
+            this.layerIndex,
+            this.lastSuccessfulKeymapParsed.length - 1
+        );
         if (this.isModified) {
             keymapLayoutUrl = "";
         }
@@ -170,28 +174,24 @@ export class App extends React.Component<{}, {}> {
         return (
             <div>
                 <nav className="pt-navbar pt-dark pt-fixed-top">
-                    {!VSC_MODE
-                        ? <div className="pt-navbar-group pt-align-left">
-                              <div className="pt-navbar-heading">KeymapCEditor</div>
-                          </div>
-                        : null}
+                    {!VSC_MODE ? (
+                        <div className="pt-navbar-group pt-align-left">
+                            <div className="pt-navbar-heading">KeymapCEditor</div>
+                        </div>
+                    ) : null}
                     <div className="pt-navbar-group pt-control-group pt-align-left pt-fill">
                         <div className="pt-select pt-fill .modifier">
                             <select
                                 value={this.keyboardLayoutKey}
                                 onChange={this.onChangeKeyboardLayoutKey}
                             >
-                                <option value="">
-                                    {LANGS.ChooseKeyboardLayout}
-                                </option>
-                                {Object.keys(keyboardLayouts).map((t, i) =>
+                                <option value="">{LANGS.ChooseKeyboardLayout}</option>
+                                {Object.keys(keyboardLayouts).map((t, i) => (
                                     <option key={i} value={t}>
                                         {keyboardLayouts[t].name}
                                     </option>
-                                )}
-                                <option value="">
-                                    {LANGS.MyLayoutIsMissing}
-                                </option>
+                                ))}
+                                <option value="">{LANGS.MyLayoutIsMissing}</option>
                             </select>
                         </div>
                         <div className="pt-select pt-fill">
@@ -199,17 +199,13 @@ export class App extends React.Component<{}, {}> {
                                 value={this.languageMappingKey}
                                 onChange={this.onChangeLanguageMappingKey}
                             >
-                                <option value="">
-                                    {LANGS.ChooseReferenceMapping}
-                                </option>
-                                {Object.keys(languageMappings).map((t, i) =>
+                                <option value="">{LANGS.ChooseReferenceMapping}</option>
+                                {Object.keys(languageMappings).map((t, i) => (
                                     <option key={i} value={t}>
                                         {languageMappings[t].name}
                                     </option>
-                                )}
-                                <option value="">
-                                    {LANGS.MyLanguageMapIsMissing}
-                                </option>
+                                ))}
+                                <option value="">{LANGS.MyLanguageMapIsMissing}</option>
                             </select>
                         </div>
                         <div className="pt-select pt-fill .modifier">
@@ -217,55 +213,56 @@ export class App extends React.Component<{}, {}> {
                                 value={this.referenceKeyboardKey}
                                 onChange={this.onChangeReferenceKeyboardKey}
                             >
-                                <option value="-1">
-                                    {LANGS.ChooseReferenceKeyboard}
-                                </option>
-                                {Object.keys(referenceKeyboards).map((key, i) =>
+                                <option value="-1">{LANGS.ChooseReferenceKeyboard}</option>
+                                {Object.keys(referenceKeyboards).map((key, i) => (
                                     <option key={i} value={key}>
                                         {referenceKeyboards[key].name}
                                     </option>
-                                )}
-                                <option value="-2">
-                                    {LANGS.MyReferenceKeyboardIsMissing}
-                                </option>
+                                ))}
+                                <option value="-2">{LANGS.MyReferenceKeyboardIsMissing}</option>
                             </select>
                         </div>
                     </div>
-                    {!VSC_MODE &&
+                    {!VSC_MODE && (
                         <div className="pt-navbar-group pt-align-right">
                             <button
                                 className="pt-button pt-icon-delete"
                                 onClick={this.onClickDelete}
                             />
-                        </div>}
+                        </div>
+                    )}
                 </nav>
 
                 {/* Tabs */}
 
-                {keyboardLayout &&
-                    <Tabs2
-                        className="pt-large"
-                        id="layouts"
-                        onChange={this.onChangeLayer}
-                        selectedTabId={Math.min(
-                            this.layerIndex,
-                            this.lastSuccessfulKeymapParsed.length - 1
-                        )}
-                    >
-                        {this.lastSuccessfulKeymapParsed.map((t, i) =>
-                            <Tab2 key={i} title={`Layer ${i}`} id={i} panel={undefined} />
-                        )}
-                        <a
-                            className="pt-button pt-minimal pt-icon-add"
-                            onClick={this.onClickAddLayer}
-                        >
-                            {LANGS.Add}
-                        </a>
-                    </Tabs2>}
+                {keyboardLayout && (
+                    <div className="pt-tabs pt-large">
+                        <div className="pt-tab-list" role="tablist">
+                            {this.lastSuccessfulKeymapParsed.map((t, i) => (
+                                <div
+                                    className="pt-tab"
+                                    role="tab"
+                                    aria-selected={currentLayoutIndex == i}
+                                    onClick={e => {
+                                        this.onChangeLayer(i, currentLayoutIndex);
+                                    }}
+                                >
+                                    Layer {i}
+                                </div>
+                            ))}
+                            <a
+                                className="pt-button pt-minimal pt-icon-add"
+                                onClick={this.onClickAddLayer}
+                            >
+                                {LANGS.Add}
+                            </a>
+                        </div>
+                    </div>
+                )}
 
                 {/* Configure keyboard layout */}
 
-                {keyboardLayout &&
+                {keyboardLayout && (
                     <div className={styles.configureKeyboard}>
                         <KeyboardLayout
                             disabled={!!this.keymapsParseError}
@@ -289,19 +286,22 @@ export class App extends React.Component<{}, {}> {
                                 className={cns("pt-input pt-fill pt-large")}
                                 placeholder={LANGS.LayoutInput}
                             />
-                            {(this.keyValidationError &&
+                            {(this.keyValidationError && (
                                 <div className="pt-callout pt-intent-danger">
                                     {this.keyValidationError}
-                                </div>) ||
+                                </div>
+                            )) || (
                                 <div className="pt-callout" style={{ opacity: 0 }}>
                                     {LANGS.NoErrors}
-                                </div>}
+                                </div>
+                            )}
                         </div>
-                    </div>}
+                    </div>
+                )}
 
                 {/* Reference keyboard layout */}
 
-                {refKeyboard &&
+                {refKeyboard && (
                     <KeyboardLayout
                         disabled={!!this.keymapsParseError || !!this.layoutNotSelectedError}
                         styleHoveredKeys={this.hoveredRefKeys}
@@ -312,76 +312,82 @@ export class App extends React.Component<{}, {}> {
                         styleBackgroundKeys={this.referenceKeycaps.backgrounds}
                         keycapTexts={this.referenceKeycaps.texts}
                         onClickKey={this.onClickReferenceKey}
-                    />}
-                {!VSC_MODE
-                    ? <div>
-                          <div className={cns("pt-control-group", styles.keymapUri)}>
-                              {this.isModified
-                                  ? <input
-                                        readOnly
-                                        value={keymapLayoutUrl}
-                                        spellCheck={false}
-                                        placeholder={LANGS.KeymapModifiedPlaceholder}
-                                        className={cns("pt-input", "pt-fill")}
+                    />
+                )}
+                {!VSC_MODE ? (
+                    <div>
+                        <div className={cns("pt-control-group", styles.keymapUri)}>
+                            {this.isModified ? (
+                                <input
+                                    readOnly
+                                    value={keymapLayoutUrl}
+                                    spellCheck={false}
+                                    placeholder={LANGS.KeymapModifiedPlaceholder}
+                                    className={cns("pt-input", "pt-fill")}
+                                />
+                            ) : (
+                                <input
+                                    ref={this.setChangeUrlInputRef}
+                                    onChange={this.onChangeKeymapUrl}
+                                    value={keymapLayoutUrl}
+                                    spellCheck={false}
+                                    placeholder={LANGS.KeymapUriPlaceholder}
+                                    className={cns(
+                                        "pt-input",
+                                        "pt-fill",
+                                        this.downloadUrlState === "downloading" &&
+                                            "pt-intent-warning",
+                                        this.downloadUrlState === "error" && "pt-intent-danger"
+                                    )}
+                                />
+                            )}
+                            {this.keyboardLayoutKey &&
+                                this.isModified && (
+                                    <button
+                                        className="pt-button pt-icon-undo"
+                                        onClick={this.onClickDefaultUrl}
                                     />
-                                  : <input
-                                        ref={this.setChangeUrlInputRef}
-                                        onChange={this.onChangeKeymapUrl}
-                                        value={keymapLayoutUrl}
-                                        spellCheck={false}
-                                        placeholder={LANGS.KeymapUriPlaceholder}
-                                        className={cns(
-                                            "pt-input",
-                                            "pt-fill",
-                                            this.downloadUrlState === "downloading" &&
-                                                "pt-intent-warning",
-                                            this.downloadUrlState === "error" && "pt-intent-danger"
-                                        )}
-                                    />}
-                              {this.keyboardLayoutKey &&
-                                  this.isModified &&
-                                  <button
-                                      className="pt-button pt-icon-undo"
-                                      onClick={this.onClickDefaultUrl}
-                                  />}
-                          </div>
-                          <textarea
-                              ref={this.setTextareaRef}
-                              placeholder={LANGS.KeymapsPlaceholder}
-                              value={this.keymapsTextareaValue}
-                              spellCheck={false}
-                              className={cns(
-                                  "pt-input pt-fill",
-                                  this.keymapsTextareaValue &&
-                                      this.layoutNotSelectedError &&
-                                      "pt-intent-danger",
-                                  this.keymapsTextareaValue &&
-                                      this.keymapsParseError !== "" &&
-                                      "pt-intent-danger",
-                                  styles.keymapsTextarea
-                              )}
-                              onFocus={this.onFocusKeymapsTextarea}
-                              onChange={this.onChangeKeymapsTextarea}
-                          />
-                      </div>
-                    : <input
-                          value={VSC_URI}
-                          readOnly
-                          className={cns("pt-input", "pt-fill", styles.keymapUri)}
-                      />}
+                                )}
+                        </div>
+                        <textarea
+                            ref={this.setTextareaRef}
+                            placeholder={LANGS.KeymapsPlaceholder}
+                            value={this.keymapsTextareaValue}
+                            spellCheck={false}
+                            className={cns(
+                                "pt-input pt-fill",
+                                this.keymapsTextareaValue &&
+                                    this.layoutNotSelectedError &&
+                                    "pt-intent-danger",
+                                this.keymapsTextareaValue &&
+                                    this.keymapsParseError !== "" &&
+                                    "pt-intent-danger",
+                                styles.keymapsTextarea
+                            )}
+                            onFocus={this.onFocusKeymapsTextarea}
+                            onChange={this.onChangeKeymapsTextarea}
+                        />
+                    </div>
+                ) : (
+                    <input
+                        value={VSC_URI}
+                        readOnly
+                        className={cns("pt-input", "pt-fill", styles.keymapUri)}
+                    />
+                )}
 
                 {this.keymapsTextareaValue &&
-                    this.layoutNotSelectedError &&
-                    <div className="pt-callout pt-intent-danger">
-                        {this.layoutNotSelectedError}
-                    </div>}
+                    this.layoutNotSelectedError && (
+                        <div className="pt-callout pt-intent-danger">
+                            {this.layoutNotSelectedError}
+                        </div>
+                    )}
                 {this.keymapsTextareaValue &&
-                    this.keymapsParseError !== "" &&
-                    <div className="pt-callout pt-intent-danger">
-                        {this.keymapsParseError}
-                    </div>}
+                    this.keymapsParseError !== "" && (
+                        <div className="pt-callout pt-intent-danger">{this.keymapsParseError}</div>
+                    )}
 
-                {!VSC_MODE &&
+                {!VSC_MODE && (
                     <p className="pt-callout pt-icon-lightbulb">
                         <a
                             className={styles.vscCallout}
@@ -390,7 +396,8 @@ export class App extends React.Component<{}, {}> {
                         >
                             {LANGS.VscCallout}
                         </a>
-                    </p>}
+                    </p>
+                )}
             </div>
         );
     }

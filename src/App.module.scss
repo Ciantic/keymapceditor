@@ -30,3 +30,8 @@
         }
     }
 }
+
+// TODO: Why do I need this?
+:global .pt-large .pt-tab {
+    line-height: $pt-grid-size * 4;
+}
