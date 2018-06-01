@@ -19,8 +19,13 @@ export type AstNode = AstWord | AstFunction;
 export type KeymapParseResult = AstNode[][];
 
 const regexIndexOf = (str: string, regex: RegExp, startpos: number) => {
-    var indexOf = str.substring(startpos || 0).search(regex);
-    return indexOf >= 0 ? indexOf + (startpos || 0) : indexOf;
+    let match = str.substring(startpos || 0).match(regex);
+    if (match) {
+        return (startpos || 0) + (match.index || 0) + match[0].length;
+    } else {
+        return -1;
+    }
+    // return indexOf >= 0 ? indexOf + (startpos || 0) : indexOf;
 };
 
 export const tryParseKeymapsText = (
@@ -30,7 +35,7 @@ export const tryParseKeymapsText = (
 ): KeymapParseResult => {
     let pos = 0;
     let keymaps: AstNode[][] = [];
-    let START = /((KEYMAP)|(LAYOUT(_\s+)?))\(/; //
+    let START = /((KEYMAP)|(LAYOUT(_\S+)?))\(/; //
 
     const tokenWithoutSpaces = (s: string): [number, string] => {
         let start = 0;
@@ -46,7 +51,6 @@ export const tryParseKeymapsText = (
 
     while (regexIndexOf(expr, START, pos) !== -1) {
         pos = regexIndexOf(expr, START, pos);
-        pos += 7; // "KEYMAP("
         let pcount = 1; // First parenthesis of KEYMAP(
         const main = (start: number) => {
             let arr: AstNode[] = [];
@@ -70,14 +74,12 @@ export const tryParseKeymapsText = (
                 if (/\s/.test(token)) {
                     throw new Error("Whitespaces are not allowed at: " + (start + offset));
                 }
-                arr.push(
-                    {
-                        type: "word",
-                        content: token,
-                        offset: start + offset,
-                        end: end, // end includes the whitespace
-                    } as AstWord
-                );
+                arr.push({
+                    type: "word",
+                    content: token,
+                    offset: start + offset,
+                    end: end, // end includes the whitespace
+                } as AstWord);
                 return true;
             };
 
@@ -96,16 +98,14 @@ export const tryParseKeymapsText = (
                 }
                 let params = main(end + 1);
                 let paramsend = params.slice(-1)[0].end;
-                arr.push(
-                    {
-                        type: "func",
-                        func: token,
-                        params: params,
-                        offset: start + offset,
-                        end: paramsend + 1, // + 1 for the ending parenthesis
-                        content: expr.slice(start + offset, paramsend + 1),
-                    } as AstFunction
-                );
+                arr.push({
+                    type: "func",
+                    func: token,
+                    params: params,
+                    offset: start + offset,
+                    end: paramsend + 1, // + 1 for the ending parenthesis
+                    content: expr.slice(start + offset, paramsend + 1),
+                } as AstFunction);
                 return true;
             };
 
@@ -193,9 +193,9 @@ export const tryParseKeymapsText = (
 
 /**
  * Returns the new keymapText with key set on to a newValue.
- * 
- * Throws an parsing error if the new value cannot be set. 
- * 
+ *
+ * Throws an parsing error if the new value cannot be set.
+ *
  * @param keymapText KeymapText value to modify
  * @param layer Layer number
  * @param key Selected key

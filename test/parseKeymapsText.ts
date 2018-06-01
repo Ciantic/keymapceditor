@@ -245,6 +245,34 @@ describe("parseKeymapsText", () => {
         ]);
     });
 
+    it("LAYOUT keyword", () => {
+        let c = tryParseKeymapsText("LAYOUT(TEST)");
+        expect(c).to.be.deep.equal([
+            [
+                {
+                    type: "word",
+                    content: "TEST",
+                    offset: 7,
+                    end: 7 + 4,
+                },
+            ],
+        ]);
+    });
+
+    it("LAYOUT_ergodox keyword", () => {
+        let c = tryParseKeymapsText("LAYOUT_ergodox(TEST)");
+        expect(c).to.be.deep.equal([
+            [
+                {
+                    type: "word",
+                    content: "TEST",
+                    offset: 15,
+                    end: 15 + 4,
+                },
+            ],
+        ]);
+    });
+
     it("the ergodox", () => {
         let c = tryParseKeymapsText(ERGODOX_DEFAULT);
         let contents = c.map(t => t.map(t => t.content));
