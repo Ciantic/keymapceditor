@@ -67,7 +67,12 @@ export class App extends React.Component<{}, {}> {
     @observable private keyValidationError: string = "";
     @observable private keymapsTextareaValue = "";
     @observable private keyInputValue = "";
-    @observable private lastSuccessfulKeymapParsed: KeymapParseResult = [];
+    @observable
+    private lastSuccessfulKeymapParsed: KeymapParseResult = {
+        keymapKeyword: "KEYMAP",
+        layers: [],
+        endParsingPosition: 0,
+    };
     private inputRef: HTMLInputElement | null = null;
     private textareaRef: HTMLTextAreaElement | null = null;
     private urlInputRef: HTMLInputElement | null = null;
@@ -165,7 +170,7 @@ export class App extends React.Component<{}, {}> {
         let keymapLayoutUrl = this.keymapLayoutUrl;
         let currentLayoutIndex = Math.min(
             this.layerIndex,
-            this.lastSuccessfulKeymapParsed.length - 1
+            this.lastSuccessfulKeymapParsed.layers.length - 1
         );
         if (this.isModified) {
             keymapLayoutUrl = "";
@@ -238,7 +243,7 @@ export class App extends React.Component<{}, {}> {
                 {keyboardLayout && (
                     <div className="pt-tabs pt-large">
                         <div className="pt-tab-list" role="tablist">
-                            {this.lastSuccessfulKeymapParsed.map((t, i) => (
+                            {this.lastSuccessfulKeymapParsed.layers.map((t, i) => (
                                 <div
                                     className="pt-tab"
                                     role="tab"
@@ -405,7 +410,7 @@ export class App extends React.Component<{}, {}> {
     @computed
     private get configureLayoutEvaled() {
         let evalTree: (QmkFunctionResult)[][] = [];
-        this.lastSuccessfulKeymapParsed.forEach(t => {
+        this.lastSuccessfulKeymapParsed.layers.forEach(t => {
             let layerEval: (QmkFunctionResult)[] = [];
             t.forEach(ast => {
                 let evaled = evalKeyExpression(ast, qmkExecutor);
@@ -455,9 +460,12 @@ export class App extends React.Component<{}, {}> {
 
     @computed
     private get currentLayoutLayer() {
-        if (this.lastSuccessfulKeymapParsed && this.lastSuccessfulKeymapParsed.length > 0) {
-            return this.lastSuccessfulKeymapParsed[
-                Math.max(0, Math.min(this.layerIndex, this.lastSuccessfulKeymapParsed.length - 1))
+        if (this.lastSuccessfulKeymapParsed && this.lastSuccessfulKeymapParsed.layers.length > 0) {
+            return this.lastSuccessfulKeymapParsed.layers[
+                Math.max(
+                    0,
+                    Math.min(this.layerIndex, this.lastSuccessfulKeymapParsed.layers.length - 1)
+                )
             ];
         }
         return null;
@@ -728,8 +736,11 @@ export class App extends React.Component<{}, {}> {
     @action
     private onClickAddLayer = (e: React.MouseEvent<any>) => {
         e.preventDefault();
-        this.keymapsTextareaValue = addLayerKeymaps(this.keymapsTextareaValue);
-        this.layerIndex = this.lastSuccessfulKeymapParsed.length;
+        this.keymapsTextareaValue = addLayerKeymaps(
+            this.keymapsTextareaValue,
+            this.lastSuccessfulKeymapParsed.keymapKeyword
+        );
+        this.layerIndex = this.lastSuccessfulKeymapParsed.layers.length;
         this.selectedKey = null;
     };
 

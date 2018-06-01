@@ -103,7 +103,7 @@ describe("parseKeymapsText", () => {
 
     it("simple word", () => {
         let c = tryParseKeymapsText("123456 KEYMAP(  TEST   )");
-        expect(c).to.be.deep.equal([
+        expect(c.layers).to.be.deep.equal([
             [
                 {
                     type: "word",
@@ -117,7 +117,7 @@ describe("parseKeymapsText", () => {
 
     it("simple arg list", () => {
         let c = tryParseKeymapsText("123456 KEYMAP(TEST, TEST2)");
-        expect(c).to.be.deep.equal([
+        expect(c.layers).to.be.deep.equal([
             [
                 { type: "word", content: "TEST", offset: 14, end: 14 + 4 },
                 { type: "word", content: "TEST2", offset: 20, end: 20 + 5 },
@@ -127,7 +127,7 @@ describe("parseKeymapsText", () => {
 
     it("simple function one argument", () => {
         let c = tryParseKeymapsText("123456 KEYMAP(FUN(PARAM))");
-        expect(c).to.be.deep.equal([
+        expect(c.layers).to.be.deep.equal([
             [
                 {
                     type: "func",
@@ -143,7 +143,7 @@ describe("parseKeymapsText", () => {
 
     it("simple function with two arguments", () => {
         let c = tryParseKeymapsText("123456 KEYMAP(FUN(PARAM, PARAM2))");
-        expect(c).to.be.deep.equal([
+        expect(c.layers).to.be.deep.equal([
             [
                 {
                     type: "func",
@@ -162,7 +162,7 @@ describe("parseKeymapsText", () => {
 
     it("simple function next to each other", () => {
         let c = tryParseKeymapsText("123456 KEYMAP(FUN(PARAM), FUN2(PARAM2))");
-        expect(c).to.be.deep.equal([
+        expect(c.layers).to.be.deep.equal([
             [
                 {
                     type: "func",
@@ -186,12 +186,14 @@ describe("parseKeymapsText", () => {
 
     it("block comment removal", () => {
         let c = tryParseKeymapsText("KEYMAP(TOKEN /* Importanto */)");
-        expect(c).to.be.deep.equal([[{ type: "word", content: "TOKEN", offset: 7, end: 13 }]]);
+        expect(c.layers).to.be.deep.equal([
+            [{ type: "word", content: "TOKEN", offset: 7, end: 13 }],
+        ]);
     });
 
     it("block comment removal two", () => {
         let c = tryParseKeymapsText("KEYMAP(TOKEN /* Importanto */, TOKEN2)");
-        expect(c).to.be.deep.equal([
+        expect(c.layers).to.be.deep.equal([
             [
                 { type: "word", content: "TOKEN", offset: 7, end: 13 },
                 { type: "word", content: "TOKEN2", offset: 31, end: 37 },
@@ -201,7 +203,7 @@ describe("parseKeymapsText", () => {
 
     it("// comment removal", () => {
         let c = tryParseKeymapsText("KEYMAP(TOKEN // Importanto \n, TOKEN2)");
-        expect(c).to.be.deep.equal([
+        expect(c.layers).to.be.deep.equal([
             [
                 { type: "word", content: "TOKEN", offset: 7, end: 13 },
                 { type: "word", content: "TOKEN2", offset: 30, end: 36 },
@@ -211,7 +213,7 @@ describe("parseKeymapsText", () => {
 
     it("\\ end of line escape removal", () => {
         let c = tryParseKeymapsText("KEYMAP(TOKEN, \\\n TOKEN2)");
-        expect(c).to.be.deep.equal([
+        expect(c.layers).to.be.deep.equal([
             [
                 { type: "word", content: "TOKEN", offset: 7, end: 12 },
                 { type: "word", content: "TOKEN2", offset: 17, end: 23 },
@@ -221,7 +223,7 @@ describe("parseKeymapsText", () => {
 
     it("parse error test", () => {
         let c = tryParseKeymapsText("KEYMAP(OUTER(INNER(A)), AFTER)");
-        expect(c).to.be.deep.equal([
+        expect(c.layers).to.be.deep.equal([
             [
                 {
                     type: "func",
@@ -247,35 +249,41 @@ describe("parseKeymapsText", () => {
 
     it("LAYOUT keyword", () => {
         let c = tryParseKeymapsText("LAYOUT(TEST)");
-        expect(c).to.be.deep.equal([
-            [
-                {
-                    type: "word",
-                    content: "TEST",
-                    offset: 7,
-                    end: 7 + 4,
-                },
+        expect(c).to.be.deep.equal({
+            keymapKeyword: "LAYOUT",
+            layers: [
+                [
+                    {
+                        type: "word",
+                        content: "TEST",
+                        offset: 7,
+                        end: 7 + 4,
+                    },
+                ],
             ],
-        ]);
+        });
     });
 
     it("LAYOUT_ergodox keyword", () => {
         let c = tryParseKeymapsText("LAYOUT_ergodox(TEST)");
-        expect(c).to.be.deep.equal([
-            [
-                {
-                    type: "word",
-                    content: "TEST",
-                    offset: 15,
-                    end: 15 + 4,
-                },
+        expect(c).to.be.deep.equal({
+            keymapKeyword: "LAYOUT_ergodox",
+            layers: [
+                [
+                    {
+                        type: "word",
+                        content: "TEST",
+                        offset: 15,
+                        end: 15 + 4,
+                    },
+                ],
             ],
-        ]);
+        });
     });
 
     it("the ergodox", () => {
         let c = tryParseKeymapsText(ERGODOX_DEFAULT);
-        let contents = c.map(t => t.map(t => t.content));
+        let contents = c.layers.map(t => t.map(t => t.content));
 
         // prettier-ignore
         expect(contents).to.be.deep.equal(

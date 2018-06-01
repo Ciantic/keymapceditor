@@ -16,7 +16,11 @@ interface AstFunction {
 
 export type AstNode = AstWord | AstFunction;
 
-export type KeymapParseResult = AstNode[][];
+export type KeymapParseResult = {
+    keymapKeyword: string;
+    layers: AstNode[][];
+    endParsingPosition: number;
+};
 
 const regexIndexOf = (str: string, regex: RegExp, startpos: number) => {
     let match = str.substring(startpos || 0).match(regex);
@@ -36,6 +40,7 @@ export const tryParseKeymapsText = (
     let pos = 0;
     let keymaps: AstNode[][] = [];
     let START = /((KEYMAP)|(LAYOUT(_\S+)?))\(/; //
+    let keymapKeyword = (expr.match(START) || "")[0].slice(0, -1);
 
     const tokenWithoutSpaces = (s: string): [number, string] => {
         let start = 0;
@@ -185,10 +190,11 @@ export const tryParseKeymapsText = (
     } else if (keymaps.length === 0) {
         throw new Error("KEYMAPS not found");
     }
-    if (_returnOnlyEndHack) {
-        (keymaps as any)._endParsingPosition = pos;
-    }
-    return keymaps;
+    return {
+        keymapKeyword: keymapKeyword,
+        endParsingPosition: pos,
+        layers: keymaps,
+    };
 };
 
 /**
@@ -210,7 +216,7 @@ export const trySetKeymapsKey = (
     keyCount: number | null = null
 ) => {
     let keymapParsed = tryParseKeymapsText(keymapText, keyCount);
-    let layerKeys = keymapParsed[layer];
+    let layerKeys = keymapParsed.layers[layer];
     if (!layerKeys) {
         return keymapText;
     }
@@ -227,20 +233,22 @@ export const trySetKeymapsKey = (
     return newKeymap;
 };
 
-export const addLayerKeymaps = (keymapText: string) => {
+export const addLayerKeymaps = (keymapText: string, keymapKeyword: string) => {
     try {
         var keymaps = tryParseKeymapsText(keymapText, null, true);
     } catch (e) {
         return keymapText;
     }
-    let pos: number = (keymaps as any)._endParsingPosition;
-    let n = keymaps.length;
-    let empties = keymaps[0].map(t => "KC_TRANSPARENT");
+    let pos: number = keymaps.endParsingPosition;
+    let n = keymaps.layers.length;
+    let empties = keymaps.layers[0].map(t => "KC_TRANSPARENT");
     return (
         keymapText.substr(0, pos) +
         ",\n [" +
         n +
-        "] = KEYMAP(" +
+        "] = " +
+        keymapKeyword +
+        "(" +
         empties.join(",") +
         ")" +
         keymapText.substr(pos)
