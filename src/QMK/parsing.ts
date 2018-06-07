@@ -40,7 +40,11 @@ export const tryParseKeymapsText = (
     let pos = 0;
     let keymaps: AstNode[][] = [];
     let START = /((KEYMAP)|(LAYOUT(_\S+)?))\(/; //
-    let keymapKeyword = (expr.match(START) || "")[0].slice(0, -1);
+    let matchStart = expr.match(START);
+    if (!matchStart) {
+        throw new Error("KEYMAP() or LAYOUT_something() is missing");
+    }
+    let keymapKeyword = matchStart[0].slice(0, -1);
 
     const tokenWithoutSpaces = (s: string): [number, string] => {
         let start = 0;

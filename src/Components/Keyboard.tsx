@@ -185,7 +185,7 @@ export class KeyboardLayout extends React.Component<KeyboardLayoutProps, {}> {
                     position: "relative",
                 }}
             >
-                {keys.map((k, n) =>
+                {keys.map((k, n) => (
                     <Key
                         key={n}
                         {...k}
@@ -198,7 +198,7 @@ export class KeyboardLayout extends React.Component<KeyboardLayoutProps, {}> {
                         w2={c(k.w2)}
                         h2={c(k.h2)}
                     />
-                )}
+                ))}
                 <div
                     style={{
                         position: "relative",

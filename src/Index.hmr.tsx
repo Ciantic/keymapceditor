@@ -2,6 +2,7 @@ import { AppContainer } from "react-hot-loader";
 import * as React from "react";
 import { render } from "react-dom";
 import { App } from "./App";
+import { TestRenderer } from "./TestRenderer";
 import DevTools from "mobx-react-devtools";
 
 const rootEl = document.getElementById("root");
@@ -11,7 +12,7 @@ const rootEl = document.getElementById("root");
 render(
     <AppContainer>
         <div>
-            <App />
+            {window.location.hash === "#testrenderer" ? <TestRenderer /> : <App />}
             <DevTools />
         </div>
     </AppContainer>,
