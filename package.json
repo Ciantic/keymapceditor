@@ -35,6 +35,8 @@
         "postcss-loader": "^2.0.5",
         "prettier": "^1.5.2",
         "react-hot-loader": "next",
+        "request": "^2.87.0",
+        "request-promise": "^4.2.2",
         "sass-loader": "^6.0.3",
         "style-loader": "^0.16.1",
         "svg-inline-loader": "^0.7.1",
@@ -47,8 +49,9 @@
     },
     "scripts": {
         "start": "node webpack.dev.server.js",
-        "build": "webpack",
-        "publish": "webpack && dir ..\\ciantic.github.com\\keymapceditor && ncp build ..\\ciantic.github.com\\keymapceditor && git -C ..\\ciantic.github.com commit -a -m \"keymapceditor...\" && git -C ..\\ciantic.github.com push",
+        "build": "node build.js",
+        "publish":
+            "webpack && dir ..\\ciantic.github.com\\keymapceditor && ncp build ..\\ciantic.github.com\\keymapceditor && git -C ..\\ciantic.github.com commit -a -m \"keymapceditor...\" && git -C ..\\ciantic.github.com push",
         "testwatch": "karma start karma.config.js"
     }
 }

@@ -14,7 +14,7 @@ import { observer } from "mobx-react";
 import * as React from "react";
 
 import { KeyboardLayout } from "./Components/Keyboard";
-import { IKeyboardLayout, keyboardLayouts, KeyboardLayoutKey } from "./KeyboardLayouts";
+import { IKeyboardLayout, keyboards } from "./KeyboardLayouts";
 import { LANGS } from "./Langs";
 import { ILanguageMapping, languageMappings, LanguageMappingKey } from "./LanguageMaps";
 import { keycodeToUsbcode, normalizeKeycode, isKeycode } from "./QMK";
@@ -39,14 +39,16 @@ import {
     sendLogToExtension,
 } from "./Extension";
 import { renderKeycapBackground, renderKeycapText } from "./QMK/keyrendering";
+import { QmkInfoJson, QmkKeyDefinition } from "./QMK/info";
+import { QmkKeyboardLayout } from "./Components/QmkKeyboard";
 const styles = require("./App.module.scss");
 
 @observer
 export class App extends React.Component<{}, {}> {
     // Drop downs
-    @observable private languageMappingKey: LanguageMappingKey | "";
-    @observable private referenceKeyboardKey: ReferenceKeyboardKey | "";
-    @observable private keyboardLayoutKey: KeyboardLayoutKey | "";
+    @observable private selectedLanguageMappingKey: LanguageMappingKey | "";
+    @observable private selectedRefKeyboardKey: ReferenceKeyboardKey | "";
+    @observable private selectedKeyboardKey: string = "";
 
     // Keymap.c from url
     @observable private keymapLayoutUrl = "";
@@ -69,7 +71,7 @@ export class App extends React.Component<{}, {}> {
     @observable private keyInputValue = "";
     @observable
     private lastSuccessfulKeymapParsed: KeymapParseResult = {
-        keymapKeyword: "KEYMAP",
+        layoutKey: "KEYMAP",
         layers: [],
         endParsingPosition: 0,
     };
@@ -85,11 +87,11 @@ export class App extends React.Component<{}, {}> {
 
         // This is almost like a caching trick, parsing happens only when these
         // two changes
-        reaction(t => [this.keymapsTextareaValue, this.keyboardLayoutKey], this.parseKeymapsText);
+        reaction(t => [this.keymapsTextareaValue, this.selectedKeyboardKey], this.parseKeymapsText);
 
         // Somewhat bad way to update a keyInputValue
         reaction(
-            () => [this.keyboardLayoutKey, this.currentSelectedValue],
+            () => [this.selectedKeyboardKey, this.currentSelectedValue],
             () => {
                 this.keyValidationError = "";
                 this.keyInputValue =
@@ -99,11 +101,11 @@ export class App extends React.Component<{}, {}> {
 
         // Update reference keyboard from language mapping change
         reaction(
-            () => this.languageMappingKey,
+            () => this.selectedLanguageMappingKey,
             () => {
-                let languageMap = languageMappings[this.languageMappingKey];
+                let languageMap = languageMappings[this.selectedLanguageMappingKey];
                 if (languageMap && languageMap.referenceKeyboard) {
-                    this.referenceKeyboardKey = languageMap.referenceKeyboard;
+                    this.selectedRefKeyboardKey = languageMap.referenceKeyboard;
                 }
             }
         );
@@ -133,31 +135,31 @@ export class App extends React.Component<{}, {}> {
             // Get keyboard key from a url
             let m = VSC_URI.match(/\/keyboards\/(.*?)\//);
             if (m && m[1]) {
-                this.keyboardLayoutKey = m[1] as KeyboardLayoutKey;
+                this.selectedKeyboardKey = m[1];
             }
 
             if (window.localStorage) {
                 let lang = localStorage.getItem("language");
                 if (lang) {
-                    this.languageMappingKey = lang as LanguageMappingKey;
+                    this.selectedLanguageMappingKey = lang as LanguageMappingKey;
                 }
 
                 let ref = localStorage.getItem("referenceKeyboard");
                 if (ref) {
-                    this.referenceKeyboardKey = ref as ReferenceKeyboardKey;
+                    this.selectedRefKeyboardKey = ref as ReferenceKeyboardKey;
                 }
 
                 reaction(
-                    () => this.languageMappingKey,
+                    () => this.selectedLanguageMappingKey,
                     () => {
-                        localStorage.setItem("language", this.languageMappingKey);
+                        localStorage.setItem("language", this.selectedLanguageMappingKey);
                     }
                 );
 
                 reaction(
-                    () => this.referenceKeyboardKey,
+                    () => this.selectedRefKeyboardKey,
                     () => {
-                        localStorage.setItem("referenceKeyboard", this.referenceKeyboardKey);
+                        localStorage.setItem("referenceKeyboard", this.selectedRefKeyboardKey);
                     }
                 );
             }
@@ -165,8 +167,10 @@ export class App extends React.Component<{}, {}> {
     }
 
     render() {
-        let refKeyboard: IReferenceKeyboard | null = referenceKeyboards[this.referenceKeyboardKey];
-        let keyboardLayout: IKeyboardLayout | null = keyboardLayouts[this.keyboardLayoutKey];
+        let refKeyboard: IReferenceKeyboard | null =
+            referenceKeyboards[this.selectedRefKeyboardKey];
+        // let keyboardLayout: QmkInfoJson | null = keyboardLayouts[this.keyboardLayoutKey];
+        let currentKeyboardKeys = this.currentLayoutKeys;
         let keymapLayoutUrl = this.keymapLayoutUrl;
         let currentLayoutIndex = Math.min(
             this.layerIndex,
@@ -187,13 +191,13 @@ export class App extends React.Component<{}, {}> {
                     <div className="pt-navbar-group pt-control-group pt-align-left pt-fill">
                         <div className="pt-select pt-fill .modifier">
                             <select
-                                value={this.keyboardLayoutKey}
+                                value={this.selectedKeyboardKey}
                                 onChange={this.onChangeKeyboardLayoutKey}
                             >
                                 <option value="">{LANGS.ChooseKeyboardLayout}</option>
-                                {Object.keys(keyboardLayouts).map((t, i) => (
+                                {Object.keys(keyboards).map((t, i) => (
                                     <option key={i} value={t}>
-                                        {keyboardLayouts[t].name}
+                                        {keyboards[t].keyboard_name}
                                     </option>
                                 ))}
                                 <option value="">{LANGS.MyLayoutIsMissing}</option>
@@ -201,7 +205,7 @@ export class App extends React.Component<{}, {}> {
                         </div>
                         <div className="pt-select pt-fill">
                             <select
-                                value={this.languageMappingKey}
+                                value={this.selectedLanguageMappingKey}
                                 onChange={this.onChangeLanguageMappingKey}
                             >
                                 <option value="">{LANGS.ChooseReferenceMapping}</option>
@@ -215,7 +219,7 @@ export class App extends React.Component<{}, {}> {
                         </div>
                         <div className="pt-select pt-fill .modifier">
                             <select
-                                value={this.referenceKeyboardKey}
+                                value={this.selectedRefKeyboardKey}
                                 onChange={this.onChangeReferenceKeyboardKey}
                             >
                                 <option value="-1">{LANGS.ChooseReferenceKeyboard}</option>
@@ -240,7 +244,7 @@ export class App extends React.Component<{}, {}> {
 
                 {/* Tabs */}
 
-                {keyboardLayout && (
+                {currentKeyboardKeys && (
                     <div className="pt-tabs pt-large">
                         <div className="pt-tab-list" role="tablist">
                             {this.lastSuccessfulKeymapParsed.layers.map((t, i) => (
@@ -267,14 +271,14 @@ export class App extends React.Component<{}, {}> {
 
                 {/* Configure keyboard layout */}
 
-                {keyboardLayout && (
+                {currentKeyboardKeys && (
                     <div className={styles.configureKeyboard}>
-                        <KeyboardLayout
+                        <QmkKeyboardLayout
                             disabled={!!this.keymapsParseError}
                             styleHoveredKeys={this.hoveredKeys}
                             stylePressedKeys={new Map().set("" + this.selectedKey, true)}
                             styleBackgroundKeys={this.configureLayoutKeycaps.backgrounds}
-                            layout={keyboardLayout.layout}
+                            {...currentKeyboardKeys}
                             onMouseLeaveKey={this.onMouseOutConfigureKey}
                             onMouseEnterKey={this.onMouseOverConfigureKey}
                             keycapTexts={this.configureLayoutKeycaps.texts}
@@ -346,7 +350,7 @@ export class App extends React.Component<{}, {}> {
                                     )}
                                 />
                             )}
-                            {this.keyboardLayoutKey &&
+                            {this.selectedKeyboardKey &&
                                 this.isModified && (
                                     <button
                                         className="pt-button pt-icon-undo"
@@ -405,6 +409,32 @@ export class App extends React.Component<{}, {}> {
                 )}
             </div>
         );
+    }
+
+    @computed
+    private get currentLayoutKeys() {
+        let key = this.lastSuccessfulKeymapParsed.layoutKey;
+        if (!key) {
+            return null;
+        }
+        let layout = keyboards[this.selectedKeyboardKey];
+        if (!layout) {
+            return null;
+        }
+        let keys: QmkKeyDefinition[] = [];
+        // Get by layout key, e.g. LAYOUT_ergodox
+        if (key in layout.layouts) {
+            keys = layout.layouts[key].layout;
+        } else {
+            // If layout key is not found (e.g. KEYMAP), fallback to first layout
+            keys = layout.layouts[Object.keys(layout.layouts)[0]].layout;
+        }
+
+        return {
+            width: layout.width,
+            height: layout.height,
+            keys: keys,
+        };
     }
 
     @computed
@@ -482,7 +512,7 @@ export class App extends React.Component<{}, {}> {
                 texts: new Map(),
             };
         }
-        let langMapping = languageMappings[this.languageMappingKey];
+        let langMapping = languageMappings[this.selectedLanguageMappingKey];
         let keycapTexts = new Map<string, KeycapText>();
         let backgrounds = new Map<string, KeycapBackground>();
         let i = 0;
@@ -523,14 +553,14 @@ export class App extends React.Component<{}, {}> {
         backgrounds: Map<string, KeycapBackground>;
         texts: Map<string, KeycapText>;
     } {
-        let refkeyboard = referenceKeyboards[this.referenceKeyboardKey];
+        let refkeyboard = referenceKeyboards[this.selectedRefKeyboardKey];
         if (!refkeyboard) {
             return {
                 backgrounds: new Map(),
                 texts: new Map(),
             };
         }
-        let langMapping = languageMappings[this.languageMappingKey];
+        let langMapping = languageMappings[this.selectedLanguageMappingKey];
         let texts = new Map<string, KeycapText>();
         let backgrounds = new Map<string, KeycapBackground>();
 
@@ -560,7 +590,11 @@ export class App extends React.Component<{}, {}> {
     }
 
     private updateUrl = () => {
-        let parts = [this.keyboardLayoutKey, this.languageMappingKey, this.keymapLayoutUrl];
+        let parts = [
+            this.selectedKeyboardKey,
+            this.selectedLanguageMappingKey,
+            encodeURIComponent(this.keymapLayoutUrl),
+        ];
         let newUrl = parts.join("|");
         if (newUrl) {
             window.location.replace("#" + newUrl);
@@ -581,11 +615,11 @@ export class App extends React.Component<{}, {}> {
                 .split("|");
 
             if (languageMappingKey && languageMappingKey in languageMappings) {
-                this.languageMappingKey = languageMappingKey as LanguageMappingKey;
+                this.selectedLanguageMappingKey = languageMappingKey as LanguageMappingKey;
             }
 
-            if (keyboardLayoutKey && keyboardLayoutKey in keyboardLayouts) {
-                this.keyboardLayoutKey = keyboardLayoutKey as KeyboardLayoutKey;
+            if (keyboardLayoutKey && keyboardLayoutKey in keyboards) {
+                this.selectedKeyboardKey = keyboardLayoutKey;
             }
 
             if (keymapLayoutUrl) {
@@ -609,9 +643,9 @@ export class App extends React.Component<{}, {}> {
 
     @action
     private onClickDelete = () => {
-        this.keyboardLayoutKey = "";
-        this.languageMappingKey = "";
-        this.referenceKeyboardKey = "";
+        this.selectedKeyboardKey = "";
+        this.selectedLanguageMappingKey = "";
+        this.selectedRefKeyboardKey = "";
         this.downloadUrlState = "";
         this.downloadedKeymap = "";
         this.keymapsTextareaValue = "";
@@ -620,7 +654,7 @@ export class App extends React.Component<{}, {}> {
 
     @action
     private onClickDefaultUrl = () => {
-        let layout = keyboardLayouts[this.keyboardLayoutKey];
+        let layout = keyboards[this.selectedKeyboardKey];
         if (layout) {
             this.keymapsTextareaValue = this.downloadedKeymap;
             setTimeout(() => {
@@ -688,8 +722,8 @@ export class App extends React.Component<{}, {}> {
         this.textareaRef = el;
     };
 
-    private getLayoutOrError = (): IKeyboardLayout | null => {
-        let layout = keyboardLayouts[this.keyboardLayoutKey] || null;
+    private getLayoutOrError = (): QmkInfoJson | null => {
+        let layout = keyboards[this.selectedKeyboardKey] || null;
         if (!layout) {
             this.layoutNotSelectedError = LANGS.LayoutNotSelectedError;
             return null;
@@ -709,10 +743,7 @@ export class App extends React.Component<{}, {}> {
             return;
         }
         try {
-            this.lastSuccessfulKeymapParsed = tryParseKeymapsText(
-                this.keymapsTextareaValue,
-                layout.keyCount
-            );
+            this.lastSuccessfulKeymapParsed = tryParseKeymapsText(this.keymapsTextareaValue);
             this.keymapsParseError = "";
             sendKeymapToExtension(this.keymapsTextareaValue);
         } catch (e) {
@@ -738,7 +769,7 @@ export class App extends React.Component<{}, {}> {
         e.preventDefault();
         this.keymapsTextareaValue = addLayerKeymaps(
             this.keymapsTextareaValue,
-            this.lastSuccessfulKeymapParsed.keymapKeyword
+            this.lastSuccessfulKeymapParsed.layoutKey
         );
         this.layerIndex = this.lastSuccessfulKeymapParsed.layers.length;
         this.selectedKey = null;
@@ -783,8 +814,7 @@ export class App extends React.Component<{}, {}> {
                 this.keymapsTextareaValue,
                 this.layerIndex,
                 this.selectedKey,
-                keymap,
-                layout && layout.keyCount
+                keymap
             );
         } catch (e) {
             if (e instanceof Error) {
@@ -796,21 +826,21 @@ export class App extends React.Component<{}, {}> {
     // Drop downs at the top
     @action
     private onChangeLanguageMappingKey = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        this.languageMappingKey = e.target.value as LanguageMappingKey;
+        this.selectedLanguageMappingKey = e.target.value as LanguageMappingKey;
     };
 
     @action
     private onChangeReferenceKeyboardKey = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        this.referenceKeyboardKey = e.target.value as ReferenceKeyboardKey;
+        this.selectedRefKeyboardKey = e.target.value as ReferenceKeyboardKey;
     };
 
     @action
     private onChangeKeyboardLayoutKey = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        let oldLayout = keyboardLayouts[this.keyboardLayoutKey];
+        let oldLayout = keyboards[this.selectedKeyboardKey];
         let oldUrl = this.keymapLayoutUrl;
-        this.keyboardLayoutKey = e.target.value as KeyboardLayoutKey;
-        let newLayout = keyboardLayouts[this.keyboardLayoutKey];
-        if (!newLayout || !newLayout.defaultKeymapUrl) {
+        this.selectedKeyboardKey = e.target.value;
+        let newLayout = keyboards[this.selectedKeyboardKey];
+        if (!newLayout || !newLayout._defaultKeymapUrl) {
             return;
         }
 
@@ -819,11 +849,11 @@ export class App extends React.Component<{}, {}> {
             (!this.keymapLayoutUrl && !this.keymapsTextareaValue) ||
             // If the URL is default URL of the old layout, allow changing the
             // url to new default url
-            (oldLayout && oldLayout.defaultKeymapUrl === oldUrl && !this.isModified) ||
+            (oldLayout && oldLayout._defaultKeymapUrl === oldUrl && !this.isModified) ||
             // If the keymap text is not modified allow changing the download url
             (!oldLayout && !this.isModified)
         ) {
-            this.keymapLayoutUrl = newLayout.defaultKeymapUrl;
+            this.keymapLayoutUrl = newLayout._defaultKeymapUrl;
         }
     };
 
@@ -863,8 +893,7 @@ export class App extends React.Component<{}, {}> {
                         this.keymapsTextareaValue,
                         this.layerIndex,
                         this.selectedKey,
-                        k,
-                        layout && layout.keyCount
+                        k
                     );
                 } catch (e) {}
             }

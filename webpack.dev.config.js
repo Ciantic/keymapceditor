@@ -4,7 +4,8 @@ var webpack = require("webpack");
 
 var appDir = path.resolve(__dirname, "src");
 var testDir = path.resolve(__dirname, "test");
-var config = {
+
+let createConfig = infoJson => ({
     entry: {
         vendors: [
             "react-hot-loader",
@@ -88,6 +89,6 @@ var config = {
         }),
         new webpack.HotModuleReplacementPlugin(),
     ],
-};
+});
 
-module.exports = config;
+module.exports = createConfig;

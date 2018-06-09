@@ -17,7 +17,7 @@ interface AstFunction {
 export type AstNode = AstWord | AstFunction;
 
 export type KeymapParseResult = {
-    keymapKeyword: string;
+    layoutKey: string;
     layers: AstNode[][];
     endParsingPosition: number;
 };
@@ -32,11 +32,7 @@ const regexIndexOf = (str: string, regex: RegExp, startpos: number) => {
     }
 };
 
-export const tryParseKeymapsText = (
-    expr: string,
-    keyCount: number | null = null,
-    _returnOnlyEndHack: boolean = false
-): KeymapParseResult => {
+export const tryParseKeymapsText = (expr: string): KeymapParseResult => {
     let pos = 0;
     let keymaps: AstNode[][] = [];
     let START = /((KEYMAP)|(LAYOUT(_\S+)?))\(/; //
@@ -183,19 +179,19 @@ export const tryParseKeymapsText = (
         if (keymaps.some(t => t.length !== keymaps[0].length)) {
             throw new Error("Incompatible amount of keys in layers");
         }
-        if (keyCount !== null && keymaps[0].length !== keyCount) {
-            throw new Error(
-                "Number of keys in KEYMAP are incorrect for this layout: " +
-                    keymaps[0].length +
-                    " expected: " +
-                    keyCount
-            );
-        }
+        // if (keyCount !== null && keymaps[0].length !== keyCount) {
+        //     throw new Error(
+        //         "Number of keys in KEYMAP are incorrect for this layout: " +
+        //             keymaps[0].length +
+        //             " expected: " +
+        //             keyCount
+        //     );
+        // }
     } else if (keymaps.length === 0) {
         throw new Error("KEYMAPS not found");
     }
     return {
-        keymapKeyword: keymapKeyword,
+        layoutKey: keymapKeyword,
         endParsingPosition: pos,
         layers: keymaps,
     };
@@ -216,10 +212,9 @@ export const trySetKeymapsKey = (
     keymapText: string,
     layer: number,
     key: number,
-    newValue: string,
-    keyCount: number | null = null
+    newValue: string
 ) => {
-    let keymapParsed = tryParseKeymapsText(keymapText, keyCount);
+    let keymapParsed = tryParseKeymapsText(keymapText);
     let layerKeys = keymapParsed.layers[layer];
     if (!layerKeys) {
         return keymapText;
@@ -233,13 +228,13 @@ export const trySetKeymapsKey = (
     let head = keymapText.substr(0, keyValue.offset);
     let tail = keymapText.substr(keyValue.offset + keyValue.content.length);
     let newKeymap = head + newValue + tail;
-    tryParseKeymapsText(newKeymap, keyCount);
+    tryParseKeymapsText(newKeymap);
     return newKeymap;
 };
 
 export const addLayerKeymaps = (keymapText: string, keymapKeyword: string) => {
     try {
-        var keymaps = tryParseKeymapsText(keymapText, null, true);
+        var keymaps = tryParseKeymapsText(keymapText);
     } catch (e) {
         return keymapText;
     }

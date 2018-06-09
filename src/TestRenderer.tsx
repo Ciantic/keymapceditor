@@ -14,41 +14,14 @@ import { observer } from "mobx-react";
 import * as React from "react";
 import { cns } from "./Utils/classnames";
 import { Key } from "./Components/Key";
+import { KeyboardLayoutArray } from "./KLE/keyboardlayout";
+import { QmkInfoJson } from "./QMK/info";
 const styles = require("./TestRenderer.module.scss");
-
-type Coordinate = [number, number];
-
-type KeyDefinition = {
-    label: string;
-    x: number;
-    y: number;
-    w?: number;
-    h?: number;
-    r?: number;
-    ks?: Coordinate[];
-};
-
-type LayoutDefinition = {
-    layout: KeyDefinition[];
-};
-
-type LayoutFormat = {
-    [keyword: string]: LayoutDefinition; // keyword is the "LAYOUT_something"
-};
-
-type InfoFormat = {
-    keyboard_name: string;
-    url: string;
-    bootloader: string;
-    maintainer: string;
-    width: number;
-    height: number;
-    layouts: LayoutFormat;
-};
 
 @observer
 export class TestRenderer extends React.Component<{}, {}> {
-    // @observable private infoJsonValue: InfoFormat | null = null;
+    @observable private convertFromKleValue: string = "";
+
     @observable
     private infoJsonTextarea = `
     {
@@ -472,20 +445,34 @@ export class TestRenderer extends React.Component<{}, {}> {
         }
     }
     `;
+
+    convert = (kleValue: string): KeyboardLayoutArray => {
+        return null as any;
+    };
+
     render() {
-        let infoJsonValue: InfoFormat = null as any;
+        let infoJsonValue: QmkInfoJson = null as any;
         try {
             infoJsonValue = JSON.parse(this.infoJsonTextarea);
         } catch (e) {}
         return (
             <div>
+                Insert KLE here:
+                <textarea
+                    value={this.convertFromKleValue}
+                    spellCheck={false}
+                    className={cns("pt-input pt-fill", styles.inputTextarea)}
+                    onChange={this.onChangeKeymapsTextarea}
+                />
+                <br />
+                <br />
+                Insert INFO.json here:
                 <textarea
                     value={this.infoJsonTextarea}
                     spellCheck={false}
                     className={cns("pt-input pt-fill", styles.inputTextarea)}
                     onChange={this.onChangeKeymapsTextarea}
                 />
-
                 <div
                     style={{ position: "relative", overflow: "hidden" }}
                     className={styles.keyboard}
