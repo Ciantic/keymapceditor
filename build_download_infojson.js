@@ -132,23 +132,49 @@ const getInfoJsonMap = async (clearCache = false) => {
     /** @type {[string, Object][]} */
     let infoJsonFiles = fs
         .readdirSync(INFO_JSON_CACHE_DIR)
-        .map(t => {
-            let fileContents = fs.readFileSync(path.join(INFO_JSON_CACHE_DIR, t), "utf8");
+        .map(cachedFilename => {
+            let fileContents = fs.readFileSync(
+                path.join(INFO_JSON_CACHE_DIR, cachedFilename),
+                "utf8"
+            );
+            /** @type {{url: string; infoJson: any; keymapUrl: string}} */
+            let parsed;
             try {
-                /** @type {{url: string; infoJson: any; keymapUrl: string}} */
-                let parsed = JSON.parse(fileContents);
-
-                /** @type {[string, Object]} */
-                let result = [t, { ...parsed.infoJson, _defaultKeymapUrl: parsed.keymapUrl }];
-                return result;
+                parsed = JSON.parse(fileContents);
             } catch (e) {
-                console.error("Unable to parse info.json file: ", t);
+                console.error("Unable to parse info.json file: ", cachedFilename);
                 console.log("Continuing regardless of error...");
+                return;
             }
+
+            let keyMatch = parsed.url.match(/keyboards\/(.*?)\//);
+            if (!keyMatch) {
+                console.log("Discarding info.json file, not in keyboards: ", cachedFilename);
+                return;
+            }
+
+            if (!parsed.infoJson.keyboard_name) {
+                console.log("Discarding info.json file, no name: ", cachedFilename);
+                return;
+            }
+
+            /** @type {[string, Object]} */
+            let result = [
+                keyMatch[1],
+                {
+                    ...parsed.infoJson,
+                    _defaultKeymapUrl: parsed.keymapUrl.replace(
+                        "info.json",
+                        "keymaps/default/keymap.c"
+                    ),
+                },
+            ];
+            return result;
         })
         .filter(t => t);
 
     let infoJsonMap = {};
+    infoJsonFiles.sort((a, b) => (a[0] > b[0] ? 1 : a[0] === b[0] ? 0 : -1));
     infoJsonFiles.forEach(([key, infoJson]) => {
         infoJsonMap[key] = infoJson;
     });

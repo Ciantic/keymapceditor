@@ -192,7 +192,7 @@ export class App extends React.Component<{}, {}> {
                         <div className="pt-select pt-fill .modifier">
                             <select
                                 value={this.selectedKeyboardKey}
-                                onChange={this.onChangeKeyboardLayoutKey}
+                                onChange={this.onChangeKeyboard}
                             >
                                 <option value="">{LANGS.ChooseKeyboardLayout}</option>
                                 {Object.keys(keyboards).map((t, i) => (
@@ -206,7 +206,7 @@ export class App extends React.Component<{}, {}> {
                         <div className="pt-select pt-fill">
                             <select
                                 value={this.selectedLanguageMappingKey}
-                                onChange={this.onChangeLanguageMappingKey}
+                                onChange={this.onChangeLanguageMapping}
                             >
                                 <option value="">{LANGS.ChooseReferenceMapping}</option>
                                 {Object.keys(languageMappings).map((t, i) => (
@@ -220,7 +220,7 @@ export class App extends React.Component<{}, {}> {
                         <div className="pt-select pt-fill .modifier">
                             <select
                                 value={this.selectedRefKeyboardKey}
-                                onChange={this.onChangeReferenceKeyboardKey}
+                                onChange={this.onChangeReferenceKeyboard}
                             >
                                 <option value="-1">{LANGS.ChooseReferenceKeyboard}</option>
                                 {Object.keys(referenceKeyboards).map((key, i) => (
@@ -610,23 +610,23 @@ export class App extends React.Component<{}, {}> {
         // This format may change
         let hash = location.href.indexOf("#");
         if (hash !== -1) {
-            let [keyboardLayoutKey, languageMappingKey, keymapLayoutUrl] = location.href
+            let [selectedKeyboard, selectedLang, selectedKeymapUrl] = location.href
                 .slice(hash + 1)
                 .split("|");
 
-            if (languageMappingKey && languageMappingKey in languageMappings) {
-                this.selectedLanguageMappingKey = languageMappingKey as LanguageMappingKey;
+            if (selectedLang && selectedLang in languageMappings) {
+                this.selectedLanguageMappingKey = selectedLang as LanguageMappingKey;
             }
 
-            if (keyboardLayoutKey && keyboardLayoutKey in keyboards) {
-                this.selectedKeyboardKey = keyboardLayoutKey;
+            if (selectedKeyboard && selectedKeyboard in keyboards) {
+                this.selectedKeyboardKey = selectedKeyboard;
             }
 
-            if (keymapLayoutUrl) {
-                if (keymapLayoutUrl.indexOf("%3A") !== -1) {
-                    keymapLayoutUrl = decodeURIComponent(keymapLayoutUrl);
+            if (selectedKeymapUrl) {
+                if (selectedKeymapUrl.indexOf("%3A") !== -1) {
+                    selectedKeymapUrl = decodeURIComponent(selectedKeymapUrl);
                 }
-                this.keymapLayoutUrl = keymapLayoutUrl;
+                this.keymapLayoutUrl = selectedKeymapUrl;
             }
         }
     };
@@ -683,6 +683,9 @@ export class App extends React.Component<{}, {}> {
 
         if (this.throttleDownloadKeymapUrlTimeout !== null) {
             clearTimeout(this.throttleDownloadKeymapUrlTimeout);
+        }
+        if (this.downloadKeymapUrlXhr) {
+            this.downloadKeymapUrlXhr.abort();
         }
         this.throttleDownloadKeymapUrlTimeout = setTimeout(() => {
             if (this.downloadKeymapUrlXhr) {
@@ -825,17 +828,17 @@ export class App extends React.Component<{}, {}> {
 
     // Drop downs at the top
     @action
-    private onChangeLanguageMappingKey = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    private onChangeLanguageMapping = (e: React.ChangeEvent<HTMLSelectElement>) => {
         this.selectedLanguageMappingKey = e.target.value as LanguageMappingKey;
     };
 
     @action
-    private onChangeReferenceKeyboardKey = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    private onChangeReferenceKeyboard = (e: React.ChangeEvent<HTMLSelectElement>) => {
         this.selectedRefKeyboardKey = e.target.value as ReferenceKeyboardKey;
     };
 
     @action
-    private onChangeKeyboardLayoutKey = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    private onChangeKeyboard = (e: React.ChangeEvent<HTMLSelectElement>) => {
         let oldLayout = keyboards[this.selectedKeyboardKey];
         let oldUrl = this.keymapLayoutUrl;
         this.selectedKeyboardKey = e.target.value;
@@ -844,17 +847,26 @@ export class App extends React.Component<{}, {}> {
             return;
         }
 
-        if (
-            // If nothing is set, allow changing url
-            (!this.keymapLayoutUrl && !this.keymapsTextareaValue) ||
-            // If the URL is default URL of the old layout, allow changing the
-            // url to new default url
-            (oldLayout && oldLayout._defaultKeymapUrl === oldUrl && !this.isModified) ||
-            // If the keymap text is not modified allow changing the download url
-            (!oldLayout && !this.isModified)
-        ) {
+        // if (
+        //     // If nothing is set, allow changing url
+        //     (!this.keymapLayoutUrl && !this.keymapsTextareaValue) ||
+        //     // If the URL is default URL of the old layout, allow changing the
+        //     // url to new default url
+        //     (oldLayout && oldLayout._defaultKeymapUrl === oldUrl && !this.isModified) ||
+        //     // If the keymap text is not modified allow changing the download url
+        //     (!oldLayout && !this.isModified)
+        // ) {
+        this.lastSuccessfulKeymapParsed = {
+            layoutKey: "KEYMAP",
+            layers: [],
+            endParsingPosition: 0,
+        };
+        if (!VSC_MODE) {
+            this.keymapsTextareaValue = "";
             this.keymapLayoutUrl = newLayout._defaultKeymapUrl;
         }
+
+        // }
     };
 
     // Configure keyboard layout
