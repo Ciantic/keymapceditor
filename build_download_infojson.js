@@ -147,7 +147,7 @@ const getInfoJsonMap = async (clearCache = false) => {
                 return;
             }
 
-            let keyMatch = parsed.url.match(/keyboards\/(.*?)\//);
+            let keyMatch = parsed.url.match(/keyboards\/(.*?)\/info.json/);
             if (!keyMatch) {
                 console.log("Discarding info.json file, not in keyboards: ", cachedFilename);
                 return;
