@@ -250,7 +250,7 @@ describe("parseKeymapsText", () => {
     it("LAYOUT keyword", () => {
         let c = tryParseKeymapsText("LAYOUT(TEST)");
         expect(c).to.be.deep.equal({
-            keymapKeyword: "LAYOUT",
+            layoutKey: "LAYOUT",
             endParsingPosition: 12,
             layers: [
                 [
@@ -268,7 +268,7 @@ describe("parseKeymapsText", () => {
     it("LAYOUT_ergodox keyword", () => {
         let c = tryParseKeymapsText("LAYOUT_ergodox(TEST)");
         expect(c).to.be.deep.equal({
-            keymapKeyword: "LAYOUT_ergodox",
+            layoutKey: "LAYOUT_ergodox",
             endParsingPosition: 20,
             layers: [
                 [

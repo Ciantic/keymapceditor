@@ -11,7 +11,7 @@ module.exports = function(config) {
         preprocessors: {
             "test/*.ts": ["webpack"],
         },
-        webpack: webpackDevConfig,
+        webpack: webpackDevConfig({}),
         mime: {
             "text/x-typescript": ["ts"],
         },

@@ -137,24 +137,27 @@ const getInfoJsonMap = async (clearCache = false) => {
                 path.join(INFO_JSON_CACHE_DIR, cachedFilename),
                 "utf8"
             );
+
+            // Parse the info.json
             /** @type {{url: string; infoJson: any; keymapUrl: string}} */
             let parsed;
             try {
                 parsed = JSON.parse(fileContents);
             } catch (e) {
-                console.error("Unable to parse info.json file: ", cachedFilename);
-                console.log("Continuing regardless of error...");
+                console.error("Discarding info.json file, not JSON parseable: ", cachedFilename);
                 return;
             }
 
+            // Get the keyboard unique identifier from url part keyboards/...
             let keyMatch = parsed.url.match(/keyboards\/(.*?)\/info.json/);
             if (!keyMatch) {
                 console.log("Discarding info.json file, not in keyboards: ", cachedFilename);
                 return;
             }
 
+            // TODO: Validate info.json structure more thoroughly here:
             if (!parsed.infoJson.keyboard_name) {
-                console.log("Discarding info.json file, no name: ", cachedFilename);
+                console.log("Discarding info.json file, no keyboard_name: ", cachedFilename);
                 return;
             }
 
