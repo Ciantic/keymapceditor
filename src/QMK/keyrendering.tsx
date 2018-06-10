@@ -51,6 +51,11 @@ export const renderKeycapBackground = (expr: QmkFunctionResult): KeycapBackgroun
         if (expr.type === "togglelayer") {
             return "layer";
         }
+        if (expr.type === "customkeycap" && expr.bg) {
+            return {
+                bg: expr.bg,
+            };
+        }
     }
     return "";
 };
@@ -135,7 +140,7 @@ const knownRenderings = {
     KC_WWW_BACK: {
         centered: [renderBlueprintIcon("GLOBE"), renderBlueprintIcon("ARROW_LEFT")],
     },
-} as Partial<{ [k in (qmkkeycode | keycode)]: KeycapText }>;
+} as Partial<{ [k in qmkkeycode | keycode]: KeycapText }>;
 
 const getKeycodeOrStringExpr = (expr: QmkFunctionResult): string | null => {
     if (typeof expr === "string") {

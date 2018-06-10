@@ -1,3 +1,6 @@
+import { load as readYaml } from "js-yaml";
+import { Record, Array, Union, InstanceOf, String, Partial } from "runtypes";
+
 interface AstWord {
     type: "word";
     content: string;
@@ -14,12 +17,52 @@ interface AstFunction {
     content: string;
 }
 
+interface ISettings {
+    keycaps?: {
+        match: RegExp | string;
+        text?: string;
+        bg?: string;
+    }[];
+}
+
+const Settings = Partial({
+    keycaps: Array(
+        Record({
+            match: Union(InstanceOf(RegExp), String),
+        }).And(
+            Partial({
+                text: String,
+                bg: String,
+            })
+        )
+    ),
+});
+
 export type AstNode = AstWord | AstFunction;
 
 export type KeymapParseResult = {
     layoutKey: string;
     layers: AstNode[][];
     endParsingPosition: number;
+    settings: ISettings;
+};
+
+const tryReadSettings = (str: string): ISettings => {
+    let val;
+
+    // Read yaml
+    try {
+        val = readYaml(str);
+    } catch (e) {
+        throw new Error("/*---*/ settings contains error: " + e);
+    }
+
+    // Validate and give result
+    try {
+        return Settings.check(val);
+    } catch (e) {
+        throw new Error("/*---*/ settings are not valid: " + e);
+    }
 };
 
 const regexIndexOf = (str: string, regex: RegExp, startpos: number) => {
@@ -41,6 +84,12 @@ export const tryParseKeymapsText = (expr: string): KeymapParseResult => {
         throw new Error("KEYMAP() or LAYOUT_something() is missing");
     }
     let keymapKeyword = matchStart[0].slice(0, -1);
+
+    let settings: ISettings = {};
+    let settingsYamlMatch = expr.match(/\/\*---([\s\S]*?)---\*\//);
+    if (settingsYamlMatch) {
+        settings = tryReadSettings(settingsYamlMatch[1]);
+    }
 
     const tokenWithoutSpaces = (s: string): [number, string] => {
         let start = 0;
@@ -194,6 +243,7 @@ export const tryParseKeymapsText = (expr: string): KeymapParseResult => {
         layoutKey: keymapKeyword,
         endParsingPosition: pos,
         layers: keymaps,
+        settings: settings,
     };
 };
 

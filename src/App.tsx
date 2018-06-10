@@ -14,7 +14,7 @@ import { observer } from "mobx-react";
 import * as React from "react";
 
 import { KeyboardLayout } from "./Components/Keyboard";
-import { IKeyboardLayout, keyboards } from "./KeyboardLayouts";
+import { keyboards } from "./KeyboardLayouts";
 import { LANGS } from "./Langs";
 import { ILanguageMapping, languageMappings, LanguageMappingKey } from "./LanguageMaps";
 import { keycodeToUsbcode, normalizeKeycode, isKeycode } from "./QMK";
@@ -41,6 +41,7 @@ import {
 import { renderKeycapBackground, renderKeycapText } from "./QMK/keyrendering";
 import { QmkInfoJson, QmkKeyDefinition } from "./QMK/info";
 import { QmkKeyboardLayout } from "./Components/QmkKeyboard";
+import { exampleKeymap } from "./Example";
 const styles = require("./App.module.scss");
 
 @observer
@@ -74,6 +75,7 @@ export class App extends React.Component<{}, {}> {
         layoutKey: "KEYMAP",
         layers: [],
         endParsingPosition: 0,
+        settings: {},
     };
     private inputRef: HTMLInputElement | null = null;
     private textareaRef: HTMLTextAreaElement | null = null;
@@ -138,7 +140,15 @@ export class App extends React.Component<{}, {}> {
                 this.selectedKeyboardKey = m[1];
             }
 
+            // Get from localstorage
             if (window.localStorage) {
+                if (!this.selectedKeyboardKey) {
+                    let kbd = localStorage.getItem("keyboard");
+                    if (kbd) {
+                        this.selectedKeyboardKey = kbd;
+                    }
+                }
+
                 let lang = localStorage.getItem("language");
                 if (lang) {
                     this.selectedLanguageMappingKey = lang as LanguageMappingKey;
@@ -148,6 +158,13 @@ export class App extends React.Component<{}, {}> {
                 if (ref) {
                     this.selectedRefKeyboardKey = ref as ReferenceKeyboardKey;
                 }
+
+                reaction(
+                    () => this.selectedKeyboardKey,
+                    () => {
+                        localStorage.setItem("keyboard", this.selectedKeyboardKey);
+                    }
+                );
 
                 reaction(
                     () => this.selectedLanguageMappingKey,
@@ -231,13 +248,21 @@ export class App extends React.Component<{}, {}> {
                                 <option value="-2">{LANGS.MyReferenceKeyboardIsMissing}</option>
                             </select>
                         </div>
+                        {!VSC_MODE && (
+                            <button
+                                className="pt-button pt-icon-trash"
+                                onClick={this.onClickDelete}
+                            />
+                        )}
                     </div>
                     {!VSC_MODE && (
                         <div className="pt-navbar-group pt-align-right">
                             <button
-                                className="pt-button pt-icon-delete"
-                                onClick={this.onClickDelete}
-                            />
+                                className="pt-button pt-icon-example pt-intent-success"
+                                onClick={this.onClickShowExample}
+                            >
+                                {LANGS.ExampleKeymap}
+                            </button>
                         </div>
                     )}
                 </nav>
@@ -249,6 +274,7 @@ export class App extends React.Component<{}, {}> {
                         <div className="pt-tab-list" role="tablist">
                             {this.lastSuccessfulKeymapParsed.layers.map((t, i) => (
                                 <div
+                                    key={i}
                                     className="pt-tab"
                                     role="tab"
                                     aria-selected={currentLayoutIndex == i}
@@ -278,7 +304,7 @@ export class App extends React.Component<{}, {}> {
                             styleHoveredKeys={this.hoveredKeys}
                             stylePressedKeys={new Map().set("" + this.selectedKey, true)}
                             styleBackgroundKeys={this.configureLayoutKeycaps.backgrounds}
-                            {...currentKeyboardKeys}
+                            keys={currentKeyboardKeys}
                             onMouseLeaveKey={this.onMouseOutConfigureKey}
                             onMouseEnterKey={this.onMouseOverConfigureKey}
                             keycapTexts={this.configureLayoutKeycaps.texts}
@@ -430,11 +456,7 @@ export class App extends React.Component<{}, {}> {
             keys = layout.layouts[Object.keys(layout.layouts)[0]].layout;
         }
 
-        return {
-            width: layout.width,
-            height: layout.height,
-            keys: keys,
-        };
+        return keys;
     }
 
     @computed
@@ -443,6 +465,34 @@ export class App extends React.Component<{}, {}> {
         this.lastSuccessfulKeymapParsed.layers.forEach(t => {
             let layerEval: (QmkFunctionResult)[] = [];
             t.forEach(ast => {
+                // Replacements from YAML settings
+                if (this.lastSuccessfulKeymapParsed.settings.keycaps) {
+                    for (const c of this.lastSuccessfulKeymapParsed.settings.keycaps) {
+                        if (typeof c.match === "string") {
+                            if (c.match === ast.content) {
+                                layerEval.push({
+                                    type: "customkeycap",
+                                    rendered: {
+                                        centered: c.text || ast.content,
+                                    },
+                                    bg: c.bg,
+                                });
+                                return; // Jump to next ast
+                            }
+                        } else if (c.match.exec(ast.content)) {
+                            layerEval.push({
+                                type: "customkeycap",
+                                rendered: {
+                                    centered: c.text || ast.content,
+                                },
+                                bg: c.bg,
+                            });
+                            return; // Jump to next ast
+                        }
+                    }
+                }
+
+                // Evaluate
                 let evaled = evalKeyExpression(ast, qmkExecutor);
                 if (evaled === null || (typeof evaled === "object" && evaled.type === "error")) {
                     layerEval.push({
@@ -610,7 +660,9 @@ export class App extends React.Component<{}, {}> {
         // This format may change
         let hash = location.href.indexOf("#");
         if (hash !== -1) {
-            let [selectedKeyboard, selectedLang, selectedKeymapUrl] = location.href
+            let [selectedKeyboard, selectedLang, selectedKeymapUrl] = decodeURIComponent(
+                location.href
+            )
                 .slice(hash + 1)
                 .split("|");
 
@@ -622,12 +674,10 @@ export class App extends React.Component<{}, {}> {
                 this.selectedKeyboardKey = selectedKeyboard;
             }
 
-            if (selectedKeymapUrl) {
-                if (selectedKeymapUrl.indexOf("%3A") !== -1) {
-                    selectedKeymapUrl = decodeURIComponent(selectedKeymapUrl);
-                }
-                this.keymapLayoutUrl = selectedKeymapUrl;
+            if (selectedKeymapUrl && selectedKeymapUrl.indexOf("%3A") !== -1) {
+                selectedKeymapUrl = decodeURIComponent(selectedKeymapUrl);
             }
+            this.keymapLayoutUrl = selectedKeymapUrl || "";
         }
     };
 
@@ -640,6 +690,11 @@ export class App extends React.Component<{}, {}> {
         }
         return !!this.keymapsTextareaValue;
     }
+
+    @action
+    private onClickShowExample = () => {
+        location.hash = exampleKeymap.keyboard + "|" + exampleKeymap.lang + "|example";
+    };
 
     @action
     private onClickDelete = () => {
@@ -673,6 +728,11 @@ export class App extends React.Component<{}, {}> {
     private downloadKeymapUrl = () => {
         if (!this.keymapLayoutUrl) {
             this.downloadUrlState = "";
+            return;
+        }
+        if (this.keymapLayoutUrl === "example") {
+            this.downloadedKeymap = this.keymapsTextareaValue = exampleKeymap.keymap;
+            this.downloadUrlState = "success";
             return;
         }
         if (!this.keymapLayoutUrl.startsWith("http")) {
@@ -860,6 +920,7 @@ export class App extends React.Component<{}, {}> {
             layoutKey: "KEYMAP",
             layers: [],
             endParsingPosition: 0,
+            settings: {},
         };
         if (!VSC_MODE) {
             this.keymapsTextareaValue = "";

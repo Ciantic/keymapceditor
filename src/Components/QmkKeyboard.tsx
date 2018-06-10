@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Key, KeyStyle, KeyProps, KeycapText, KeycapBackground } from "./Key";
-import { observable, action, runInAction } from "mobx";
+import { observable, action, runInAction, computed } from "mobx";
 import { observer } from "mobx-react";
 import {
     IKeyboardLayoutNextKey,
@@ -19,8 +19,6 @@ const isKeyboardLayoutKeyDefinition = (o: any): o is IKeyboardLayoutKeyDefinitio
 
 interface KeyboardLayoutProps {
     className?: string;
-    width: number;
-    height: number;
     keys: QmkKeyDefinition[];
     disabled?: boolean;
     styleBackgroundKeys?: Map<string, KeycapBackground>;
@@ -40,6 +38,16 @@ export class QmkKeyboardLayout extends React.Component<KeyboardLayoutProps, {}> 
         styleHoveredKeys: new Map(),
     };
 
+    @computed
+    private get width() {
+        return Math.max(...this.props.keys.map(t => t.x + (t.w || 1)));
+    }
+
+    @computed
+    private get height() {
+        return Math.max(...this.props.keys.map(t => t.y + (t.h || 1)));
+    }
+
     render() {
         let props = this.props;
         let keys: KeyProps[] = [];
@@ -49,7 +57,7 @@ export class QmkKeyboardLayout extends React.Component<KeyboardLayoutProps, {}> 
         let onClickKey = props.onClickKey;
 
         let convertToPercents = (v: number) => {
-            return v / props.width * 100;
+            return v / this.width * 100;
         };
         // let layoutDefintion = props.keyboard.layouts[props.layoutKey];
         // if (!layoutDefintion) {
@@ -117,7 +125,7 @@ export class QmkKeyboardLayout extends React.Component<KeyboardLayoutProps, {}> 
                 <div
                     style={{
                         position: "relative",
-                        paddingTop: props.height / props.width * 100 + "%",
+                        paddingTop: this.height / this.width * 100 + "%",
                     }}
                 />
             </div>

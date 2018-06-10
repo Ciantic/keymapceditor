@@ -12,7 +12,7 @@ export interface KeyStyle {
     background?: KeycapBackground;
 }
 
-export type KeycapBackground = "" | "mod" | "layer";
+export type KeycapBackground = "" | "mod" | "layer" | { bg: string };
 
 export interface KeycapText {
     topleft?: React.ReactNode;
@@ -53,11 +53,7 @@ const Texts = (opts: { className: string; children: React.ReactNode }) => {
             fz = styles.smaller;
         }
     }
-    return (
-        <div className={cns(opts.className, fz)}>
-            {opts.children}
-        </div>
-    );
+    return <div className={cns(opts.className, fz)}>{opts.children}</div>;
 };
 
 @observer
@@ -101,7 +97,7 @@ export class Key extends React.Component<KeyProps, {}> {
                     style.disabled && styles.disabled,
                     style.pressed && styles.pressed,
                     style.hovered && styles.hovered,
-                    styles[style.background || ""]
+                    typeof style.background == "string" && styles[style.background]
                 )}
                 style={{
                     position: "absolute",
@@ -110,7 +106,7 @@ export class Key extends React.Component<KeyProps, {}> {
                     transformOrigin: `top left`,
                 }}
             >
-                {rectangle2 &&
+                {rectangle2 && (
                     <div
                         className={styles.container}
                         style={rectangle2 as CSSProperties}
@@ -120,49 +116,49 @@ export class Key extends React.Component<KeyProps, {}> {
                             <div className={styles.shadow} />
                             <div className={styles.top} />
                         </div>
-                    </div>}
+                    </div>
+                )}
 
                 <div className={styles.container} style={rectangle1 as CSSProperties} {...events}>
                     <div className={styles.borders}>
                         <div className={styles.shadow} />
-                        <div className={styles.top}>
+                        <div
+                            className={styles.top}
+                            style={{
+                                backgroundColor:
+                                    typeof style.background == "object"
+                                        ? style.background.bg
+                                        : undefined,
+                            }}
+                        >
                             <div className={styles.texts}>
-                                {texts.topleft &&
-                                    <Texts className={styles.tl}>
-                                        {texts.topleft}
-                                    </Texts>}
-                                {texts.topcenter &&
-                                    <Texts className={styles.tc}>
-                                        {texts.topcenter}
-                                    </Texts>}
-                                {texts.topright &&
-                                    <Texts className={styles.tr}>
-                                        {texts.topright}
-                                    </Texts>}
-                                {texts.bottomleft &&
-                                    <Texts className={styles.bl}>
-                                        {texts.bottomleft}
-                                    </Texts>}
-                                {texts.bottomcenter &&
-                                    <Texts className={styles.bc}>
-                                        {texts.bottomcenter}
-                                    </Texts>}
-                                {texts.bottomright &&
-                                    <Texts className={styles.br}>
-                                        {texts.bottomright}
-                                    </Texts>}
-                                {texts.centered &&
-                                    <Texts className={styles.c}>
-                                        {texts.centered}
-                                    </Texts>}
-                                {texts.centerright &&
-                                    <Texts className={styles.cr}>
-                                        {texts.centerright}
-                                    </Texts>}
-                                {texts.centerleft &&
-                                    <Texts className={styles.cl}>
-                                        {texts.centerleft}
-                                    </Texts>}
+                                {texts.topleft && (
+                                    <Texts className={styles.tl}>{texts.topleft}</Texts>
+                                )}
+                                {texts.topcenter && (
+                                    <Texts className={styles.tc}>{texts.topcenter}</Texts>
+                                )}
+                                {texts.topright && (
+                                    <Texts className={styles.tr}>{texts.topright}</Texts>
+                                )}
+                                {texts.bottomleft && (
+                                    <Texts className={styles.bl}>{texts.bottomleft}</Texts>
+                                )}
+                                {texts.bottomcenter && (
+                                    <Texts className={styles.bc}>{texts.bottomcenter}</Texts>
+                                )}
+                                {texts.bottomright && (
+                                    <Texts className={styles.br}>{texts.bottomright}</Texts>
+                                )}
+                                {texts.centered && (
+                                    <Texts className={styles.c}>{texts.centered}</Texts>
+                                )}
+                                {texts.centerright && (
+                                    <Texts className={styles.cr}>{texts.centerright}</Texts>
+                                )}
+                                {texts.centerleft && (
+                                    <Texts className={styles.cl}>{texts.centerleft}</Texts>
+                                )}
                                 {texts.node && texts.node}
                             </div>
                         </div>

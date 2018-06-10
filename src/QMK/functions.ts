@@ -70,6 +70,11 @@ interface IOneShotModifierResult extends IRenderable {
     mod: modtapmodifierstype;
 }
 
+interface ICustomKeycap extends IRenderable {
+    type: "customkeycap";
+    bg?: string;
+}
+
 export type QmkFunctionResult =
     | IParseError
     | IModResult
@@ -81,6 +86,7 @@ export type QmkFunctionResult =
     | ILangKeycodeResult
     | IOneShotLayerResult
     | IOneShotModifierResult
+    | ICustomKeycap
     | string; // Passes keycodes and words
 
 const modifierTextShortened = (mods: modifierkeytype[]) => {

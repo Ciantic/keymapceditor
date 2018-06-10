@@ -21,9 +21,11 @@ export const LANGS = {
     MyReferenceKeyboardIsMissing: "Where is keyboard...?",
     MyLanguageMapIsMissing: "Where is language...?",
 
+    ExampleKeymap: "Show example",
+
     StoredKeymaps: "All stored keymaps...",
 
-    LayoutNotSelectedError: "Layout must be chosen for KEYMAPS to work",
+    LayoutNotSelectedError: "Please select keyboard from the top first",
     NoErrors: "No Errors",
 
     CtrlSingleLetter: "C",
