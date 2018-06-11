@@ -30,7 +30,7 @@ interface KeyboardLayoutProps {
 }
 
 @observer
-export class KeyboardLayout extends React.Component<KeyboardLayoutProps, {}> {
+export class KleKeyboard extends React.Component<KeyboardLayoutProps, {}> {
     static defaultProps: Partial<KeyboardLayoutProps> = {
         disabled: false,
         stylePressedKeys: new Map(),

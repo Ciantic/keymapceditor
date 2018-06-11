@@ -13,7 +13,7 @@ import {
 import { observer } from "mobx-react";
 import * as React from "react";
 
-import { KeyboardLayout } from "./Components/Keyboard";
+import { KleKeyboard } from "./Components/KleKeyboard";
 import { keyboards } from "./KeyboardLayouts";
 import { LANGS } from "./Langs";
 import { ILanguageMapping, languageMappings, LanguageMappingKey } from "./LanguageMaps";
@@ -136,7 +136,7 @@ export class App extends React.Component<{}, {}> {
 
             // Get keyboard key from a url
             let m = VSC_URI.match(/\/keyboards\/(.*?)\//);
-            if (m && m[1]) {
+            if (m && m[1] && m[1] in keyboards) {
                 this.selectedKeyboardKey = m[1];
             }
 
@@ -337,7 +337,7 @@ export class App extends React.Component<{}, {}> {
                 {/* Reference keyboard layout */}
 
                 {refKeyboard && (
-                    <KeyboardLayout
+                    <KleKeyboard
                         disabled={!!this.keymapsParseError || !!this.layoutNotSelectedError}
                         styleHoveredKeys={this.hoveredRefKeys}
                         stylePressedKeys={this.selectedRefKeys}

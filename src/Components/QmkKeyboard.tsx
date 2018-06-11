@@ -59,14 +59,6 @@ export class QmkKeyboardLayout extends React.Component<KeyboardLayoutProps, {}> 
         let convertToPercents = (v: number) => {
             return v / this.width * 100;
         };
-        // let layoutDefintion = props.keyboard.layouts[props.layoutKey];
-        // if (!layoutDefintion) {
-        //     return (
-        //         <div className="pt-intent-danger pt-callout">
-        //             Unable to render keyboard, definition for `{props.layoutKey}` not found.
-        //         </div>
-        //     );
-        // }
         return (
             <div style={{ position: "relative", overflow: "hidden" }} className={styles.keyboard}>
                 {props.keys.map((k, i) => {
