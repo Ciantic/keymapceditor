@@ -1,6 +1,6 @@
 {
     "name": "keymapceditor",
-    "version": "0.7.2",
+    "version": "0.7.3",
     "license": "",
     "dependencies": {
         "@blueprintjs/core": "^1.37.1",
@@ -53,7 +53,8 @@
     "scripts": {
         "start": "node build.js --development",
         "build": "node build.js",
-        "publish": "node build.js && dir ..\\ciantic.github.com\\keymapceditor && ncp build ..\\ciantic.github.com\\keymapceditor && git -C ..\\ciantic.github.com commit -a -m \"keymapceditor...\" && git -C ..\\ciantic.github.com push",
+        "publish":
+            "node build.js && dir ..\\ciantic.github.com\\keymapceditor && ncp build ..\\ciantic.github.com\\keymapceditor && git -C ..\\ciantic.github.com commit -a -m \"keymapceditor...\" && git -C ..\\ciantic.github.com push",
         "testwatch": "karma start karma.config.js"
     }
 }
