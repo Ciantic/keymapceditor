@@ -26,6 +26,7 @@ export const LANGS = {
     StoredKeymaps: "All stored keymaps...",
 
     LayoutNotSelectedError: "Please select keyboard from the top first",
+    KeyCountError: "This keymap.c has different amount of keys than in a chosen keyboard",
     NoErrors: "No Errors",
 
     CtrlSingleLetter: "C",

@@ -45,6 +45,7 @@ export type KeymapParseResult = {
     layers: AstNode[][];
     endParsingPosition: number;
     settings: ISettings;
+    keyCount: number;
 };
 
 const tryReadSettings = (str: string): ISettings => {
@@ -244,6 +245,7 @@ export const tryParseKeymapsText = (expr: string): KeymapParseResult => {
         endParsingPosition: pos,
         layers: keymaps,
         settings: settings,
+        keyCount: keymaps[0].length,
     };
 };
 

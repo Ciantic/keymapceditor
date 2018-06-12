@@ -76,6 +76,7 @@ export class App extends React.Component<{}, {}> {
         layers: [],
         endParsingPosition: 0,
         settings: {},
+        keyCount: 0,
     };
     private inputRef: HTMLInputElement | null = null;
     private textareaRef: HTMLTextAreaElement | null = null;
@@ -409,6 +410,10 @@ export class App extends React.Component<{}, {}> {
                         readOnly
                         className={cns("pt-input", "pt-fill", styles.keymapUri)}
                     />
+                )}
+
+                {this.keyCountError && (
+                    <div className="pt-callout pt-intent-warning">{LANGS.KeyCountError}</div>
                 )}
 
                 {this.keymapsTextareaValue &&
@@ -839,6 +844,14 @@ export class App extends React.Component<{}, {}> {
     };
 
     @computed
+    private get keyCountError() {
+        if (this.currentLayoutKeys) {
+            return this.currentLayoutKeys.length != this.lastSuccessfulKeymapParsed.keyCount;
+        }
+        return false;
+    }
+
+    @computed
     private get selectedRefKeys() {
         let value = this.currentSelectedKey;
         if (typeof value === "string") {
@@ -921,6 +934,7 @@ export class App extends React.Component<{}, {}> {
             layers: [],
             endParsingPosition: 0,
             settings: {},
+            keyCount: 0,
         };
         if (!VSC_MODE) {
             this.keymapsTextareaValue = "";
