@@ -56,14 +56,11 @@ export class App extends React.Component<{}, {}> {
     @observable private downloadUrlState: "" | "success" | "downloading" | "error" = "";
     @observable private downloadedKeymap = "";
 
-    // Stored name of the keymap
-    @observable private keymapLayoutName = "";
-
     // Layer tab index
-    @observable private layerIndex = 0;
+    @observable private selectedLayerIndex = 0;
 
     // Configure layout
-    @observable private selectedKey: number | null = null;
+    @observable private selectedKeyIndex: number | null = null;
     @observable private hoveredKeys = new Map<string, boolean>();
     @observable private layoutNotSelectedError = "";
     @observable private keymapsParseError: string = "";
@@ -79,7 +76,6 @@ export class App extends React.Component<{}, {}> {
         keyCount: 0,
     };
     private inputRef: HTMLInputElement | null = null;
-    private textareaRef: HTMLTextAreaElement | null = null;
     private urlInputRef: HTMLInputElement | null = null;
 
     // Reference layout
@@ -94,11 +90,11 @@ export class App extends React.Component<{}, {}> {
 
         // Somewhat bad way to update a keyInputValue
         reaction(
-            () => [this.selectedKeyboardKey, this.currentSelectedValue],
+            () => [this.selectedKeyboardKey, this.selectedKeyAstNode],
             () => {
                 this.keyValidationError = "";
                 this.keyInputValue =
-                    (this.currentSelectedValue && this.currentSelectedValue.content) || "";
+                    (this.selectedKeyAstNode && this.selectedKeyAstNode.content) || "";
             }
         );
 
@@ -191,7 +187,7 @@ export class App extends React.Component<{}, {}> {
         let currentKeyboardKeys = this.currentLayoutKeys;
         let keymapLayoutUrl = this.keymapLayoutUrl;
         let currentLayoutIndex = Math.min(
-            this.layerIndex,
+            this.selectedLayerIndex,
             this.lastSuccessfulKeymapParsed.layers.length - 1
         );
         if (this.isModified) {
@@ -303,18 +299,20 @@ export class App extends React.Component<{}, {}> {
                         <QmkKeyboardLayout
                             disabled={!!this.keymapsParseError}
                             styleHoveredKeys={this.hoveredKeys}
-                            stylePressedKeys={new Map().set("" + this.selectedKey, true)}
-                            styleBackgroundKeys={this.configureLayoutKeycaps.backgrounds}
+                            stylePressedKeys={new Map().set("" + this.selectedKeyIndex, true)}
+                            styleBackgroundKeys={this.currentLayerKeycaps.backgrounds}
                             keys={currentKeyboardKeys}
                             onMouseLeaveKey={this.onMouseOutConfigureKey}
                             onMouseEnterKey={this.onMouseOverConfigureKey}
-                            keycapTexts={this.configureLayoutKeycaps.texts}
+                            keycapTexts={this.currentLayerKeycaps.texts}
                             onClickKey={this.onClickConfigureKey}
                         />
                         <div className={styles.layoutInput}>
                             <input
                                 spellCheck={false}
-                                disabled={!!this.keymapsParseError || this.selectedKey === null}
+                                disabled={
+                                    !!this.keymapsParseError || this.selectedKeyIndex === null
+                                }
                                 value={this.keyInputValue}
                                 ref={this.setInputRef}
                                 onChange={this.onChangeInput}
@@ -386,7 +384,6 @@ export class App extends React.Component<{}, {}> {
                                 )}
                         </div>
                         <textarea
-                            ref={this.setTextareaRef}
                             placeholder={LANGS.KeymapsPlaceholder}
                             value={this.keymapsTextareaValue}
                             spellCheck={false}
@@ -465,7 +462,7 @@ export class App extends React.Component<{}, {}> {
     }
 
     @computed
-    private get configureLayoutEvaled() {
+    private get evalTree() {
         let evalTree: (QmkFunctionResult)[][] = [];
         this.lastSuccessfulKeymapParsed.layers.forEach(t => {
             let layerEval: (QmkFunctionResult)[] = [];
@@ -515,41 +512,44 @@ export class App extends React.Component<{}, {}> {
     }
 
     @computed
-    private get currentConfigureLayoutEvaled() {
-        if (this.configureLayoutEvaled && this.configureLayoutEvaled.length > 0) {
-            return this.configureLayoutEvaled[
-                Math.max(0, Math.min(this.layerIndex, this.configureLayoutEvaled.length - 1))
+    private get currentLayerEvalTree() {
+        if (this.evalTree && this.evalTree.length > 0) {
+            return this.evalTree[
+                Math.max(0, Math.min(this.selectedLayerIndex, this.evalTree.length - 1))
             ];
         }
         return null;
     }
 
     @computed
-    get currentSelectedKey() {
-        if (this.currentConfigureLayoutEvaled && this.selectedKey !== null) {
-            return this.currentConfigureLayoutEvaled[this.selectedKey];
+    get selectedKeyEvalResult() {
+        if (this.currentLayerEvalTree && this.selectedKeyIndex !== null) {
+            return this.currentLayerEvalTree[this.selectedKeyIndex];
         }
         return null;
     }
 
     @computed
-    private get currentSelectedValue() {
-        let currentLayer = this.currentLayoutLayer;
-        if (currentLayer && this.selectedKey !== null) {
-            if (currentLayer[this.selectedKey]) {
-                return currentLayer[this.selectedKey];
+    private get selectedKeyAstNode() {
+        let currentLayer = this.currentLayerAstTree;
+        if (currentLayer && this.selectedKeyIndex !== null) {
+            if (currentLayer[this.selectedKeyIndex]) {
+                return currentLayer[this.selectedKeyIndex];
             }
         }
         return null;
     }
 
     @computed
-    private get currentLayoutLayer() {
+    private get currentLayerAstTree() {
         if (this.lastSuccessfulKeymapParsed && this.lastSuccessfulKeymapParsed.layers.length > 0) {
             return this.lastSuccessfulKeymapParsed.layers[
                 Math.max(
                     0,
-                    Math.min(this.layerIndex, this.lastSuccessfulKeymapParsed.layers.length - 1)
+                    Math.min(
+                        this.selectedLayerIndex,
+                        this.lastSuccessfulKeymapParsed.layers.length - 1
+                    )
                 )
             ];
         }
@@ -557,11 +557,11 @@ export class App extends React.Component<{}, {}> {
     }
 
     @computed
-    private get configureLayoutKeycaps(): {
+    private get currentLayerKeycaps(): {
         backgrounds: Map<string, KeycapBackground>;
         texts: Map<string, KeycapText>;
     } {
-        if (!this.currentConfigureLayoutEvaled) {
+        if (!this.currentLayerEvalTree) {
             return {
                 backgrounds: new Map(),
                 texts: new Map(),
@@ -571,7 +571,7 @@ export class App extends React.Component<{}, {}> {
         let keycapTexts = new Map<string, KeycapText>();
         let backgrounds = new Map<string, KeycapBackground>();
         let i = 0;
-        for (let result of this.currentConfigureLayoutEvaled) {
+        for (let result of this.currentLayerEvalTree) {
             let index = "" + i++;
             let fallback: KeycapText = {
                 centered: "???",
@@ -786,10 +786,6 @@ export class App extends React.Component<{}, {}> {
         this.inputRef = el;
     };
 
-    private setTextareaRef = (el: HTMLTextAreaElement) => {
-        this.textareaRef = el;
-    };
-
     private getLayoutOrError = (): QmkInfoJson | null => {
         let layout = keyboards[this.selectedKeyboardKey] || null;
         if (!layout) {
@@ -828,8 +824,8 @@ export class App extends React.Component<{}, {}> {
 
     @action
     private onChangeLayer = (newTabId: number, prevTabId: number) => {
-        this.selectedKey = null;
-        this.layerIndex = newTabId;
+        this.selectedKeyIndex = null;
+        this.selectedLayerIndex = newTabId;
     };
 
     @action
@@ -839,8 +835,8 @@ export class App extends React.Component<{}, {}> {
             this.keymapsTextareaValue,
             this.lastSuccessfulKeymapParsed.layoutKey
         );
-        this.layerIndex = this.lastSuccessfulKeymapParsed.layers.length;
-        this.selectedKey = null;
+        this.selectedLayerIndex = this.lastSuccessfulKeymapParsed.layers.length;
+        this.selectedKeyIndex = null;
     };
 
     @computed
@@ -853,7 +849,7 @@ export class App extends React.Component<{}, {}> {
 
     @computed
     private get selectedRefKeys() {
-        let value = this.currentSelectedKey;
+        let value = this.selectedKeyEvalResult;
         if (typeof value === "string") {
             return new Map().set(value || "", true);
         }
@@ -879,8 +875,7 @@ export class App extends React.Component<{}, {}> {
     };
 
     private validateKeyChange = (keymap: string) => {
-        let layout = this.getLayoutOrError();
-        if (this.selectedKey === null) {
+        if (this.selectedKeyIndex === null) {
             return;
         }
 
@@ -888,8 +883,8 @@ export class App extends React.Component<{}, {}> {
             this.keyValidationError = "";
             this.keymapsTextareaValue = trySetKeymapsKey(
                 this.keymapsTextareaValue,
-                this.layerIndex,
-                this.selectedKey,
+                this.selectedLayerIndex,
+                this.selectedKeyIndex,
                 keymap
             );
         } catch (e) {
@@ -912,14 +907,23 @@ export class App extends React.Component<{}, {}> {
 
     @action
     private onChangeKeyboard = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        let oldLayout = keyboards[this.selectedKeyboardKey];
-        let oldUrl = this.keymapLayoutUrl;
         this.selectedKeyboardKey = e.target.value;
+        this.selectedKeyIndex = null;
+        this.selectedLayerIndex = 0;
+        this.lastSuccessfulKeymapParsed = {
+            layoutKey: "KEYMAP",
+            layers: [],
+            endParsingPosition: 0,
+            settings: {},
+            keyCount: 0,
+        };
         let newLayout = keyboards[this.selectedKeyboardKey];
         if (!newLayout || !newLayout._defaultKeymapUrl) {
             return;
         }
 
+        // let oldLayout = keyboards[this.selectedKeyboardKey];
+        // let oldUrl = this.keymapLayoutUrl;
         // if (
         //     // If nothing is set, allow changing url
         //     (!this.keymapLayoutUrl && !this.keymapsTextareaValue) ||
@@ -929,13 +933,6 @@ export class App extends React.Component<{}, {}> {
         //     // If the keymap text is not modified allow changing the download url
         //     (!oldLayout && !this.isModified)
         // ) {
-        this.lastSuccessfulKeymapParsed = {
-            layoutKey: "KEYMAP",
-            layers: [],
-            endParsingPosition: 0,
-            settings: {},
-            keyCount: 0,
-        };
         if (!VSC_MODE) {
             this.keymapsTextareaValue = "";
             this.keymapLayoutUrl = newLayout._defaultKeymapUrl;
@@ -947,10 +944,10 @@ export class App extends React.Component<{}, {}> {
     // Configure keyboard layout
     private onClickConfigureKey = (v: string, n: number) =>
         action(() => {
-            if (+v === this.selectedKey) {
-                this.selectedKey = null;
+            if (+v === this.selectedKeyIndex) {
+                this.selectedKeyIndex = null;
             } else {
-                this.selectedKey = +v;
+                this.selectedKeyIndex = +v;
             }
             setTimeout(() => {
                 if (this.inputRef) {
@@ -973,13 +970,13 @@ export class App extends React.Component<{}, {}> {
     // Reference keyboard layout
     private onClickReferenceKey = (k: keycode, n: number) =>
         action(() => {
-            if (this.selectedKey !== null) {
+            if (this.selectedKeyIndex !== null) {
                 let layout = this.getLayoutOrError();
                 try {
                     this.keymapsTextareaValue = trySetKeymapsKey(
                         this.keymapsTextareaValue,
-                        this.layerIndex,
-                        this.selectedKey,
+                        this.selectedLayerIndex,
+                        this.selectedKeyIndex,
                         k
                     );
                 } catch (e) {}
@@ -988,7 +985,7 @@ export class App extends React.Component<{}, {}> {
 
     private onMouseOverReferenceKey = (k: keycode, n: number) =>
         action(() => {
-            if (this.selectedKey !== null) {
+            if (this.selectedKeyIndex !== null) {
                 this.hoveredRefKeys.set(k, true);
             }
         });
