@@ -62,6 +62,15 @@ const getInfoJsonMap = async (clearCache = false) => {
         get(
             "https://api.github.com/search/code?q=filename:info.json+repo:qmk/qmk_firmware&per_page=100&page=2"
         ),
+        get(
+            "https://api.github.com/search/code?q=filename:info.json+repo:qmk/qmk_firmware&per_page=100&page=3"
+        ),
+        get(
+            "https://api.github.com/search/code?q=filename:info.json+repo:qmk/qmk_firmware&per_page=100&page=4"
+        ),
+        get(
+            "https://api.github.com/search/code?q=filename:info.json+repo:qmk/qmk_firmware&per_page=100&page=5"
+        ),
     ]);
 
     /** @type {string[]} */
