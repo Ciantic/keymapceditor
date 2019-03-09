@@ -1,6 +1,6 @@
 {
     "name": "keymapceditor",
-    "version": "0.7.4",
+    "version": "0.7.5",
     "license": "",
     "dependencies": {
         "@blueprintjs/core": "^1.37.1",
