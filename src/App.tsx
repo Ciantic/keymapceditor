@@ -36,7 +36,7 @@ import {
     sendKeymapToExtension,
     listenMessageFromExtension,
     initExtension,
-    sendLogToExtension,
+    vscode,
 } from "./Extension";
 import { renderKeycapBackground, renderKeycapText } from "./QMK/keyrendering";
 import { QmkInfoJson, QmkKeyDefinition } from "./QMK/info";
@@ -122,6 +122,9 @@ export class App extends React.Component<{}, {}> {
         }
 
         if (VSC_MODE) {
+            if (!vscode) {
+                return;
+            }
             // Listen messages from VSC extension
             listenMessageFromExtension("setKeymap", data =>
                 runInAction("setKeymap from extension", () => {
@@ -137,46 +140,31 @@ export class App extends React.Component<{}, {}> {
                 this.selectedKeyboardKey = m[1];
             }
 
-            // Get from localstorage
-            if (window.localStorage) {
-                if (!this.selectedKeyboardKey) {
-                    let kbd = localStorage.getItem("keyboard");
-                    if (kbd) {
-                        this.selectedKeyboardKey = kbd;
-                    }
-                }
-
-                let lang = localStorage.getItem("language");
-                if (lang) {
-                    this.selectedLanguageMappingKey = lang as LanguageMappingKey;
-                }
-
-                let ref = localStorage.getItem("referenceKeyboard");
-                if (ref) {
-                    this.selectedRefKeyboardKey = ref as ReferenceKeyboardKey;
-                }
-
-                reaction(
-                    () => this.selectedKeyboardKey,
-                    () => {
-                        localStorage.setItem("keyboard", this.selectedKeyboardKey);
-                    }
-                );
-
-                reaction(
-                    () => this.selectedLanguageMappingKey,
-                    () => {
-                        localStorage.setItem("language", this.selectedLanguageMappingKey);
-                    }
-                );
-
-                reaction(
-                    () => this.selectedRefKeyboardKey,
-                    () => {
-                        localStorage.setItem("referenceKeyboard", this.selectedRefKeyboardKey);
-                    }
-                );
+            // Get from vscode state
+            let state = vscode.getState();
+            if (state) {
+                if (state.keyboard) this.selectedKeyboardKey = state.keyboard;
+                if (state.language)
+                    this.selectedLanguageMappingKey = state.language as LanguageMappingKey;
+                if (state.referenceKeyboard)
+                    this.selectedRefKeyboardKey = state.referenceKeyboard as ReferenceKeyboardKey;
             }
+
+            const updateState = () => {
+                if (!vscode) {
+                    return;
+                }
+                let newState = {
+                    keyboard: this.selectedKeyboardKey,
+                    language: this.selectedLanguageMappingKey,
+                    referenceKeyboard: this.selectedRefKeyboardKey,
+                };
+                vscode.setState(newState);
+            };
+
+            reaction(() => this.selectedKeyboardKey, updateState);
+            reaction(() => this.selectedLanguageMappingKey, updateState);
+            reaction(() => this.selectedRefKeyboardKey, updateState);
         }
     }
 
@@ -197,11 +185,11 @@ export class App extends React.Component<{}, {}> {
         return (
             <div>
                 <nav className="pt-navbar pt-dark pt-fixed-top">
-                    {!VSC_MODE ? (
+                    {VSC_MODE && (
                         <div className="pt-navbar-group pt-align-left">
                             <div className="pt-navbar-heading">KeymapCEditor</div>
                         </div>
-                    ) : null}
+                    )}
                     <div className="pt-navbar-group pt-control-group pt-align-left pt-fill">
                         <div className="pt-select pt-fill .modifier">
                             <select

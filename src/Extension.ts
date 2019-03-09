@@ -4,46 +4,27 @@ if (typeof VSC_MODE === "undefined") {
 if (typeof VSC_URI === "undefined") {
     (window as any)["VSC_URI"] = "";
 }
+export const vscode = VSC_MODE ? acquireVsCodeApi() : null;
 
-const sendToExtension = (command: string, ...args: any[]) => {
+const sendToExtension = (command: string, data?: {}) => {
     if (!VSC_MODE) {
         return;
     }
-    if (window && window.parent && window.parent.postMessage) {
-        window.parent.postMessage(
-            {
-                // This is required to be "did-click-link" in all cases, this is
-                // some misfeature in vscode that actually sends the event to the
-                // command specified in data
-                //
-                // This pattern is used in the vscode/markdown extension itself
-                command: "did-click-link",
-                data: `command:${command}?${encodeURIComponent(JSON.stringify(args))}`,
-            },
-            "file://"
-        );
+    if (!vscode) {
+        return;
     }
-};
-
-export const sendConnectRequestToExtension = () => {
-    sendToExtension("_keymapceditor.connectedPreview", {
+    vscode.postMessage({
+        command: command,
         uri: VSC_URI,
+        ...data,
     });
 };
 
-export const sendLogToExtension = (a: any) => {
-    sendToExtension("_keymapceditor.logging", a);
+export const sendConnectRequestToExtension = () => {
+    sendToExtension("_keymapceditor.connectedPreview");
 };
 
 let throttleTimeout: number | null = null;
-
-let sendSaveToExtension = () => {
-    setTimeout(() => {
-        sendToExtension("_keymapceditor.save", {
-            uri: VSC_URI,
-        });
-    }, 400); // 400 is greater than 300 below
-};
 
 let avoidResendCycle = "";
 
@@ -62,7 +43,6 @@ export let sendKeymapToExtension = (keymap: string) => {
     }
     throttleTimeout = setTimeout(() => {
         sendToExtension("_keymapceditor.keymapFromPreview", {
-            uri: VSC_URI,
             keymap,
         });
     }, 300);
