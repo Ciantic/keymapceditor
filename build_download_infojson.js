@@ -214,7 +214,12 @@ const getInfoJsonMap = async (clearCache = false) => {
         .filter(t => t);
 
     let infoJsonMap = {};
-    infoJsonFiles.sort((a, b) => (a[0] > b[0] ? 1 : a[0] === b[0] ? 0 : -1));
+    infoJsonFiles.sort(
+        (a, b) =>
+            a[1].keyboard_name > b[1].keyboard_name
+                ? 1
+                : a[1].keyboard_name === b[1].keyboard_name ? 0 : -1
+    );
     infoJsonFiles.forEach(([key, infoJson]) => {
         infoJsonMap[key] = infoJson;
     });
