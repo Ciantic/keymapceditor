@@ -138,9 +138,19 @@ const getInfoJsonMap = async (clearCache = false) => {
     console.log("Cached info.json files:", files.length);
 
     // Returns the filepaths to the info.json files
+    let infoJsonFileNames = fs.readdirSync(INFO_JSON_CACHE_DIR);
+    infoJsonFileNames.sort((a, b) => {
+        a = a.toLowerCase().replace(/(.+?)keyboards_/, "");
+        b = b.toLowerCase().replace(/(.+?)keyboards_/, "");
+        return a > b ? 1 : b > a ? -1 : 0;
+    });
+
+    // Info.json inherits in the tree, e.g. keyboards/a/info.json "inherits" to keyboards/a/b/info.json
+    /** @type {{[k: string]: Object}} */
+    let infoJsonInheritanceCache = {};
+
     /** @type {[string, Object][]} */
-    let infoJsonFiles = fs
-        .readdirSync(INFO_JSON_CACHE_DIR)
+    let infoJsonFiles = infoJsonFileNames
         .map(cachedFilename => {
             let fileContents = fs.readFileSync(
                 path.join(INFO_JSON_CACHE_DIR, cachedFilename),
@@ -163,6 +173,24 @@ const getInfoJsonMap = async (clearCache = false) => {
                 console.log("Discarding info.json file, not in keyboards: ", cachedFilename);
                 return;
             }
+            let keyboardPath = keyMatch[1];
+            let inheritFromParts = keyboardPath.split("/").slice(0, -1);
+            let bits = "";
+            for (const part of inheritFromParts) {
+                bits += (bits != "" ? "/" : "") + part;
+                if (bits in infoJsonInheritanceCache) {
+                    // console.log("Inherit", bits);
+                    // console.log("Pre inherit", parsed.infoJson);
+                    parsed.infoJson = Object.assign(
+                        {},
+                        infoJsonInheritanceCache[bits],
+                        parsed.infoJson
+                    );
+                    // console.log("After inherit", parsed.infoJson);
+                }
+            }
+
+            infoJsonInheritanceCache[keyboardPath] = parsed.infoJson;
 
             // TODO: Validate info.json structure more thoroughly here:
             if (!parsed.infoJson.keyboard_name) {
@@ -172,7 +200,7 @@ const getInfoJsonMap = async (clearCache = false) => {
 
             /** @type {[string, Object]} */
             let result = [
-                keyMatch[1],
+                keyboardPath,
                 {
                     ...parsed.infoJson,
                     _defaultKeymapUrl: parsed.keymapUrl.replace(
