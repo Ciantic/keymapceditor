@@ -291,6 +291,7 @@ const SFT_T = (kc: keycode) => _MT(LSFT(kc));
 const ALT_T = (kc: keycode) => _MT(LALT(kc));
 const ALGR_T = (kc: keycode) => _MT(RALT(kc));
 const GUI_T = (kc: keycode) => _MT(LGUI(kc));
+const RCTL_T = (kc: keycode) => _MT(RCTL(kc));
 const ALL_T = (kc: keycode) => _MT(HYPR(kc));
 const LCAG_T = (kc: keycode) => _MT(LCAG(kc));
 const MEH_T = (kc: keycode) => _MT(MEH(kc));
@@ -420,6 +421,9 @@ const functionExpansionAliases: { [k: string]: keyof typeof functionExpansions }
 
 const functionNameAliases = {
     S: LSFT,
+    LALT_T: ALT_T,
+    LCTL_T: CTL_T,
+    LGUI_T: GUI_T,
 };
 
 const functions = {
@@ -430,6 +434,7 @@ const functions = {
     SFT_T,
     ALT_T,
     ALGR_T,
+    RCTL_T,
     GUI_T,
     ALL_T,
     LCAG_T,
