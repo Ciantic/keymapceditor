@@ -44,6 +44,7 @@ usbcode,normal,shifted,altgr,altgrshifted,deadkeys,bottomleft,topleft,topright,b
 46,=,+,,,,,,,,,
 47,[,{,,,,,,,,,
 48,],},,,,,,,,,
+49,\,|,,,,,,,,,
 50,??,??,,,,,,,,,
 51,;,:,,,,,,,,,
 52,',”,,,,,,,,,
