@@ -15,7 +15,7 @@ usbcode,normal,shifted,altgr,altgrshifted,deadkeys,bottomleft,topleft,topright,b
 17,n,N,,,,,N,,,,
 18,o,O,,,,,O,,,,
 19,p,P,,,,,P,,,,
-20,q,Q,,,,,Q,,,,
+20,q,Q,@,,,,Q,,,,
 21,r,R,,,,,R,,,,
 22,s,S,,,,,S,,,,
 23,t,T,,,,,T,,,,
